@@ -1,17 +1,13 @@
+import { STAGES } from "../lib/types.ts";
 import type { Dashboard } from "../lib/urlState.ts";
 
 const DASHBOARDS: { key: Dashboard; label: string }[] = [
   { key: "overview", label: "Overview" },
-  { key: "research", label: "Research" },
-  { key: "scaling", label: "Scaling" },
-  { key: "adoption", label: "Adoption" },
-  { key: "money", label: "Money" },
+  ...STAGES.map((s) => ({ key: s.id as Dashboard, label: s.label })),
 ];
 
-// The five persistent dashboard tabs — one consistent label set used
-// everywhere (never "Track Research" in one place and "Research" in
-// another). "Track" is a single eyebrow above the row, not repeated
-// inside each button.
+// The 7 persistent dashboard tabs (Overview + the 6 real pipeline stages,
+// see types.ts's STAGES) — one consistent label set used everywhere.
 export function DashboardNavigation({ active, onNavigate }: { active: Dashboard; onNavigate: (d: Dashboard) => void }) {
   return (
     <>

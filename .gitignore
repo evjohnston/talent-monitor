@@ -5,13 +5,12 @@ dist
 .vscode/*
 !.vscode/extensions.json
 
-# Accumulated fetch output lives on the `data` branch now, not `main` — see
-# CLAUDE.md's "Data lives on its own branch" section. Untracked here
-# 2026-07-20 specifically so the nightly/every-3h fetch job never has
-# anything to commit to `main` again; a human never needs to `git pull`
-# before pushing just because the bot ran. The files still exist on disk
-# after `npm run fetch-data` — git just stops caring about them here.
-public/data/*.json
+# public/data/talent.json IS committed to main (2026-07-28 talent-monitor
+# rebuild) — unlike the old quantum/AI verticals' nightly-fetched data,
+# there's no live source behind it to protect a human's `git pull` from;
+# see CLAUDE.md's "Ingestion" section. The `data` branch this repo used to
+# split fetch output onto is now dormant, not deleted, in case any of that
+# history is ever needed again.
 
 # Generated output from one-off research scripts (e.g. form-d-sector-
 # tracker.ts) — real data, but it's a local analysis artifact regenerated
@@ -46,3 +45,10 @@ __pycache__/
 # same treatment as output/ (form-d-sector-tracker.ts).
 ciq_output/
 .embed_cache/
+
+# talent_charts/ (the R project behind "The Great Talent Competition,"
+# absorbed as plain tracked files 2026-07-28 — see CLAUDE.md) has its own
+# RStudio session-state dumps, not source. .DS_Store already covered above.
+talent_charts/.RData
+talent_charts/.RDataTmp
+talent_charts/.Rhistory
