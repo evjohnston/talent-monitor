@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-07-28T21:28:11.577Z",
+  "generatedAt": "2026-07-28T23:31:31.824Z",
   "exhibits": [
     {
       "id": "FIG101",
@@ -11,8 +11,8 @@
       "sourceShort": "NCSES, Survey of Earned Doctorates, 2010–2024; Thurgood, Golladay, and Hill, U.S. Doctorates in the 20th Century, 2006.",
       "sourceLong": "National Center for Science and Engineering Statistics, Survey of Earned Doctorates Data Tables (U.S. National Science Foundation, 2010–2024), data tables compiled by the author across available survey years, https://ncses.nsf.gov/surveys/earned-doctorates; Delores H. Thurgood, Mary J. Golladay, and Susan T. Hill, U.S. Doctorates in the 20th Century, NSF 06-319 (Arlington, VA: National Science Foundation, 2006), https://www.nsf.gov/statistics/nsf06319/.",
       "sourceUrls": [
-        "https://ncses",
-        "https://www"
+        "https://ncses.nsf.gov/surveys/earned-doctorates",
+        "https://www.nsf.gov/statistics/nsf06319/"
       ],
       "columns": [
         "Year",
@@ -657,7 +657,7 @@
       "sourceShort": "NCES, IPEDS Completions, 1995–2024.",
       "sourceLong": "National Center for Education Statistics, \"Integrated Postsecondary Education Data System (IPEDS) Completions Component\" (U.S. Department of Education, 1995–2024), compiled by the author using Python from annual IPEDS Completions survey files, https://nces.ed.gov/ipeds/datacenter/DataFiles.aspx?year=-1&surveyNumber=3&sid=bd7f629c-c359-478c-a31c-7a82876497ed&rtid=7.",
       "sourceUrls": [
-        "https://nces"
+        "https://nces.ed.gov/ipeds/datacenter/DataFiles.aspx?year=-1&surveyNumber=3&sid=bd7f629c-c359-478c-a31c-7a82876497ed&rtid=7"
       ],
       "columns": [
         "Year",
@@ -858,7 +858,7 @@
       "sourceShort": "NCES, IPEDS Completions, 1995–2024.",
       "sourceLong": "National Center for Education Statistics, \"Integrated Postsecondary Education Data System (IPEDS) Completions Component\" (U.S. Department of Education, 1995–2024), compiled by the author using Python from annual IPEDS Completions survey files, https://nces.ed.gov/ipeds/datacenter/DataFiles.aspx?year=-1&surveyNumber=3&sid=bd7f629c-c359-478c-a31c-7a82876497ed&rtid=7.",
       "sourceUrls": [
-        "https://nces"
+        "https://nces.ed.gov/ipeds/datacenter/DataFiles.aspx?year=-1&surveyNumber=3&sid=bd7f629c-c359-478c-a31c-7a82876497ed&rtid=7"
       ],
       "columns": [
         "Year",
@@ -1059,7 +1059,7 @@
       "sourceShort": "NCES, IPEDS Completions, 1995–2024.",
       "sourceLong": "National Center for Education Statistics, \"Integrated Postsecondary Education Data System (IPEDS) Completions Component\" (U.S. Department of Education, 1995–2024), compiled by the author using Python from annual IPEDS Completions survey files, https://nces.ed.gov/ipeds/datacenter/DataFiles.aspx?year=-1&surveyNumber=3&sid=bd7f629c-c359-478c-a31c-7a82876497ed&rtid=7.",
       "sourceUrls": [
-        "https://nces"
+        "https://nces.ed.gov/ipeds/datacenter/DataFiles.aspx?year=-1&surveyNumber=3&sid=bd7f629c-c359-478c-a31c-7a82876497ed&rtid=7"
       ],
       "columns": [
         "Year",
@@ -1291,7 +1291,7 @@
       "sourceShort": "NCSES, Survey of Earned Doctorates, 2010–2024.",
       "sourceLong": "National Center for Science and Engineering Statistics, Survey of Earned Doctorates Data Tables (U.S. National Science Foundation, 2010–2024), data tables compiled by the author across available survey years, https://ncses.nsf.gov/surveys/earned-doctorates.",
       "sourceUrls": [
-        "https://ncses"
+        "https://ncses.nsf.gov/surveys/earned-doctorates"
       ],
       "columns": [
         "Year",
@@ -1714,7 +1714,7 @@
       "sourceShort": "IIE, \"International Student Enrollment Trends,\" Open Doors, 2025.",
       "sourceLong": "Institute of International Education, \"International Student Enrollment Trends, 1948/49–2024/25,\" Open Doors Report on International Educational Exchange, 2025, https://opendoorsdata.org/data/international-students/enrollment-trends/.",
       "sourceUrls": [
-        "https://opendoorsdata"
+        "https://opendoorsdata.org/data/international-students/enrollment-trends/"
       ],
       "columns": [
         "Year",
@@ -2119,7 +2119,7 @@
       "sourceShort": "NCES, IPEDS Completions, 1995–2024.",
       "sourceLong": "National Center for Education Statistics, \"Integrated Postsecondary Education Data System (IPEDS) Completions Component\" (U.S. Department of Education, 1995–2024), compiled by the author using Python from annual IPEDS Completions survey files, https://nces.ed.gov/ipeds/datacenter/DataFiles.aspx?year=-1&surveyNumber=3&sid=bd7f629c-c359-478c-a31c-7a82876497ed&rtid=7.",
       "sourceUrls": [
-        "https://nces"
+        "https://nces.ed.gov/ipeds/datacenter/DataFiles.aspx?year=-1&surveyNumber=3&sid=bd7f629c-c359-478c-a31c-7a82876497ed&rtid=7"
       ],
       "columns": [
         "Year",
@@ -2351,7 +2351,7 @@
       "sourceShort": "NCES, IPEDS Completions, 1995–2024.",
       "sourceLong": "National Center for Education Statistics, \"Integrated Postsecondary Education Data System (IPEDS) Completions Component\" (U.S. Department of Education, 1995–2024), compiled by the author using Python from annual IPEDS Completions survey files, https://nces.ed.gov/ipeds/datacenter/DataFiles.aspx?year=-1&surveyNumber=3&sid=bd7f629c-c359-478c-a31c-7a82876497ed&rtid=7.",
       "sourceUrls": [
-        "https://nces"
+        "https://nces.ed.gov/ipeds/datacenter/DataFiles.aspx?year=-1&surveyNumber=3&sid=bd7f629c-c359-478c-a31c-7a82876497ed&rtid=7"
       ],
       "columns": [
         "Year",
@@ -2583,7 +2583,7 @@
       "sourceShort": "NSB, \"International Comparisons of S&E Higher Education,\" Science and Engineering Indicators 2024; author's projections beyond reported figures.",
       "sourceLong": "National Science Board, \"International Comparisons of S&E Higher Education,\" in Higher Education in Science and Engineering, NSB-2023-32, Science and Engineering Indicators 2024 (U.S. National Science Foundation, 2023), 53–62, https://ncses.nsf.gov/pubs/nsb202332/international-comparisons-of-s-e-higher-education#educational-attainment; original data appear on p. 56, and projections beyond the reported figures were generated by the author.",
       "sourceUrls": [
-        "https://ncses"
+        "https://ncses.nsf.gov/pubs/nsb202332/international-comparisons-of-s-e-higher-education#educational-attainment"
       ],
       "columns": [
         "Year",
@@ -3213,7 +3213,7 @@
       "sourceShort": "NSB, \"International Comparisons of S&E Higher Education,\" Science and Engineering Indicators 2024; author's projections beyond reported figures.",
       "sourceLong": "National Science Board, \"International Comparisons of S&E Higher Education,\" in Higher Education in Science and Engineering, NSB-2023-32, Science and Engineering Indicators 2024 (U.S. National Science Foundation, 2023), 53–62, https://ncses.nsf.gov/pubs/nsb202332/international-comparisons-of-s-e-higher-education#educational-attainment; original data appear on p. 56, and projections beyond the reported figures were generated by the author.",
       "sourceUrls": [
-        "https://ncses"
+        "https://ncses.nsf.gov/pubs/nsb202332/international-comparisons-of-s-e-higher-education#educational-attainment"
       ],
       "columns": [
         "Year",
@@ -3843,7 +3843,7 @@
       "sourceShort": "IIE, \"International Students by Academic Level,\" Open Doors, 2025.",
       "sourceLong": "Institute of International Education, \"International Students by Academic Level, 1999/00–2024/25,\" Open Doors Report on International Educational Exchange, 2025, https://opendoorsdata.org/data/international-students/academic-level/.",
       "sourceUrls": [
-        "https://opendoorsdata"
+        "https://opendoorsdata.org/data/international-students/academic-level/"
       ],
       "columns": [
         "Year",
@@ -4155,7 +4155,7 @@
       "sourceShort": "IIE, \"International Students by Academic Level,\" Open Doors, 2025.",
       "sourceLong": "Institute of International Education, \"International Students by Academic Level, 1999/00–2024/25,\" Open Doors Report on International Educational Exchange, 2025, https://opendoorsdata.org/data/international-students/academic-level/.",
       "sourceUrls": [
-        "https://opendoorsdata"
+        "https://opendoorsdata.org/data/international-students/academic-level/"
       ],
       "columns": [
         "Year",
@@ -4467,7 +4467,7 @@
       "sourceShort": "IIE, \"International Students by Academic Level and Place of Origin,\" Open Doors, 2025.",
       "sourceLong": "Institute of International Education, \"International Students by Academic Level and Place of Origin, 2001/02–2024/25,\" Open Doors Report on International Educational Exchange, 2025, https://opendoorsdata.org/data/international-students/all-places-of-origin/.",
       "sourceUrls": [
-        "https://opendoorsdata"
+        "https://opendoorsdata.org/data/international-students/all-places-of-origin/"
       ],
       "columns": [
         "Year",
@@ -4820,7 +4820,7 @@
       "sourceShort": "IIE, \"International Students by Academic Level and Place of Origin,\" Open Doors, 2025.",
       "sourceLong": "Institute of International Education, \"International Students by Academic Level and Place of Origin, 2001/02–2024/25,\" Open Doors Report on International Educational Exchange, 2025, https://opendoorsdata.org/data/international-students/all-places-of-origin/.",
       "sourceUrls": [
-        "https://opendoorsdata"
+        "https://opendoorsdata.org/data/international-students/all-places-of-origin/"
       ],
       "columns": [
         "Year",
@@ -5173,7 +5173,7 @@
       "sourceShort": "IIE, \"Number of International Students by Field of Study,\" Open Doors, 2025.",
       "sourceLong": "Institute of International Education, \"Number of International Students by Field of Study, 1998/99–2024/25,\" Open Doors Report on International Educational Exchange, 2025, https://opendoorsdata.org/data/international-students/fields-of-study/",
       "sourceUrls": [
-        "https://opendoorsdata"
+        "https://opendoorsdata.org/data/international-students/fields-of-study/"
       ],
       "columns": [
         "Year",
@@ -5412,7 +5412,7 @@
       "sourceShort": "IIE, \"Fields of Study of Students from Selected Places of Origin,\" Open Doors, 2025.",
       "sourceLong": "Institute of International Education, \"Fields of Study of Students from Selected Places of Origin, 2009/10–2024/25,\" Open Doors Report on International Educational Exchange, 2025, https://opendoorsdata.org/data/international-students/fields-of-study-by-place-of-origin/",
       "sourceUrls": [
-        "https://opendoorsdata"
+        "https://opendoorsdata.org/data/international-students/fields-of-study-by-place-of-origin/"
       ],
       "columns": [
         "Year",
@@ -5767,7 +5767,7 @@
       "sourceShort": "NCSES, Survey of Graduate Students and Postdoctorates in Science and Engineering, 1994–2025.",
       "sourceLong": "National Center for Science and Engineering Statistics, Survey of Graduate Students and Postdoctorates in Science and Engineering Data Tables (U.S. National Science Foundation, 1994–2025), data tables compiled by the author across available survey years, https://ncses.nsf.gov/surveys/graduate-students.",
       "sourceUrls": [
-        "https://ncses"
+        "https://ncses.nsf.gov/surveys/graduate-students"
       ],
       "columns": [
         "Year",
@@ -6058,7 +6058,7 @@
       "sourceShort": "NCSES, Postdocs at Federally Funded R&D Centers, 2010–2023.",
       "sourceLong": "National Center for Science and Engineering Statistics, Postdocs at Federally Funded R&D Centers Data Tables (U.S. National Science Foundation, 2010–2023), data tables compiled by the author across available survey years, https://ncses.nsf.gov/surveys/ffrdc-postdocs.",
       "sourceUrls": [
-        "https://ncses"
+        "https://ncses.nsf.gov/surveys/ffrdc-postdocs"
       ],
       "columns": [
         "Year",
@@ -6113,8 +6113,8 @@
       "sourceShort": "U.S. Bureau of Economic Analysis, \"U.S. Trade in Services,\" Table 2.1, line 21; first reported in Baer and Ekin, Fall 2025 Snapshot (IIE, 2025).",
       "sourceLong": "U.S. Bureau of Economic Analysis, \"Table 2.1. U.S. Trade in Services, by Type of Service,\" line 21, International Transactions, International Services, and International Investment Position Tables (Washington, DC: BEA, July 3, 2025), https://apps.bea.gov/iTable/; first reported in Julie Baer and Sumeyra Ekin, Fall 2025 Snapshot on International Student Enrollment (Institute of International Education, 2025), https://iie.widen.net/s/xd9xrsft6q/iie_fall-2025-snapshot_full-report.",
       "sourceUrls": [
-        "https://apps",
-        "https://iie"
+        "https://apps.bea.gov/iTable/",
+        "https://iie.widen.net/s/xd9xrsft6q/iie_fall-2025-snapshot_full-report"
       ],
       "columns": [
         "Year",
@@ -6237,7 +6237,7 @@
       "sourceShort": "IIE, Fall 2025 Snapshot on International Student Enrollment, 2025.",
       "sourceLong": "Institute of International Education, Fall 2025 Snapshot on International Student Enrollment (New York: Institute of International Education, 2025), https://iie.widen.net/s/xd9xrsft6q/iie_fall-2025-snapshot_full-report.",
       "sourceUrls": [
-        "https://iie"
+        "https://iie.widen.net/s/xd9xrsft6q/iie_fall-2025-snapshot_full-report"
       ],
       "columns": [
         "Category",
@@ -6272,7 +6272,7 @@
       "sourceShort": "IIE, Fall 2025 Snapshot on International Student Enrollment, 2025.",
       "sourceLong": "Institute of International Education, Fall 2025 Snapshot on International Student Enrollment (New York: Institute of International Education, 2025), https://iie.widen.net/s/xd9xrsft6q/iie_fall-2025-snapshot_full-report.",
       "sourceUrls": [
-        "https://iie"
+        "https://iie.widen.net/s/xd9xrsft6q/iie_fall-2025-snapshot_full-report"
       ],
       "columns": [
         "Rank",
@@ -6364,7 +6364,7 @@
       "sourceShort": "IIE, Fall 2025 Snapshot on International Student Enrollment, 2025.",
       "sourceLong": "Institute of International Education, Fall 2025 Snapshot on International Student Enrollment (New York: Institute of International Education, 2025), https://iie.widen.net/s/xd9xrsft6q/iie_fall-2025-snapshot_full-report.",
       "sourceUrls": [
-        "https://iie"
+        "https://iie.widen.net/s/xd9xrsft6q/iie_fall-2025-snapshot_full-report"
       ],
       "columns": [
         "Reason",
@@ -6445,7 +6445,7 @@
       "sourceShort": "NCSES, National Survey of College Graduates.",
       "sourceLong": "National Center for Science and Engineering Statistics, National Survey of College Graduates Data Tables (U.S. National Science Foundation), data tables compiled by the author across all available survey years, https://ncses.nsf.gov/surveys/national-survey-college-graduates.",
       "sourceUrls": [
-        "https://ncses"
+        "https://ncses.nsf.gov/surveys/national-survey-college-graduates"
       ],
       "columns": [
         "Year",
@@ -6559,7 +6559,7 @@
       "sourceShort": "USCIS, H-1B Employer Data Hub, 2009–2026.",
       "sourceLong": "U.S. Citizenship and Immigration Services, H-1B Employer Data Hub (Camp Springs, MD: USCIS, 2009–2026), data downloaded by the author across all available fiscal years, https://www.uscis.gov/tools/reports-and-studies/h-1b-employer-data-hub.",
       "sourceUrls": [
-        "https://www"
+        "https://www.uscis.gov/tools/reports-and-studies/h-1b-employer-data-hub"
       ],
       "columns": [
         "Company",
@@ -12140,7 +12140,7 @@
       "sourceShort": "USCIS, H-1B Employer Data Hub, 2009–2026.",
       "sourceLong": "U.S. Citizenship and Immigration Services, H-1B Employer Data Hub (Camp Springs, MD: USCIS, 2009–2026), data downloaded by the author across all available fiscal years, https://www.uscis.gov/tools/reports-and-studies/h-1b-employer-data-hub.",
       "sourceUrls": [
-        "https://www"
+        "https://www.uscis.gov/tools/reports-and-studies/h-1b-employer-data-hub"
       ],
       "columns": [
         "Year",
@@ -12231,7 +12231,7 @@
       "sourceShort": "Forbes AI 50, 2019–2025.",
       "sourceLong": "Forbes AI 50 lists, 2019–2025, https://www.forbes.com/lists/ai50/, compiled by the author; individual lists by Jillian D'Onfro (2019), Alan Ohnsman (2020, 2021), Helen A. S. Popkin (2022), Konstantine Buhler (2023), Kenrick Cai (2024), and Rashi Shrivastava (2025).",
       "sourceUrls": [
-        "https://www"
+        "https://www.forbes.com/lists/ai50/"
       ],
       "columns": [
         "Year",
@@ -12294,7 +12294,7 @@
       "sourceShort": "Forbes AI 50, 2019–2025.",
       "sourceLong": "Forbes AI 50 lists, 2019–2025, https://www.forbes.com/lists/ai50/, compiled by the author; individual lists by Jillian D'Onfro (2019), Alan Ohnsman (2020, 2021), Helen A. S. Popkin (2022), Konstantine Buhler (2023), Kenrick Cai (2024), and Rashi Shrivastava (2025).",
       "sourceUrls": [
-        "https://www"
+        "https://www.forbes.com/lists/ai50/"
       ],
       "columns": [
         "Country",
@@ -12545,7 +12545,7 @@
       "sourceShort": "Forbes AI 50, 2019–2025.",
       "sourceLong": "Forbes AI 50 lists, 2019–2025, https://www.forbes.com/lists/ai50/, compiled by the author; individual lists by Jillian D'Onfro (2019), Alan Ohnsman (2020, 2021), Helen A. S. Popkin (2022), Konstantine Buhler (2023), Kenrick Cai (2024), and Rashi Shrivastava (2025).",
       "sourceUrls": [
-        "https://www"
+        "https://www.forbes.com/lists/ai50/"
       ],
       "columns": [
         "Company",
@@ -15068,7 +15068,7 @@
       "sourceShort": "Forbes AI 50, 2019–2025.",
       "sourceLong": "Forbes AI 50 lists, 2019–2025, https://www.forbes.com/lists/ai50/, compiled by the author; individual lists by Jillian D'Onfro (2019), Alan Ohnsman (2020, 2021), Helen A. S. Popkin (2022), Konstantine Buhler (2023), Kenrick Cai (2024), and Rashi Shrivastava (2025).",
       "sourceUrls": [
-        "https://www"
+        "https://www.forbes.com/lists/ai50/"
       ],
       "columns": [
         "Binary",
@@ -15104,7 +15104,7 @@
       "sourceShort": "OpenAlex (Priem, Piwowar, and Orr).",
       "sourceLong": "Jason Priem, Heather Piwowar, and Richard Orr, OpenAlex (OurResearch, 2022–2025), citation statistics by field accessed via the OpenAlex API, with specific fields and year ranges noted accordingly, data compiled by the author, https://openalex.org.",
       "sourceUrls": [
-        "https://openalex"
+        "https://openalex.org"
       ],
       "columns": [
         "Company",
@@ -15161,7 +15161,12 @@
       "sourceShort": "OECD, PISA 2022 Results.",
       "sourceLong": "OECD, PISA 2022 Results (Paris: OECD Publishing, 2023–2024), vol. I, The State of Learning and Equity in Education (Dec. 5, 2023), https://doi.org/10.1787/53f23881-en; vol. II, Learning During—and From—Disruption (Dec. 5, 2023), https://doi.org/10.1787/a97db61c-en; vol. III, Creative Minds, Creative Schools (June 18, 2024), https://doi.org/10.1787/765ee8c2-en; vol. IV, How Financially Smart Are Students? (June 27, 2024), https://doi.org/10.1787/5a849c2a-en; vol. V, Learning Strategies and Attitudes for Life (Nov. 13, 2024), https://doi.org/10.1787/c2e44201-en; Technical Report (Feb. 29, 2024), https://doi.org/10.1787/01820d6d-en.",
       "sourceUrls": [
-        "https://doi"
+        "https://doi.org/10.1787/53f23881-en",
+        "https://doi.org/10.1787/a97db61c-en",
+        "https://doi.org/10.1787/765ee8c2-en",
+        "https://doi.org/10.1787/5a849c2a-en",
+        "https://doi.org/10.1787/c2e44201-en",
+        "https://doi.org/10.1787/01820d6d-en"
       ],
       "columns": [
         "Year",
@@ -15230,7 +15235,12 @@
       "sourceShort": "OECD, PISA 2022 Results.",
       "sourceLong": "OECD, PISA 2022 Results (Paris: OECD Publishing, 2023–2024), vol. I, The State of Learning and Equity in Education (Dec. 5, 2023), https://doi.org/10.1787/53f23881-en; vol. II, Learning During—and From—Disruption (Dec. 5, 2023), https://doi.org/10.1787/a97db61c-en; vol. III, Creative Minds, Creative Schools (June 18, 2024), https://doi.org/10.1787/765ee8c2-en; vol. IV, How Financially Smart Are Students? (June 27, 2024), https://doi.org/10.1787/5a849c2a-en; vol. V, Learning Strategies and Attitudes for Life (Nov. 13, 2024), https://doi.org/10.1787/c2e44201-en; Technical Report (Feb. 29, 2024), https://doi.org/10.1787/01820d6d-en.",
       "sourceUrls": [
-        "https://doi"
+        "https://doi.org/10.1787/53f23881-en",
+        "https://doi.org/10.1787/a97db61c-en",
+        "https://doi.org/10.1787/765ee8c2-en",
+        "https://doi.org/10.1787/5a849c2a-en",
+        "https://doi.org/10.1787/c2e44201-en",
+        "https://doi.org/10.1787/01820d6d-en"
       ],
       "columns": [
         "Country",
@@ -15655,7 +15665,12 @@
       "sourceShort": "OECD, PISA 2022 Results.",
       "sourceLong": "OECD, PISA 2022 Results (Paris: OECD Publishing, 2023–2024), vol. I, The State of Learning and Equity in Education (Dec. 5, 2023), https://doi.org/10.1787/53f23881-en; vol. II, Learning During—and From—Disruption (Dec. 5, 2023), https://doi.org/10.1787/a97db61c-en; vol. III, Creative Minds, Creative Schools (June 18, 2024), https://doi.org/10.1787/765ee8c2-en; vol. IV, How Financially Smart Are Students? (June 27, 2024), https://doi.org/10.1787/5a849c2a-en; vol. V, Learning Strategies and Attitudes for Life (Nov. 13, 2024), https://doi.org/10.1787/c2e44201-en; Technical Report (Feb. 29, 2024), https://doi.org/10.1787/01820d6d-en.",
       "sourceUrls": [
-        "https://doi"
+        "https://doi.org/10.1787/53f23881-en",
+        "https://doi.org/10.1787/a97db61c-en",
+        "https://doi.org/10.1787/765ee8c2-en",
+        "https://doi.org/10.1787/5a849c2a-en",
+        "https://doi.org/10.1787/c2e44201-en",
+        "https://doi.org/10.1787/01820d6d-en"
       ],
       "columns": [
         "Below Level 1c",
@@ -16654,7 +16669,7 @@
       "sourceShort": "OECD, Education at a Glance 2025.",
       "sourceLong": "OECD, Education at a Glance 2025: OECD Indicators (Paris: OECD Publishing, 2025), https://doi.org/10.1787/1c0d9c79-en.",
       "sourceUrls": [
-        "https://doi"
+        "https://doi.org/10.1787/1c0d9c79-en"
       ],
       "columns": [
         "Country",
@@ -17367,7 +17382,7 @@
       "sourceShort": "IIE, \"U.S. Study Abroad for Academic Credit Trends,\" Open Doors, 2025.",
       "sourceLong": "Institute of International Education, \"U.S. Study Abroad for Academic Credit Trends, 1989/90–2023/24,\" Open Doors Report on International Educational Exchange, 2025, https://opendoorsdata.org/data/us-study-abroad/u-s-study-abroad-for-academic-credit-trends/",
       "sourceUrls": [
-        "https://opendoorsdata"
+        "https://opendoorsdata.org/data/us-study-abroad/u-s-study-abroad-for-academic-credit-trends/"
       ],
       "columns": [
         "Year",
@@ -17552,7 +17567,7 @@
       "sourceShort": "UNESCO Institute for Statistics, \"Total Outbound Internationally Mobile Tertiary Students,\" UIS.Stat; author's compilation.",
       "sourceLong": "UNESCO Institute for Statistics, \"Total Outbound Internationally Mobile Tertiary Students Studying Abroad, All Countries, Both Sexes (UIS Estimate) (Number),\" UIS.Stat Database, data compiled by the author by country over time, 2026, https://data.uis.unesco.org/.",
       "sourceUrls": [
-        "https://data"
+        "https://data.uis.unesco.org/"
       ],
       "columns": [
         "Year",
@@ -24294,7 +24309,7 @@
       "sourceShort": "UNESCO Institute for Statistics, \"Net Flow of Internationally Mobile Students (Inbound − Outbound),\" UIS.Stat; author's compilation.",
       "sourceLong": "UNESCO Institute for Statistics, \"Net Flow of Internationally Mobile Students (Inbound – Outbound), Both Sexes (UIS Estimate) (Number),\" UIS.Stat Database, data compiled by the author by country over time, 2026, https://data.uis.unesco.org/.",
       "sourceUrls": [
-        "https://data"
+        "https://data.uis.unesco.org/"
       ],
       "columns": [
         "Year",
@@ -24884,7 +24899,7 @@
       "sourceShort": "Paper Copilot, conference acceptance and submission statistics; author's compilation.",
       "sourceLong": "Paper Copilot, conference acceptance and submission statistics, data compiled by the author across all conferences and years, 2026, https://papercopilot.com/.",
       "sourceUrls": [
-        "https://papercopilot"
+        "https://papercopilot.com/"
       ],
       "columns": [
         "Year",
@@ -24977,7 +24992,7 @@
       "sourceShort": "OpenAlex (Priem, Piwowar, and Orr).",
       "sourceLong": "Jason Priem, Heather Piwowar, and Richard Orr, OpenAlex (OurResearch, 2022–2025), citation statistics by field accessed via the OpenAlex API, with specific fields and year ranges noted accordingly, data compiled by the author, https://openalex.org.",
       "sourceUrls": [
-        "https://openalex"
+        "https://openalex.org"
       ],
       "columns": [
         "Year",
@@ -25052,7 +25067,7 @@
       "sourceShort": "OpenAlex (Priem, Piwowar, and Orr).",
       "sourceLong": "Jason Priem, Heather Piwowar, and Richard Orr, OpenAlex (OurResearch, 2022–2025), citation statistics by field accessed via the OpenAlex API, with specific fields and year ranges noted accordingly, data compiled by the author, https://openalex.org.",
       "sourceUrls": [
-        "https://openalex"
+        "https://openalex.org"
       ],
       "columns": [
         "Year",
@@ -25127,7 +25142,7 @@
       "sourceShort": "Clarivate, \"Highly Cited Researchers,\" 2014–2025.",
       "sourceLong": "Clarivate Analytics, \"Past Lists of Highly Cited Researchers, 2014–2025,\" https://clarivate.com/highly-cited-researchers/past-lists/.",
       "sourceUrls": [
-        "https://clarivate"
+        "https://clarivate.com/highly-cited-researchers/past-lists/"
       ],
       "columns": [
         "Year",
@@ -25233,8 +25248,8 @@
       "sourceShort": "Nobel Prize Outreach, \"All Nobel Prizes,\" and ACM, \"A.M. Turing Award Winners.\"",
       "sourceLong": "Nobel Prize Outreach, \"All Nobel Prizes,\" Nobel Prize Foundation, 2026, data compiled by the author across all available award years, https://www.nobelprize.org/prizes/lists/all-nobel-prizes; Association for Computing Machinery, \"Chronological Listing of A.M. Turing Award Winners,\" ACM, 2025, data compiled by the author across all available award years, https://amturing.acm.org/byyear.cfm",
       "sourceUrls": [
-        "https://www",
-        "https://amturing"
+        "https://www.nobelprize.org/prizes/lists/all-nobel-prizes",
+        "https://amturing.acm.org/byyear.cfm"
       ],
       "columns": [
         "Year",
@@ -25465,8 +25480,8 @@
       "sourceShort": "Nobel Prize Outreach, \"All Nobel Prizes,\" and ACM, \"A.M. Turing Award Winners.\"",
       "sourceLong": "Nobel Prize Outreach, \"All Nobel Prizes,\" Nobel Prize Foundation, 2026, data compiled by the author across all available award years, https://www.nobelprize.org/prizes/lists/all-nobel-prizes; Association for Computing Machinery, \"Chronological Listing of A.M. Turing Award Winners,\" ACM, 2025, data compiled by the author across all available award years, https://amturing.acm.org/byyear.cfm",
       "sourceUrls": [
-        "https://www",
-        "https://amturing"
+        "https://www.nobelprize.org/prizes/lists/all-nobel-prizes",
+        "https://amturing.acm.org/byyear.cfm"
       ],
       "columns": [
         "immigrant_binary",
@@ -25502,8 +25517,8 @@
       "sourceShort": "Nobel Prize Outreach, \"All Nobel Prizes,\" and ACM, \"A.M. Turing Award Winners.\"",
       "sourceLong": "Nobel Prize Outreach, \"All Nobel Prizes,\" Nobel Prize Foundation, 2026, data compiled by the author across all available award years, https://www.nobelprize.org/prizes/lists/all-nobel-prizes; Association for Computing Machinery, \"Chronological Listing of A.M. Turing Award Winners,\" ACM, 2025, data compiled by the author across all available award years, https://amturing.acm.org/byyear.cfm",
       "sourceUrls": [
-        "https://www",
-        "https://amturing"
+        "https://www.nobelprize.org/prizes/lists/all-nobel-prizes",
+        "https://amturing.acm.org/byyear.cfm"
       ],
       "columns": [
         "bornCountry (normalized)",
@@ -25703,8 +25718,8 @@
       "sourceShort": "OECD, Main Science and Technology Indicators; NSB, Cross-National Comparisons of R&D Performance, Science and Engineering Indicators 2024.",
       "sourceLong": "Organisation for Economic Co-operation and Development (OECD), Main Science and Technology Indicators (MSTI) Database, OECD Data Explorer, http://data-explorer.oecd.org/; National Science Board, Cross-National Comparisons of R&D Performance, Science and Engineering Indicators 2024 (Alexandria, VA: National Science Foundation, 2024), https://ncses.nsf.gov/pubs/nsb20246/cross-national-comparisons-of-r-d-performance.",
       "sourceUrls": [
-        "http://data-explorer",
-        "https://ncses"
+        "http://data-explorer.oecd.org/",
+        "https://ncses.nsf.gov/pubs/nsb20246/cross-national-comparisons-of-r-d-performance"
       ],
       "columns": [
         "Unnamed: 0",
@@ -26093,7 +26108,7 @@
       "sourceShort": "Georgakaki et al., EU Industrial R&D Investment Scoreboard, 2003–2024.",
       "sourceLong": "Aliki Georgakaki et al., The EU Industrial R&D Investment Scoreboard Panel Data, 2003–2024 (European Commission, 2025), https://iri.jrc.ec.europa.eu/scoreboard/2025-eu-industrial-rd-investment-scoreboard#field_data.",
       "sourceUrls": [
-        "https://iri"
+        "https://iri.jrc.ec.europa.eu/scoreboard/2025-eu-industrial-rd-investment-scoreboard#field_data"
       ],
       "columns": [
         "Year",
@@ -26361,8 +26376,8 @@
       "sourceShort": "OECD, Main Science and Technology Indicators; NSB, Cross-National Comparisons of R&D Performance, Science and Engineering Indicators 2024.",
       "sourceLong": "Organisation for Economic Co-operation and Development (OECD), Main Science and Technology Indicators (MSTI) Database, OECD Data Explorer, http://data-explorer.oecd.org/; National Science Board, Cross-National Comparisons of R&D Performance, Science and Engineering Indicators 2024 (Alexandria, VA: National Science Foundation, 2024), https://ncses.nsf.gov/pubs/nsb20246/cross-national-comparisons-of-r-d-performance.",
       "sourceUrls": [
-        "http://data-explorer",
-        "https://ncses"
+        "http://data-explorer.oecd.org/",
+        "https://ncses.nsf.gov/pubs/nsb20246/cross-national-comparisons-of-r-d-performance"
       ],
       "columns": [
         "Year",
@@ -29054,7 +29069,7 @@
       "sourceShort": "OpenAlex (Priem, Piwowar, and Orr).",
       "sourceLong": "Jason Priem, Heather Piwowar, and Richard Orr, OpenAlex (OurResearch, 2022–2025), citation statistics by field accessed via the OpenAlex API, with specific fields and year ranges noted accordingly, data compiled by the author, https://openalex.org.",
       "sourceUrls": [
-        "https://openalex"
+        "https://openalex.org"
       ],
       "columns": [
         "Country",
@@ -29573,7 +29588,7 @@
       "sourceShort": "OpenAlex (Priem, Piwowar, and Orr).",
       "sourceLong": "Jason Priem, Heather Piwowar, and Richard Orr, OpenAlex (OurResearch, 2022–2025), citation statistics by field accessed via the OpenAlex API, with specific fields and year ranges noted accordingly, data compiled by the author, https://openalex.org.",
       "sourceUrls": [
-        "https://openalex"
+        "https://openalex.org"
       ],
       "columns": [
         "Country",
@@ -30056,7 +30071,7 @@
       "sourceShort": "NCES, IPEDS Completions, 1995–2024.",
       "sourceLong": "National Center for Education Statistics, \"Integrated Postsecondary Education Data System (IPEDS) Completions Component\" (U.S. Department of Education, 1995–2024), compiled by the author using Python from annual IPEDS Completions survey files, https://nces.ed.gov/ipeds/datacenter/DataFiles.aspx?year=-1&surveyNumber=3&sid=bd7f629c-c359-478c-a31c-7a82876497ed&rtid=7.",
       "sourceUrls": [
-        "https://nces"
+        "https://nces.ed.gov/ipeds/datacenter/DataFiles.aspx?year=-1&surveyNumber=3&sid=bd7f629c-c359-478c-a31c-7a82876497ed&rtid=7"
       ],
       "columns": [
         "Field",
@@ -30167,7 +30182,7 @@
       "sourceShort": "NCSES, Survey of Earned Doctorates, 2010–2024.",
       "sourceLong": "National Center for Science and Engineering Statistics, Survey of Earned Doctorates Data Tables (U.S. National Science Foundation, 2010–2024), data tables compiled by the author across available survey years, https://ncses.nsf.gov/surveys/earned-doctorates.",
       "sourceUrls": [
-        "https://ncses"
+        "https://ncses.nsf.gov/surveys/earned-doctorates"
       ],
       "columns": [
         "Year",
@@ -30278,8 +30293,8 @@
       "sourceShort": "NCSES, \"Foreign-Born STEM Workers,\" Science and Engineering Indicators 2024; Finn, Stay Rates of Foreign Doctorate Recipients, 2011.",
       "sourceLong": "National Center for Science and Engineering Statistics, \"Foreign-Born STEM Workers,\" in The STEM Labor Force: Scientists, Engineers, and Skilled Technical Workers, Science and Engineering Indicators, NSB-2024-5 (National Science Foundation, 2024), 42–48, https://ncses.nsf.gov/pubs/nsb20245/foreign-born-stem-workers; original data appear on p. 46. Michael G. Finn, Stay Rates of Foreign Doctorate Recipients from U.S. Universities, 2011 (Oak Ridge, TN: Oak Ridge Institute for Science and Education, 2014), https://doi.org/10.2172/1303351.",
       "sourceUrls": [
-        "https://ncses",
-        "https://doi"
+        "https://ncses.nsf.gov/pubs/nsb20245/foreign-born-stem-workers",
+        "https://doi.org/10.2172/1303351"
       ],
       "columns": [
         "Year",
@@ -30354,8 +30369,9 @@
       "sourceShort": "USCIS, Form I-765 Application for Employment Authorization, FY2003–2023.",
       "sourceLong": "U.S. Citizenship and Immigration Services, Form I-765, Application for Employment Authorization: All Receipts, Approvals, Denials Grouped by Eligibility Category and Filing Type (Camp Springs, MD: USCIS, 2003–2023), drawn from three reports covering FY2003–2021, FY2022, and FY2023, https://www.uscis.gov/sites/default/files/document/data/I-765_Application_for_Employment_FY03-21.pdf, https://web.archive.org/web/20250202082421/https://www.uscis.gov/sites/default/files/document/data/I-765_Application_for_Employment_FY22.pdf, and https://web.archive.org/web/20250211085540/https://www.uscis.gov/sites/default/files/document/data/I-765_Application_for_Employment_FY23.pdf.",
       "sourceUrls": [
-        "https://www",
-        "https://web"
+        "https://www.uscis.gov/sites/default/files/document/data/I-765_Application_for_Employment_FY03-21.pdf",
+        "https://web.archive.org/web/20250202082421/https://www.uscis.gov/sites/default/files/document/data/I-765_Application_for_Employment_FY22.pdf",
+        "https://web.archive.org/web/20250211085540/https://www.uscis.gov/sites/default/files/document/data/I-765_Application_for_Employment_FY23.pdf"
       ],
       "columns": [
         "Year",
@@ -30503,7 +30519,7 @@
       "sourceShort": "USCIS, H-1B Employer Data Hub, 2009–2026.",
       "sourceLong": "U.S. Citizenship and Immigration Services, H-1B Employer Data Hub (Camp Springs, MD: USCIS, 2009–2026), data downloaded by the author across all available fiscal years, https://www.uscis.gov/tools/reports-and-studies/h-1b-employer-data-hub.",
       "sourceUrls": [
-        "https://www"
+        "https://www.uscis.gov/tools/reports-and-studies/h-1b-employer-data-hub"
       ],
       "columns": [
         "Year",
@@ -30662,7 +30678,7 @@
       "sourceShort": "USCIS, H-1B Employer Data Hub, 2009–2026",
       "sourceLong": "U.S. Citizenship and Immigration Services, H-1B Employer Data Hub (Camp Springs, MD: USCIS, 2009–2026), data downloaded by the author across all available fiscal years, https://www.uscis.gov/tools/reports-and-studies/h-1b-employer-data-hub.",
       "sourceUrls": [
-        "https://www"
+        "https://www.uscis.gov/tools/reports-and-studies/h-1b-employer-data-hub"
       ],
       "columns": [
         "Year",
@@ -30803,7 +30819,7 @@
       "sourceShort": "U.S. Department of Labor, Foreign Labor Certification Performance Data, 2008–2025.",
       "sourceLong": "U.S. Department of Labor, Foreign Labor Certification Performance Data (Washington, DC: U.S. Department of Labor, 2008–2025), data downloaded by the author from individual annual performance data files, https://www.dol.gov/agencies/eta/foreign-labor/performance.",
       "sourceUrls": [
-        "https://www"
+        "https://www.dol.gov/agencies/eta/foreign-labor/performance"
       ],
       "columns": [
         "Year",
@@ -31008,7 +31024,7 @@
       "sourceShort": "U.S. Department of State, \"Facts and Figures,\" BridgeUSA, 2024.",
       "sourceLong": "U.S. Department of State, \"Facts and Figures 2015–2025,\" BridgeUSA, U.S. Department of State, 2024, data extracted by the author, https://j1visa.state.gov/facts-and-figures-2015-2024/.",
       "sourceUrls": [
-        "https://j1visa"
+        "https://j1visa.state.gov/facts-and-figures-2015-2024/"
       ],
       "columns": [
         "Year",
@@ -31191,7 +31207,7 @@
       "sourceShort": "OECD, International Migration Outlook 2025, 90.",
       "sourceLong": "Organisation for Economic Co-operation and Development (OECD), International Migration Outlook 2025 (Paris: OECD Publishing, 2025), 90, https://www.oecd.org/content/dam/oecd/en/publications/reports/2025/11/international-migration-outlook-2025_355ae9fd/ae26c893-en.pdf",
       "sourceUrls": [
-        "https://www"
+        "https://www.oecd.org/content/dam/oecd/en/publications/reports/2025/11/international-migration-outlook-2025_355ae9fd/ae26c893-en.pdf"
       ],
       "columns": [
         "Country",
@@ -31405,7 +31421,7 @@
       "sourceShort": "IIE, \"International Student Totals by Place of Origin,\" Open Doors, 2025.",
       "sourceLong": "Institute of International Education, \"International Student Totals by Place of Origin, 2000/01–2024/25,\" Open Doors Report on International Educational Exchange, 2025, https://opendoorsdata.org/data/international-students/all-places-of-origin/.",
       "sourceUrls": [
-        "https://opendoorsdata"
+        "https://opendoorsdata.org/data/international-students/all-places-of-origin/"
       ],
       "columns": [
         "Year",
@@ -31744,7 +31760,7 @@
       "sourceShort": "IIE, \"Fields of Study of Students from Selected Places of Origin,\" Open Doors, 2025.",
       "sourceLong": "Institute of International Education, \"Fields of Study of Students from Selected Places of Origin, 2009/10–2024/25,\" Open Doors Report on International Educational Exchange, 2025, https://opendoorsdata.org/data/international-students/fields-of-study-by-place-of-origin/",
       "sourceUrls": [
-        "https://opendoorsdata"
+        "https://opendoorsdata.org/data/international-students/fields-of-study-by-place-of-origin/"
       ],
       "columns": [
         "Year",
@@ -32337,7 +32353,7 @@
       "sourceShort": "IIE, \"Fields of Study of Students from Selected Places of Origin,\" Open Doors, 2025.",
       "sourceLong": "Institute of International Education, \"Fields of Study of Students from Selected Places of Origin, 2009/10–2024/25,\" Open Doors Report on International Educational Exchange, 2025, https://opendoorsdata.org/data/international-students/fields-of-study-by-place-of-origin/",
       "sourceUrls": [
-        "https://opendoorsdata"
+        "https://opendoorsdata.org/data/international-students/fields-of-study-by-place-of-origin/"
       ],
       "columns": [
         "Year",
@@ -32930,7 +32946,7 @@
       "sourceShort": "IIE, \"Fields of Study of Students from Selected Places of Origin,\" Open Doors, 2025.",
       "sourceLong": "Institute of International Education, \"Fields of Study of Students from Selected Places of Origin, 2009/10–2024/25,\" Open Doors Report on International Educational Exchange, 2025, https://opendoorsdata.org/data/international-students/fields-of-study-by-place-of-origin/",
       "sourceUrls": [
-        "https://opendoorsdata"
+        "https://opendoorsdata.org/data/international-students/fields-of-study-by-place-of-origin/"
       ],
       "columns": [
         "Year",
@@ -33523,7 +33539,7 @@
       "sourceShort": "NCSES, Survey of Graduate Students and Postdoctorates in Science and Engineering, 1994–2025.",
       "sourceLong": "National Center for Science and Engineering Statistics, Survey of Graduate Students and Postdoctorates in Science and Engineering Data Tables (U.S. National Science Foundation, 1994–2025), data tables compiled by the author across available survey years, https://ncses.nsf.gov/surveys/graduate-students.",
       "sourceUrls": [
-        "https://ncses"
+        "https://ncses.nsf.gov/surveys/graduate-students"
       ],
       "columns": [
         "Year",
@@ -33768,7 +33784,7 @@
       "sourceShort": "NCSES, Survey of Graduate Students and Postdoctorates in Science and Engineering, 1994–2025.",
       "sourceLong": "National Center for Science and Engineering Statistics, Survey of Graduate Students and Postdoctorates in Science and Engineering Data Tables (U.S. National Science Foundation, 1994–2025), data tables compiled by the author across available survey years, https://ncses.nsf.gov/surveys/graduate-students.",
       "sourceUrls": [
-        "https://ncses"
+        "https://ncses.nsf.gov/surveys/graduate-students"
       ],
       "columns": [
         "Year",
@@ -34013,7 +34029,7 @@
       "sourceShort": "NCSES, Survey of Graduate Students and Postdoctorates in Science and Engineering, 1994–2025.",
       "sourceLong": "National Center for Science and Engineering Statistics, Survey of Graduate Students and Postdoctorates in Science and Engineering Data Tables (U.S. National Science Foundation, 1994–2025), data tables compiled by the author across available survey years, https://ncses.nsf.gov/surveys/graduate-students.",
       "sourceUrls": [
-        "https://ncses"
+        "https://ncses.nsf.gov/surveys/graduate-students"
       ],
       "columns": [
         "Year",
@@ -34258,7 +34274,7 @@
       "sourceShort": "NCSES, Survey of Earned Doctorates, 2010–2024.",
       "sourceLong": "National Center for Science and Engineering Statistics, Survey of Earned Doctorates Data Tables (U.S. National Science Foundation, 2010–2024), data tables compiled by the author across available survey years, https://ncses.nsf.gov/surveys/earned-doctorates.",
       "sourceUrls": [
-        "https://ncses"
+        "https://ncses.nsf.gov/surveys/earned-doctorates"
       ],
       "columns": [
         "Year",
@@ -34525,7 +34541,7 @@
       "sourceShort": "NCSES, National Survey of College Graduates.",
       "sourceLong": "National Center for Science and Engineering Statistics, National Survey of College Graduates Data Tables (U.S. National Science Foundation), data tables compiled by the author across all available survey years, https://ncses.nsf.gov/surveys/national-survey-college-graduates.",
       "sourceUrls": [
-        "https://ncses"
+        "https://ncses.nsf.gov/surveys/national-survey-college-graduates"
       ],
       "columns": [
         "Year",
@@ -34600,7 +34616,7 @@
       "sourceShort": "NCSES, National Survey of College Graduates.",
       "sourceLong": "National Center for Science and Engineering Statistics, National Survey of College Graduates Data Tables (U.S. National Science Foundation), data tables compiled by the author across all available survey years, https://ncses.nsf.gov/surveys/national-survey-college-graduates.",
       "sourceUrls": [
-        "https://ncses"
+        "https://ncses.nsf.gov/surveys/national-survey-college-graduates"
       ],
       "columns": [
         "Year",
@@ -34733,7 +34749,7 @@
       "sourceShort": "IIE, \"Percent of U.S. Study Abroad Students by Field of Study,\" Open Doors, 2024.",
       "sourceLong": "Institute of International Education, \"Percent of U.S. Study Abroad Students by Field of Study, 2000/01–2022/23,\" Open Doors Report on International Educational Exchange, 2024, https://opendoorsdata.org/data/us-study-abroad/fields-of-study/",
       "sourceUrls": [
-        "https://opendoorsdata"
+        "https://opendoorsdata.org/data/us-study-abroad/fields-of-study/"
       ],
       "columns": [
         "Year",
@@ -34973,7 +34989,7 @@
       "sourceShort": "IIE, \"Host Regions of U.S. Study Abroad Students,\" Open Doors, 2024.",
       "sourceLong": "Institute of International Education, \"Host Regions of U.S. Study Abroad Students, 2004/05–2022/23,\" Open Doors Report on International Educational Exchange, 2024, https://opendoorsdata.org/data/us-study-abroad/host-regions/",
       "sourceUrls": [
-        "https://opendoorsdata"
+        "https://opendoorsdata.org/data/us-study-abroad/host-regions/"
       ],
       "columns": [
         "Year",
@@ -35240,7 +35256,7 @@
       "sourceShort": "Paper Copilot, conference acceptance and submission statistics; author's compilation.",
       "sourceLong": "Paper Copilot, conference acceptance and submission statistics, data compiled by the author across all conferences and years, 2026, https://papercopilot.com/.",
       "sourceUrls": [
-        "https://papercopilot"
+        "https://papercopilot.com/"
       ],
       "columns": [
         "conf_norm",
@@ -38895,7 +38911,7 @@
       "sourceShort": "Times Higher Education, World University Rankings by Subject, 2011–2026.",
       "sourceLong": "Times Higher Education, World University Rankings by Subject (Times Higher Education [THE], 2011–2026), data compiled by the author across subject rankings (Life Sciences, Clinical & Pre-Clinical Health, Engineering, Physical Sciences, and Social Sciences, 2011–2026; Computer Science, 2017–2026), https://www.timeshighereducation.com/world-university-rankings/by-subject.",
       "sourceUrls": [
-        "https://www"
+        "https://www.timeshighereducation.com/world-university-rankings/by-subject"
       ],
       "columns": [
         "Year",
@@ -39022,7 +39038,7 @@
       "sourceShort": "World Intellectual Property Organization, \"Patents Granted by Technology,\" WIPO IP Statistics Data Center, 2024.",
       "sourceLong": "World Intellectual Property Organization, \"Patents Granted by Technology\" (indicator 5), WIPO IP Statistics Data Center, data compiled by the author, 2024, https://www3.wipo.int/ipstats.",
       "sourceUrls": [
-        "https://www3"
+        "https://www3.wipo.int/ipstats"
       ],
       "columns": [
         "Year",
@@ -39397,7 +39413,7 @@
       "sourceShort": "World Intellectual Property Organization, \"Patents Granted by Technology,\" WIPO IP Statistics Data Center, 2024.",
       "sourceLong": "World Intellectual Property Organization, \"Patents Granted by Technology\" (indicator 5), WIPO IP Statistics Data Center, data compiled by the author, 2024, https://www3.wipo.int/ipstats.",
       "sourceUrls": [
-        "https://www3"
+        "https://www3.wipo.int/ipstats"
       ],
       "columns": [
         "Year",
@@ -39772,7 +39788,7 @@
       "sourceShort": "World Intellectual Property Organization, \"Patents Granted by Technology,\" WIPO IP Statistics Data Center, 2024.",
       "sourceLong": "World Intellectual Property Organization, \"Patents Granted by Technology\" (indicator 5), WIPO IP Statistics Data Center, data compiled by the author, 2024, https://www3.wipo.int/ipstats.",
       "sourceUrls": [
-        "https://www3"
+        "https://www3.wipo.int/ipstats"
       ],
       "columns": [
         "Year",
@@ -40307,7 +40323,7 @@
       "sourceShort": "NCSES, Survey of Earned Doctorates, 2010–2024.",
       "sourceLong": "National Center for Science and Engineering Statistics, Survey of Earned Doctorates Data Tables (U.S. National Science Foundation, 2010–2024), data tables compiled by the author across available survey years, https://ncses.nsf.gov/surveys/earned-doctorates.",
       "sourceUrls": [
-        "https://ncses"
+        "https://ncses.nsf.gov/surveys/earned-doctorates"
       ],
       "columns": [
         "Year",
@@ -40562,7 +40578,7 @@
       "sourceShort": "NCSES, Survey of Earned Doctorates, 2010–2024.",
       "sourceLong": "National Center for Science and Engineering Statistics, Survey of Earned Doctorates Data Tables (U.S. National Science Foundation, 2010–2024), data tables compiled by the author across available survey years, https://ncses.nsf.gov/surveys/earned-doctorates.",
       "sourceUrls": [
-        "https://ncses"
+        "https://ncses.nsf.gov/surveys/earned-doctorates"
       ],
       "columns": [
         "Year",
@@ -40652,7 +40668,7 @@
       "sourceShort": "U.S. Department of Labor, Foreign Labor Certification Performance Data, 2008–2025.",
       "sourceLong": "U.S. Department of Labor, Foreign Labor Certification Performance Data (Washington, DC: U.S. Department of Labor, 2008–2025), data downloaded by the author from individual annual performance data files, https://www.dol.gov/agencies/eta/foreign-labor/performance.",
       "sourceUrls": [
-        "https://www"
+        "https://www.dol.gov/agencies/eta/foreign-labor/performance"
       ],
       "columns": [
         "Country",

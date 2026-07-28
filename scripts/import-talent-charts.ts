@@ -233,8 +233,14 @@ function loadTitles(): Map<string, TitleRow> {
 }
 
 function extractUrls(sourceLong: string): string[] {
-  const matches = sourceLong.match(/https?:\/\/[^\s,;."')]+/g) ?? [];
-  return [...new Set(matches)];
+  // Real bug, caught while building the Phase 1.4 metric registry: excluding
+  // "." from the URL body (meant to drop a trailing sentence period) instead
+  // truncated every URL at its FIRST period — "https://ncses.nsf.gov/..."
+  // became just "https://ncses". Every citation link in the app was broken
+  // this way from the very first rebuild. Fixed by allowing periods in the
+  // match, then trimming only real trailing sentence punctuation after.
+  const matches = sourceLong.match(/https?:\/\/[^\s,;"')]+/g) ?? [];
+  return [...new Set(matches.map((u) => u.replace(/[.,;]+$/, "")))];
 }
 
 function main() {
