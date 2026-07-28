@@ -1,36 +1,5 @@
 import { useState, type ReactNode } from "react";
 
-// Shared scaffolding for "every major chart must have a plain-language
-// title, a one-sentence takeaway, visible units, a legend when needed, a
-// coverage note, and a useful empty state" — one frame instead of each
-// dashboard hand-rolling its own header/note/empty-state markup.
-export function ChartFrame({
-  title,
-  takeaway,
-  controls,
-  legend,
-  note,
-  empty,
-  children,
-}: {
-  title: ReactNode;
-  takeaway?: ReactNode;
-  controls?: ReactNode;
-  legend?: ReactNode;
-  note?: ReactNode;
-  empty?: ReactNode;
-  children: ReactNode;
-}) {
-  return (
-    <div className="chart-frame">
-      <SectionHeader title={title} takeaway={takeaway} note={note} />
-      {controls && <div className="chart-frame-controls">{controls}</div>}
-      <div className="chart-frame-body">{empty ?? children}</div>
-      {legend && <div className="chart-frame-legend">{legend}</div>}
-    </div>
-  );
-}
-
 // The plain-language title + one-sentence takeaway pattern used above
 // every real section — title states the QUESTION or subject, takeaway
 // states what the current real data actually shows, so a reader gets an
@@ -66,28 +35,6 @@ export function PolicyTakeaway({ children, tone = "default" }: { children: React
       {children}
     </div>
   );
-}
-
-// Verified / reported / uncertain / missing — one small badge, one shared
-// meaning everywhere it appears (milestone timelines, adoption records,
-// coverage cells). Color is never the only signal — the label text is
-// always visible, never color-only.
-export type DataQuality = "verified" | "reported" | "uncertain" | "missing";
-const QUALITY_LABEL: Record<DataQuality, string> = {
-  verified: "Verified",
-  reported: "Reported",
-  uncertain: "Uncertain",
-  missing: "No data",
-};
-export function DataQualityBadge({ status, label }: { status: DataQuality; label?: string }) {
-  return <span className={`quality-badge quality-${status}`}>{label ?? QUALITY_LABEL[status]}</span>;
-}
-
-// A real, honest "nothing to show" state — never a blank div, never a
-// centered orphan floating in empty space. Left-aligned like every other
-// piece of body content per the v5 layout rules.
-export function EmptyState({ children }: { children: ReactNode }) {
-  return <div className="trend-empty empty-state">{children}</div>;
 }
 
 // Collapses the long, real Sources & Method prose by default so a reader

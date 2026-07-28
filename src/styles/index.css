@@ -1,49 +1,35 @@
-/* Global Tech Monitor — design system v5: "policymaker instrument"
+/* Global Talent Monitor — design system v5: "policymaker instrument"
    No radius, borders instead of shadows, a tight spacing grid. Color
-   budget widened deliberately in v5 (2026-07-25, at explicit user
-   request — see below): the single Hoover Red accent, PLUS a small,
-   fixed set of semantic country colors for the handful of countries a
-   policy reader actually tracks by name at a glance, PLUS status colors
-   for verification/coverage state. Nothing else gets color. */
+   budget: the single Hoover Red accent, PLUS a small, fixed set of
+   semantic country colors for the handful of countries a policy reader
+   actually tracks by name at a glance, PLUS one status color for a
+   cautionary takeaway. Nothing else gets color. */
 :root {
   --red: #98002e;
-  /* Pipeline STAGE color only (innovation/scaling/adoption/investment,
-     see StageColumn.tsx/App.tsx's STAGE_PIE_COLOR/VolumeTrend.tsx) — kept
-     separate from country color below, same "don't conflate the two"
-     rule as before. */
-  --us: #2f4b6e; --cn: #98002e; --eu: #b08343; --other: #8a93a3;
-  /* Continent tones — no longer used for country badges/bars/lines (v5
-     reverted that; see --country-* below), kept only as a fallback
-     palette for any country not in the named set. */
+  /* Continent tones — not used for country badges/bars/lines (see
+     --country-* below for that); reused as a small, restrained
+     categorical palette for named series that AREN'T countries (degree
+     levels, test subjects, visa categories — see SeriesChart.tsx). */
   --cont-na: #2f4b6e; --cont-sa: #4d8a7a; --cont-eu: #b08343;
   --cont-as: #ab4a41; --cont-af: #c2762e; --cont-oc: #7a6a9e; --cont-me: #8f8a3a;
-  /* v5 country color — reverted from v4's "every country by continent"
-     scheme back to named colors for the handful of countries a
-     policy reader actually distinguishes at a glance without hovering
-     (explicit request, 2026-07-25): a fixed identity per major actor
-     beats six shared continent tones when the whole point of the chart
-     is "is it the US or China" at a glance. Deliberately distinct from
-     --red (the Hoover brand accent) and from --us/--cn above (STAGE
-     color) — three separate semantics now share this file, never reuse
-     one token for two meanings. Every other country falls back to
-     --country-other, a restrained neutral — NOT decorative variety,
+  /* Country color — a fixed identity for the handful of countries a
+     policy reader actually distinguishes at a glance without hovering: a
+     fixed identity per major actor beats one shared tone when the whole
+     point of a chart is "is it the US or China." Deliberately distinct
+     from --red (the Hoover brand accent). Every other country falls back
+     to --country-other, a restrained neutral — NOT decorative variety,
      just "not one of the four tracked poles." */
   --country-us: #1f3a5f; --country-cn: #a8394a; --country-in: #b3652e;
   --country-eu: #b08343; --country-other: #8a93a3;
-  /* Verification/coverage status — a second, distinct color family from
-     country color, applied to milestone/record status badges and dots,
-     never to a country. */
-  --status-verified: #1f3a2e; --status-reported: #8a93a3; --status-uncertain: #b3862e; --status-missing: #b7bcc3;
+  /* One cautionary status color, for PolicyTakeaway's warning tone. */
+  --status-uncertain: #b3862e;
   --ink: #14181d; --ink-2: #3a434e; --slate: #5c6773; --mist: #7c8794;
   --line: #dfe2e5; --line-2: #cdd3da; --panel: #f4f5f6; --panel-2: #eef1f4; --paper: #ffffff;
   --sans: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
   --mono: "SF Mono", "IBM Plex Mono", ui-monospace, "Cascadia Code", Menlo, monospace;
-  /* Content container — widened v5 (was 1280px) so the map and evidence
-     panels use real desktop width instead of capping at laptop width. */
   --maxw: 1440px;
   --pad-desktop: 40px; --pad-tablet: 24px; --pad-mobile: 16px;
-  /* Spacing scale — 8pt grid, extended with 32/48 for section-level gaps
-     (previously only used inline via literal px values). */
+  /* Spacing scale — 8pt grid. */
   --sp-1: 8px; --sp-2: 12px; --sp-3: 16px; --sp-4: 24px; --sp-5: 32px; --sp-6: 48px;
   /* Type scale (desktop) — see CLAUDE.md "Design system" for the sizes
      this maps to per element (hero/page-title/section-title/card-value/
@@ -55,13 +41,8 @@
 /* Semantic surface/text/border tokens — used for the specific spots the
    plain --paper/--panel/--ink axis doesn't cover safely: anything that
    means "selected/active" needs its OWN token, because reusing --ink for
-   an inverted "dark pill, white text" treatment (as several pressed
-   states here used to) breaks the moment --ink itself flips to a LIGHT
-   value in dark mode — that pattern was rendering the selected technology
-   tab, selected chip, and selected dashboard tab as a white block sitting
-   in an otherwise dark UI. Light-mode values map onto the existing
-   palette; dark-mode values are real, hand-picked tones — never a plain
-   inversion of the light set. */
+   an inverted "dark pill, white text" treatment breaks the moment --ink
+   itself flips to a LIGHT value in dark mode. */
 :root {
   --surface-selected: #14181d;
   --on-selected: #ffffff;
@@ -73,10 +54,9 @@
    every named color lifted so it still reads against a dark panel. */
 :root[data-theme="dark"] {
   --red: #c8395c;
-  --us: #5b82b0; --cn: #c8395c; --eu: #c99a5c; --other: #6b7480;
   --country-us: #6f93bd; --country-cn: #d17683; --country-in: #d99a5f;
   --country-eu: #c99a5c; --country-other: #6b7480;
-  --status-verified: #5fae82; --status-reported: #8b95a3; --status-uncertain: #d1a35c; --status-missing: #4a5058;
+  --status-uncertain: #d1a35c;
   --ink: #e8eaed; --ink-2: #b8c0cb; --slate: #8b95a3; --mist: #6b7480;
   --line: #2a2f37; --line-2: #3a4049; --panel: #1a1d22; --panel-2: #20242b; --paper: #14161a;
 
@@ -97,134 +77,33 @@ a { color: inherit; }
 .topbar-inner { position: relative; max-width: var(--maxw); margin: 0 auto; padding: 0 20px; display: flex; align-items: center; gap: 14px; }
 /* Absolutely positioned and centered on .topbar-inner itself, not just
    "centered in the leftover flex space" — a flex-based center would drift
-   off-true-center as soon as the left (vertical tabs) and right (status +
-   theme toggle) groups have different total widths, which they do. Height
-   matches .theme-toggle's fixed 24px so it lines up with the row's other
-   fixed-height elements; width is intentionally unset/auto so the browser
-   scales off the image's real aspect ratio rather than a hardcoded width
-   that would distort it if the logo file is ever swapped for one with
-   different proportions. */
+   off-true-center as soon as the left and right groups have different
+   total widths. Height matches .theme-toggle's fixed 24px so it lines up
+   with the row's other fixed-height elements; width is intentionally
+   unset/auto so the browser scales off the image's real aspect ratio. */
 .wordmark-logo {
   position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%);
   height: 24px; width: auto; display: block;
 }
 .topbar-meta { margin-left: auto; font-family: var(--mono); font-size: 10px; color: var(--mist); display: flex; gap: 14px; flex-wrap: wrap; align-items: center; }
-/* live-dot is still used by NewsTicker's "Latest" label, not the topbar (the topbar's live-refresh state was removed 2026-07-20 with the static-store-only pass) */
-.live-dot { display: inline-block; width: 6px; height: 6px; border-radius: 50%; background: #1f9d55; margin-right: 5px; animation: live-pulse 1.8s ease-in-out infinite; }
-@keyframes live-pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.35; } }
 .theme-toggle {
   border: 1px solid var(--line-2); background: var(--paper); color: var(--ink-2);
   width: 24px; height: 24px; border-radius: var(--r); cursor: pointer; font-size: 12px;
   display: flex; align-items: center; justify-content: center; line-height: 1;
 }
 .theme-toggle:hover { border-color: var(--red); color: var(--red); }
-.verticals { display: flex; gap: 4px; }
-.vtab { font-family: var(--mono); font-size: 10px; letter-spacing: 0.04em; text-transform: uppercase; padding: 4px 9px; border: 1px solid var(--line-2); background: var(--paper); color: var(--mist); cursor: pointer; border-radius: 0; }
-.vtab:hover { border-color: var(--slate); color: var(--ink); }
-.vtab[aria-pressed="true"] { background: var(--surface-selected); border-color: var(--surface-selected); color: var(--on-selected); }
-
-/* ── breaking-news tracker — real news-shaped entries only, continuously
-   scrolling by default (the motion is deliberate — this reads as a live
-   "breaking news" strip, not a static list). Pauses on hover/focus/
-   explicit pause; prev/next nudge a paused track by roughly one story via
-   an inline transform override, layered on top of the same CSS-driven
-   loop rather than replacing it with a second scroll mechanism. ──────── */
-.ticker { border-bottom: 1px solid var(--line); background: var(--panel-2); overflow: hidden; white-space: nowrap; display: flex; align-items: stretch; min-height: 30px; }
-.ticker-label {
-  flex: none; display: flex; align-items: center; gap: 5px; padding: 0 12px;
-  font-family: var(--mono); font-size: 9.5px; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase;
-  background: var(--red); color: #fff;
-}
-.ticker-track-wrap { flex: 1; overflow: hidden; position: relative; min-width: 0; display: flex; align-items: center; }
-.ticker-track { display: inline-flex; align-items: center; animation: ticker-scroll linear infinite; }
-.ticker-track.paused { animation-play-state: paused; }
-.ticker-item { display: inline-flex; align-items: center; gap: 6px; padding: 0 22px; font-size: 11px; color: var(--ink-2); }
-.ticker-link { font: inherit; border: none; background: none; padding: 0; color: inherit; cursor: pointer; }
-.ticker-link:hover { color: var(--red); }
-.ticker-tag { flex: none; font-family: var(--mono); font-size: 8.5px; letter-spacing: 0.04em; text-transform: uppercase; color: #fff; padding: 1px 4px; }
-.ticker-sep { flex: none; color: var(--line-2); }
-.ticker-also { flex: none; font-size: 10px; color: var(--mist); font-style: italic; }
-@keyframes ticker-scroll { from { transform: translateX(0); } to { transform: translateX(-50%); } }
-.ticker-ctrl {
-  flex: none; border: none; border-left: 1px solid var(--line); background: none; color: var(--ink-2);
-  cursor: pointer; padding: 0 10px; font-size: 13px;
-}
-.ticker-ctrl:hover { color: var(--red); background: var(--panel); }
-.ticker-fallback-note { flex: none; font-size: 9.5px; color: var(--mist); padding: 0 10px; display: flex; align-items: center; border-left: 1px solid var(--line); text-transform: uppercase; letter-spacing: 0.04em; }
-.ticker-empty { flex: 1; padding: 6px 12px; font-size: 11px; color: var(--mist); }
-.ticker-static-list { flex: 1; overflow-x: auto; display: flex; }
-.ticker-static-list .ticker-item { border-right: 1px solid var(--line); }
-@media (prefers-reduced-motion: reduce) { .ticker-track { animation: none; } }
-
-/* ── most-cited ticker: a row of cards, not a text line — width-matched
-   to .wrap (not edge-to-edge like the top ticker), tall enough to read
-   next to the KPI row. mask-image fades each edge instead of a hard clip,
-   which looked broken on a bordered card shape (fine for plain text). ── */
-.cited-ticker-wrap { margin-bottom: 6px; }
-.cited-ticker-label { font-size: 11.5px; font-weight: 600; margin-bottom: 8px; }
-.cited-ticker-label .drop { font-size: 10px; font-weight: 400; color: var(--mist); margin-left: 4px; }
-.cited-track-wrap {
-  overflow: hidden; position: relative;
-  mask-image: linear-gradient(to right, transparent 0, black 24px, black calc(100% - 24px), transparent 100%);
-  -webkit-mask-image: linear-gradient(to right, transparent 0, black 24px, black calc(100% - 24px), transparent 100%);
-}
-.cited-track { display: inline-flex; gap: 8px; animation: ticker-scroll linear infinite; }
-.cited-track-wrap:hover .cited-track { animation-play-state: paused; }
-.cited-card {
-  flex: none; width: 240px; height: 128px; text-align: left; cursor: pointer;
-  display: flex; flex-direction: column; gap: 5px;
-  background: var(--paper); border: 1px solid var(--line); border-radius: var(--r); padding: 10px 12px;
-  font-family: var(--sans); color: inherit;
-}
-.cited-card:hover { border-color: var(--red); }
-.cited-card:hover .cited-card-title { color: var(--red); }
-.cited-card-tag { font-family: var(--mono); font-size: 9px; letter-spacing: 0.03em; color: var(--mist); }
-.cited-card-title { font-size: 12px; font-weight: 600; line-height: 1.3; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; }
-.cited-card-meta { display: flex; align-items: center; gap: 5px; margin-top: auto; min-width: 0; }
-.cited-card-badge { flex: none; color: #fff; padding: 1px 4px; font-family: var(--mono); font-size: 8.5px; }
-.cited-card-org { font-size: 10px; color: var(--mist); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; min-width: 0; }
-
-/* ── public markets panel: real per-company market data (Massive), a
-   standing fact about a company rather than a dated pipeline event, so it
-   gets its own row rather than living inside a stage column. A scrollable
-   table (reuses .lb, see Leaderboard.tsx), not cards — a 20-50 row list
-   from the broadened ticker lists (2026-07-24) needs a dense, scannable
-   shape, not a wrapped grid. Capped height so a 47-row AI list doesn't
-   push the rest of the page down. No red/green for the day's move — this
-   app's color budget is accent + country only. */
-.marketpanel { margin-bottom: 6px; }
-.marketpanel-scroll { max-height: 320px; overflow-y: auto; }
-.marketpanel .cap { font-size: 10px; color: var(--mist); margin-top: 8px; }
-
-/* ── VC funding leaderboard: real, entity-consolidated Capital IQ
-   transaction data — click a company row to expand its individual rounds
-   inline, no separate modal needed for what's already a compact list. */
-.vcpanel .cap { font-size: 10px; color: var(--mist); margin-top: 8px; }
-.vc-deals { display: flex; flex-direction: column; gap: 4px; padding: 6px 0; }
-.vc-deal-row {
-  display: grid; grid-template-columns: 80px 1fr 90px 90px 90px 66px; gap: 8px;
-  font-size: 10.5px; color: var(--ink-2); align-items: center;
-}
-.vc-deal-status { color: var(--mist); }
-.vc-deal-investors { color: var(--mist); text-align: right; cursor: help; }
-.vc-deal-source { color: var(--mist); text-align: right; font-family: var(--mono); font-size: 9px; letter-spacing: 0.03em; text-transform: uppercase; }
 
 /* ── page head ──────────────────────────────────────────────────── */
 .pagehead { display: flex; justify-content: space-between; align-items: flex-start; padding: 16px 0 10px; gap: 12px; flex-wrap: wrap; }
 .pagehead h1 { font-size: 17px; font-weight: 700; letter-spacing: -0.01em; }
 .pagehead .sub { color: var(--mist); font-size: 11px; margin-top: 2px; }
-.headctl { display: flex; gap: 6px; align-items: center; flex-wrap: wrap; }
 
 /* ── controls: shared button/pill/chip language, no radius ───────── */
 .pill, .chip, .ghost-btn { font-family: var(--sans); font-size: 11px; border-radius: var(--r); border: 1px solid var(--line-2); background: var(--paper); color: var(--ink-2); padding: 4px 10px; cursor: pointer; }
 .pill { cursor: default; }
-.pill.primary { background: var(--red); color: #fff; border-color: var(--red); font-weight: 600; }
 .chip:hover, .ghost-btn:hover { border-color: var(--slate); color: var(--ink); }
 .chip[aria-pressed="true"] { background: var(--surface-selected); border-color: var(--surface-selected); color: var(--on-selected); }
 .ghost-btn:hover { border-color: var(--red); color: var(--red); }
-.controls { display: flex; gap: 6px; flex-wrap: wrap; align-items: center; padding: 8px 0 10px; }
-.controls .lbl { font-family: var(--mono); font-size: 10px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--mist); margin-right: 4px; }
-.spacer { flex: 1; }
 
 /* ── panel: the one container primitive, border only, no shadow, no radius ── */
 .panel { background: var(--paper); border: 1px solid var(--line); border-radius: var(--r); padding: var(--sp-3); min-width: 0; }
@@ -232,48 +111,23 @@ a { color: inherit; }
 .panel h3 .drop { font-size: 11px; font-weight: 400; color: var(--ink-2); }
 .panel-takeaway { font-size: var(--fs-body); color: var(--ink-2); line-height: 1.5; margin: -4px 0 var(--sp-2); text-align: left; }
 
-/* PanelTabs — several real views sharing one .panel, switched via .chip
-   buttons, instead of each view getting its own stacked panel. Reuses the
-   existing chip language rather than a second button style. */
+/* LeaderboardYears' year-chip picker — several real years sharing one
+   .panel, switched via .chip buttons. Reuses the existing chip language
+   rather than a second button style. */
 .tab-bar { display: flex; gap: 4px; flex-wrap: wrap; margin-bottom: 10px; }
 
-/* One-word red pill flagging a recently-added panel/view — same accent as
-   the rest of the app's single highlight color, used sparingly (a handful
-   of "new" panels at a time, not sprinkled everywhere) so it stays inside
-   the app's one-color-budget rule. Not auto-expiring — remove by hand once
-   a panel stops being new, same editorial judgment as the analyst notes. */
-.new-badge { font-family: var(--mono); font-size: 9px; font-weight: 700; letter-spacing: 0.05em; text-transform: uppercase; color: var(--red); border: 1px solid var(--red); border-radius: var(--r); padding: 1px 5px; margin-left: 6px; vertical-align: middle; }
-
 .kpirow { display: grid; grid-template-columns: repeat(5, 1fr); gap: var(--sp-1); margin-bottom: var(--sp-1); }
-/* Capital-cluster snapshot row — same KpiCard visual language as .kpirow,
-   but a variable 2-4 chip count depending on which financial sources this
-   vertical actually has (a vertical can genuinely have no tickers/
-   vcFunding at all), so auto-fit rather than a fixed column count. */
-.finrow { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: var(--sp-1); margin-bottom: var(--sp-1); }
-.kpi { padding: var(--sp-2); min-width: 0; }
-/* Country-filtered metric row: 4 one-unit cards + 1 two-unit institution/
-   organization card = 6 units total, so the row switches to a 6-column
-   grid (.kpirow-6, paired with .kpirow on the same element) rather than
-   the unfiltered row's 5 — that's what keeps all 5 real cards on one line
-   instead of the 2-unit card wrapping to its own row with 3 empty columns
-   beside it. Cards get proportionally narrower (a real width change, not a
-   font-size change) to make room; a long institution name wraps within its
-   card rather than forcing overflow. */
+/* Paired with .kpirow on the same element for a row with 6 cards
+   (Overview's one-per-stage KPI row) instead of the default 5. */
 .kpirow-6 { grid-template-columns: repeat(6, 1fr); }
-.kpi-span2 { grid-column: span 2; }
+.kpi { padding: var(--sp-2); min-width: 0; }
 .kpi.hi { background: var(--red); border-color: var(--red); color: #fff; }
 .kpi .label { font-size: var(--fs-card-label); font-weight: 600; letter-spacing: 0.04em; text-transform: uppercase; color: var(--ink-2); overflow-wrap: break-word; }
 .kpi.hi .label { color: rgba(255,255,255,.8); }
-/* Deliberately smaller than --fs-card-value (27px, kept for LeaderCard's
-   pure-percentage display) — a KpiCard's value is often a real institution/
-   organization/country name (e.g. "United States Air Force Research
-   Laboratory"), not just a number, and 27px bold with no wrap forced that
-   text out of the card's own bounds into its neighbors. 22px + wrapping
-   keeps the "big number" emphasis for short values while giving long
-   names real room to wrap onto a second or third line instead of
-   overflowing. */
+/* A KpiCard's value is often a real name (a company, a country), not just
+   a number — 22px + wrapping keeps the "big number" emphasis for short
+   values while giving long names real room to wrap instead of overflowing. */
 .kpi .val { font-size: 22px; font-weight: 700; margin-top: 7px; line-height: 1.25; overflow-wrap: break-word; word-break: break-word; hyphens: auto; }
-.kpi-span2 .val { font-size: 22px; }
 .kpi .delta { font-size: 11px; font-weight: 600; margin-left: 5px; color: var(--ink-2); }
 .kpi.hi .delta { color: rgba(255,255,255,.85); }
 .kpi .cap { font-size: 11px; color: var(--ink-2); margin-top: 4px; line-height: 1.4; overflow-wrap: break-word; }
@@ -281,39 +135,7 @@ a { color: inherit; }
 
 .row3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; margin-bottom: 6px; }
 
-/* The Overview dashboard's map is a full-width standalone panel now (not
-   paired with a side ranking column the way the old single-page Explore
-   view had it) — the ecosystem matrix is the main comparison surface, so
-   the map doesn't need to share a row or match a sibling's height. */
-.map-panel { display: flex; flex-direction: column; min-width: 0; }
-.map-fill { display: flex; flex-direction: column; }
-.map-fill .map-wrap { display: flex; flex-direction: column; }
-/* .mapbox needs a genuinely DEFINITE height (the `height` property, not
-   just `min-height`) at every tier, not an auto/flex-grown one — the SVG
-   inside it (ComposableMap) is styled width/height:100%, and a percentage
-   height against an `auto`-height ancestor doesn't resolve against the
-   ancestor at all, it falls back to the SVG's own intrinsic aspect ratio
-   instead. WorldMap.tsx used to measure that resulting (indirect) height
-   via ResizeObserver and feed it back in as the SVG's own viewBox height —
-   a closed loop where each measurement produced a taller next height,
-   ballooning the panel to thousands of pixels in a few frames (confirmed
-   by hand: a real ~1.5x multiply per cycle). Fixed on both ends: WorldMap
-   no longer measures anything for the compact view, and `height` here
-   (not `min-height`) means the box's size is fixed by CSS alone, so a
-   percentage-height child has a real, stable ancestor to resolve against
-   regardless of what anyone renders inside it. The map is the hero, never
-   a thumbnail — these are real target heights per breakpoint, not floors.
-   Content caps at --maxw (1440px, v5) regardless of viewport, so a 1728px
-   and a 1440px viewport render identically above that width; the real
-   breakpoints that matter are where the viewport itself narrows below
-   --maxw. */
-.map-fill .mapbox { height: 500px; }
-
-.legend { display: flex; gap: 10px; font-size: 10px; color: var(--mist); margin-bottom: 8px; }
-.legend span { display: inline-flex; align-items: center; gap: 4px; }
-.legend i { width: 10px; height: 2px; display: inline-block; }
-
-/* ── bar-row: one component, used for actor share and stage share ── */
+/* ── bar-row: one component, reused for every ranked-bar exhibit ──── */
 .barrow { display: grid; grid-template-columns: 108px 1fr 70px; align-items: center; gap: 6px; padding: 4px 0; border-top: 1px solid var(--line); }
 .barrow:first-child { border-top: none; }
 .barrow.clickable { cursor: pointer; }
@@ -324,27 +146,7 @@ a { color: inherit; }
 .barrow .fill { height: 100%; }
 .barrow .v { text-align: right; font-size: 10.5px; color: var(--ink-2); }
 
-/* ── histogram: NSF award-size distribution ────────────────────────── */
-.histogram { display: flex; align-items: flex-end; gap: 10px; height: 140px; padding-top: 8px; }
-.histogram-col { flex: 1; display: flex; flex-direction: column; align-items: center; height: 100%; }
-.histogram-col:hover .histogram-bar { background: var(--red); }
-.histogram-count { font-size: 11px; color: var(--ink-2); margin-bottom: 3px; }
-.histogram-bar-track { width: 100%; flex: 1; display: flex; align-items: flex-end; }
-.histogram-bar { width: 100%; background: var(--eu); min-height: 2px; }
-.histogram-label { font-size: 9.5px; color: var(--mist); margin-top: 4px; white-space: nowrap; }
-
-/* ── stage composition: normalized stacked bar per country ────────── */
-.stagecomp-row { display: grid; grid-template-columns: 108px 1fr 40px; align-items: center; gap: 6px; padding: 4px 0; border-top: 1px solid var(--line); }
-.stagecomp-row:first-child { border-top: none; }
-.stagecomp-row.clickable { cursor: pointer; }
-.stagecomp-row.clickable:hover .stagecomp-name { color: var(--red); }
-.stagecomp-row.active .stagecomp-name { color: var(--red); font-weight: 600; }
-.stagecomp-name { font-size: 11px; color: var(--ink-2); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.stagecomp-track { height: 12px; background: var(--panel); border-radius: 0; overflow: hidden; display: flex; }
-.stagecomp-seg { height: 100%; }
-.stagecomp-total { text-align: right; font-size: 10.5px; color: var(--ink-2); }
-
-/* ── tables: leaderboard + recent entries share one style ─────────── */
+/* ── tables: leaderboards ──────────────────────────────────────────── */
 .lb { width: 100%; border-collapse: collapse; font-size: 11.5px; }
 .lb thead th { font-family: var(--mono); font-size: 9.5px; letter-spacing: 0.06em; text-transform: uppercase; color: var(--mist); font-weight: 500; text-align: left; padding: 0 0 5px; border-bottom: 1px solid var(--line-2); }
 .lb thead th.right { text-align: right; }
@@ -358,19 +160,23 @@ a { color: inherit; }
 .lb .count { font-family: var(--mono); font-variant-numeric: tabular-nums; color: var(--ink-2); }
 .lb .right { text-align: right; }
 .actor-tag { display: inline-block; font-family: var(--mono); font-size: 9.5px; letter-spacing: 0.03em; padding: 1px 5px; border-radius: 0; color: #fff; white-space: nowrap; }
-/* Dark-mode country tokens (--country-us/-cn/-in/-eu) are deliberately
-   LIGHTENED from their light-mode values so they still read as chart
-   lines against a dark panel — the same tokens .actor-tag uses as a
-   BADGE BACKGROUND with white text on top, and a medium-light badge with
-   white text fails WCAG AA contrast (confirmed by hand: ~2.5-3:1, not the
-   4.5:1 floor). Dark text on the same lightened badge clears it easily,
-   so the badge and the chart-line use of the same token stay in sync
-   without needing a second color per country. */
+/* Dark-mode country tokens are deliberately LIGHTENED from their light-mode
+   values so they still read as chart lines against a dark panel — the same
+   tokens .actor-tag uses as a BADGE BACKGROUND with white text on top, and
+   a medium-light badge with white text fails WCAG AA contrast (confirmed
+   by hand: ~2.5-3:1, not the 4.5:1 floor). Dark text on the same lightened
+   badge clears it easily. */
 :root[data-theme="dark"] .actor-tag { color: #12141a; }
-.viewall { font-size: 10.5px; color: var(--red); font-weight: 600; margin-top: 6px; display: inline-block; background: none; border: none; padding: 0; cursor: pointer; font-family: inherit; }
 
 /* ── map ────────────────────────────────────────────────────────── */
-.mapbox { position: relative; height: 260px; background: var(--panel); border-radius: 0; overflow: hidden; }
+.map-wrap { display: flex; flex-direction: column; }
+/* A genuinely DEFINITE height (the `height` property, not `min-height`) at
+   every tier — the SVG inside (ComposableMap) is styled width/height:100%,
+   and a percentage height against an auto-height ancestor doesn't resolve
+   at all, it falls back to the SVG's own intrinsic aspect ratio instead.
+   These are real target heights per breakpoint, not floors — the map is
+   the hero, never a thumbnail. */
+.mapbox { position: relative; height: 500px; background: var(--panel); border-radius: 0; overflow: hidden; }
 .map-expand {
   position: absolute; top: 6px; right: 6px; width: 22px; height: 22px;
   border: 1px solid var(--line-2); background: var(--paper); border-radius: 0;
@@ -388,122 +194,9 @@ a { color: inherit; }
 }
 .map-fullscreen-body { flex: 1; position: relative; overflow: hidden; }
 
-.map-timebar { display: flex; align-items: center; gap: 8px; padding: 8px 12px; border-top: 1px solid var(--line); background: var(--paper); }
-.map-timebar input[type="range"] { flex: 1; accent-color: var(--red); }
-.map-timebar .date { font-family: var(--mono); font-size: 10.5px; color: var(--ink-2); min-width: 68px; }
-.map-timebar button { font-family: var(--mono); font-size: 11px; border: 1px solid var(--line-2); background: var(--paper); color: var(--ink-2); padding: 3px 8px; cursor: pointer; border-radius: 0; }
-.map-timebar button:hover { border-color: var(--red); color: var(--red); }
-
-/* ── entry detail modal ────────────────────────────────────────── */
-.entry-modal-backdrop {
-  position: fixed; inset: 0; z-index: 300; background: rgba(20, 22, 26, 0.55);
-  display: flex; align-items: center; justify-content: center; padding: 24px;
-}
-.entry-modal {
-  background: var(--paper); border: 1px solid var(--line); border-radius: var(--r);
-  max-width: 560px; width: 100%; max-height: 84vh; overflow-y: auto; padding: 18px 20px;
-}
-.entry-modal-head { display: flex; align-items: center; gap: 8px; margin-bottom: 10px; }
-.entry-modal-badge { font-family: var(--mono); font-size: 10px; color: #fff; padding: 2px 6px; }
-.entry-modal-stage { font-family: var(--mono); font-size: 10px; letter-spacing: 0.06em; text-transform: uppercase; color: var(--mist); }
-.entry-modal-close {
-  margin-left: auto; border: 1px solid var(--line-2); background: var(--paper); color: var(--ink-2);
-  width: 22px; height: 22px; cursor: pointer; font-size: 11px; border-radius: var(--r);
-}
-.entry-modal-close:hover { border-color: var(--red); color: var(--red); }
-.entry-modal-title { font-size: 15px; font-weight: 700; line-height: 1.35; margin-bottom: 8px; }
-.entry-modal-meta { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; font-family: var(--mono); font-size: 10px; color: var(--mist); margin-bottom: 6px; }
-.entry-modal-src { text-transform: uppercase; }
-.entry-modal-amt { color: var(--eu); font-weight: 600; }
-.entry-modal-org { font-size: 12px; font-weight: 500; color: var(--ink); margin-bottom: 8px; }
-.entry-modal-facts { display: flex; flex-direction: column; gap: 3px; font-size: 11.5px; color: var(--ink-2); margin-bottom: 8px; padding: 8px 10px; background: var(--panel); border-left: 2px solid var(--line-2); }
-.entry-modal-facts .lbl, .entry-modal-authors .lbl {
-  font-family: var(--mono); font-size: 9px; letter-spacing: 0.06em; text-transform: uppercase;
-  color: var(--mist); margin-right: 6px;
-}
-.entry-modal-authors { font-size: 11.5px; color: var(--ink-2); margin-bottom: 10px; }
-.entry-modal-abstract { font-size: 12px; line-height: 1.55; color: var(--ink-2); margin-bottom: 14px; }
-.entry-modal-link { display: inline-block; font-size: 11.5px; font-weight: 600; color: var(--red); text-decoration: none; }
-.entry-modal-link:hover { text-decoration: underline; }
-
-/* ── country profile drawer — a side panel, not a centered modal, per the
-   "clicking a country should open a side panel" request ─────────────── */
-.drawer-backdrop {
-  position: fixed; inset: 0; z-index: 300; background: rgba(20, 22, 26, 0.4);
-  display: flex; justify-content: flex-end;
-}
-.drawer {
-  position: relative; background: var(--paper); border-left: 1px solid var(--line);
-  width: 100%; max-width: 360px; height: 100%; overflow-y: auto; padding: 20px;
-}
-.drawer-close {
-  position: absolute; top: 16px; right: 16px; border: 1px solid var(--line-2); background: var(--paper);
-  color: var(--ink-2); width: 24px; height: 24px; cursor: pointer; font-size: 13px; border-radius: var(--r);
-}
-.drawer-close:hover { border-color: var(--red); color: var(--red); }
-.drawer-flag { width: 32px; height: 4px; margin-bottom: 10px; }
-.drawer h2 { font-size: 16px; font-weight: 700; margin-bottom: 4px; padding-right: 28px; }
-.drawer-label { font-family: var(--mono); font-size: 9.5px; letter-spacing: 0.06em; text-transform: uppercase; color: var(--mist); margin: 14px 0 4px; }
-.drawer-list { list-style: none; font-size: 12px; color: var(--ink-2); line-height: 1.7; }
-.drawer-actions { display: flex; flex-direction: column; gap: 8px; margin-top: 18px; }
-.drawer-type { font-family: var(--mono); font-size: 10px; letter-spacing: 0.06em; text-transform: uppercase; color: var(--mist); margin-bottom: 10px; }
-.drawer-field { display: flex; justify-content: space-between; gap: 10px; font-size: 12px; padding: 4px 0; border-bottom: 1px solid var(--line); }
-.drawer-field-label { color: var(--mist); flex-shrink: 0; }
-.drawer-field-value { color: var(--ink); text-align: right; }
-.drawer-note { font-size: 11.5px; color: var(--ink-2); line-height: 1.5; margin: 4px 0 8px; }
-.drawer-link-btn {
-  /* Browsers default <button> to text-align: center — invisible for a
-     one-line label, but it visibly center-wraps a long entry title spanning
-     multiple lines inside a drawer-list <li>. Left it is, like any other
-     link. Left as inline-block (its real default) rather than forced
-     block/full-width, since this class is also used inline mid-sentence
-     (Field values, "· {count}" suffixes) where block layout would break. */
-  background: none; border: none; padding: 0; font: inherit;
-  color: var(--red); font-weight: 600; text-align: left; cursor: pointer; text-decoration: none;
-}
-.drawer-link-btn:hover { text-decoration: underline; }
-
-/* ── persistent selection bar ─────────────────────────────────────── */
-.selection-bar {
-  display: flex; align-items: center; gap: 8px; flex-wrap: wrap;
-  background: var(--panel); border: 1px solid var(--line); padding: 6px 10px; margin-bottom: 10px;
-  font-size: 11.5px;
-}
-.selection-bar-label { font-family: var(--mono); font-size: 9.5px; letter-spacing: 0.06em; text-transform: uppercase; color: var(--mist); }
-.selection-bar-value { color: var(--ink); font-weight: 600; }
-
-/* ── date range control ──────────────────────────────────────────── */
-.date-input input[type="date"] {
-  font-family: var(--sans); font-size: 11px; border: 1px solid var(--line-2); background: var(--paper);
-  color: var(--ink-2); padding: 3px 6px; border-radius: var(--r);
-}
-.country-filter-select {
-  font-family: var(--sans); font-size: 11px; border: 1px solid var(--line-2); background: var(--paper);
-  color: var(--ink-2); padding: 3px 6px; border-radius: var(--r); max-width: 160px;
-  text-overflow: ellipsis; overflow: hidden; white-space: nowrap;
-}
-.sr-only {
-  position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden;
-  clip: rect(0, 0, 0, 0); white-space: nowrap; border: 0;
-}
-
-/* ── change log clickable items ──────────────────────────────────── */
-.changelog-item { text-align: left; display: inline; color: var(--ink); font-weight: 400; }
-.changelog-item:hover { color: var(--red); text-decoration: underline; }
-
-/* ── collaboration network: diagram + partner side list ──────────── */
-.collab-layout { display: grid; grid-template-columns: 1fr 160px; gap: 12px; align-items: start; }
-.collab-diagram { grid-column: 1; }
-.collab-partners { grid-column: 2; grid-row: 1; padding-top: 4px; }
-.collab-ranking-title { font-size: 12px; font-weight: 700; margin-bottom: 8px; }
-.collab-matrix th, .collab-matrix td { text-align: right; min-width: 64px; }
-.collab-matrix th:first-child, .collab-matrix td:first-child { text-align: left; min-width: 120px; }
-.matrix-diag { color: var(--mist); }
-
-/* ── dashboard navigation (replaces the old Story/Explore toggle) ───
+/* ── dashboard navigation ───────────────────────────────────────────
    "Track" is a single eyebrow label above the whole button row, not
-   repeated inside each button — the buttons themselves just say
-   Overview/Research/Scaling/Adoption/Money. */
+   repeated inside each button. */
 .dashboard-nav-heading {
   font-family: var(--sans); font-size: 9px; font-weight: 600; letter-spacing: 0.08em;
   text-transform: uppercase; color: var(--mist); margin: 10px 0 4px;
@@ -518,124 +211,13 @@ a { color: inherit; }
   background: var(--surface-selected); border-color: var(--surface-selected); border-bottom-color: var(--red); color: var(--on-selected);
 }
 
-/* ── LeaderCard — one of the Overview's four "who leads" cards ────── */
-.leader-card {
-  display: flex; flex-direction: column; gap: 4px; text-align: left; padding: var(--sp-3);
-  border: 1px solid var(--line); background: var(--paper); min-width: 0;
-}
-.leader-card-label { font-size: var(--fs-card-label); font-weight: 700; letter-spacing: 0.05em; text-transform: uppercase; color: var(--mist); }
-.leader-card-leader { font-size: 15px; font-weight: 700; color: var(--ink); margin-top: 2px; }
-.leader-card-share { font-size: var(--fs-card-value); font-weight: 700; color: var(--ink); line-height: 1.1; }
-.leader-card-def { font-size: 11px; color: var(--ink-2); line-height: 1.4; }
-.leader-card-runnerup { font-size: 11.5px; color: var(--ink-2); }
-.leader-card-change { font-size: 11px; color: var(--ink-2); font-weight: 600; }
-.leader-card-interpretation { font-size: 12px; color: var(--ink); line-height: 1.4; margin-top: 2px; border-top: 1px solid var(--line); padding-top: 6px; }
-.leader-card-open {
-  align-self: flex-start; margin-top: 4px; background: none; border: none; padding: 0; font: inherit;
-  font-size: 11.5px; font-weight: 600; color: var(--red); cursor: pointer;
-}
-.leader-card-open:hover { text-decoration: underline; }
-.leader-card-row { display: grid; grid-template-columns: repeat(4, 1fr); gap: var(--sp-2); align-items: stretch; }
-
-/* ── Overview: country ecosystem matrix ───────────────────────────── */
-.matrix-scroll { overflow-x: auto; }
-.matrix-table th, .matrix-table td { text-align: left; }
-.matrix-cell { padding: 2px 4px !important; min-width: 110px; }
-.matrix-cell-btn { display: block; width: 100%; background: none; border: none; padding: 4px 2px; cursor: pointer; font: inherit; text-align: left; }
-.matrix-cell-btn:hover { background: var(--panel); }
-.matrix-cell-top { display: flex; align-items: baseline; gap: 5px; font-size: 11px; }
-.matrix-cell-top .rank { font-family: var(--mono); color: var(--mist); }
-.matrix-bar-track { height: 3px; background: var(--line); margin-top: 3px; }
-.matrix-bar { height: 100%; }
-.matrix-change { font-family: var(--mono); font-size: 9.5px; margin-left: auto; }
-.matrix-change.up { color: var(--red); }
-.matrix-change.down { color: var(--slate); }
-.matrix-coverage { font-size: 10px; color: var(--mist); font-style: italic; }
-.matrix-row-major { background: var(--panel-2); }
-.matrix-row-major .org-name { font-weight: 700; }
-.matrix-showall {
-  display: block; margin-top: 8px; background: none; border: 1px solid var(--line-2); padding: 6px 12px;
-  font: inherit; font-size: 11.5px; font-weight: 600; color: var(--ink-2); cursor: pointer; text-align: left;
-}
-.matrix-showall:hover { border-color: var(--slate); color: var(--ink); }
-
-/* ── Overview: leadership-across-the-stack grouped bar chart ──────── */
-.stack-chart { display: flex; flex-direction: column; gap: var(--sp-2); }
-.stack-chart-legend { display: flex; gap: 14px; font-size: 11px; color: var(--ink-2); }
-.stack-chart-row { display: grid; grid-template-columns: 80px 1fr; gap: var(--sp-2); align-items: center; }
-.stack-chart-row-label { font-size: 12px; font-weight: 600; color: var(--ink); text-align: left; }
-.stack-chart-bars { display: flex; flex-direction: column; gap: 4px; }
-.stack-chart-bar-track { position: relative; height: 16px; background: var(--panel); }
-.stack-chart-bar { height: 100%; }
-.stack-chart-bar-value { position: absolute; left: 100%; top: 0; margin-left: 6px; font-size: 10.5px; line-height: 16px; color: var(--ink-2); white-space: nowrap; }
-
-/* ── Overview: research-minus-adoption diverging bar chart ────────── */
-.gap-chart { display: flex; flex-direction: column; gap: 6px; }
-.gap-chart-row { display: grid; grid-template-columns: minmax(90px, 150px) 1fr 56px; gap: var(--sp-2); align-items: center; }
-/* A real country name can run to 30+ characters ("Islamic Republic of
-   Iran," "Democratic People's Republic of Korea") — a fixed 100px column
-   with no wrap forced long names past the row into the bar track next to
-   it. Wraps onto a second line instead; the row still reads fine since
-   each row has real vertical room between it and its neighbors. */
-.gap-chart-label { font-size: 12px; color: var(--ink); text-align: left; overflow-wrap: break-word; line-height: 1.3; }
-.gap-chart-track { position: relative; height: 14px; }
-.gap-chart-zero { position: absolute; left: 50%; top: 0; bottom: 0; width: 1px; background: var(--line-2); }
-.gap-chart-bar { position: absolute; top: 1px; bottom: 1px; }
-.gap-chart-bar-pos { left: 50%; }
-.gap-chart-bar-neg { right: 50%; }
-.gap-chart-value { font-size: 11px; text-align: left; color: var(--ink-2); }
-
-/* ── Overview: inline selected-country profile ────────────────────── */
-.country-profile-ranks { display: flex; gap: 16px; flex-wrap: wrap; margin: 8px 0; }
-.country-profile-rank { display: flex; flex-direction: column; gap: 2px; }
-
-/* Shared: a chart's own dynamic finding-led title (BumpChart, ranked-bars) —
-   distinct from .panel h3 since some of these render inside a tab body,
-   not a fresh panel header. */
-.chart-title { font-size: 13px; font-weight: 700; margin-bottom: 8px; }
-
-/* ── Track Scaling: milestone timeline ─────────────────────────────── */
-.milestone-timeline { list-style: none; }
-.milestone-row {
-  display: flex; align-items: center; gap: 8px; padding: 7px 4px; border-bottom: 1px solid var(--line);
-  font-size: 12px; cursor: pointer; flex-wrap: wrap;
-}
-.milestone-row:hover { background: var(--panel); }
-.milestone-date { color: var(--mist); font-size: 10.5px; min-width: 74px; }
-.milestone-title { flex: 1; min-width: 160px; }
-.milestone-org { color: var(--ink-2); font-size: 11px; }
-
-/* ── Sankey: legend + full-width scroll container ─────────────────── */
-.sankey-legend { display: flex; gap: 14px; flex-wrap: wrap; font-size: 10.5px; color: var(--ink-2); margin-bottom: 10px; }
-.sankey-legend-swatch { display: inline-block; width: 9px; height: 9px; margin-right: 4px; vertical-align: middle; }
-
-/* ── method note ("data & method" popover) ──────────────────────── */
-.method-note { position: relative; display: inline-block; margin-left: 6px; }
-.method-note-toggle {
-  background: none; border: 1px solid var(--line-2); border-radius: 50%; width: 16px; height: 16px;
-  font-size: 10px; line-height: 1; color: var(--mist); cursor: pointer; padding: 0;
-}
-.method-note-toggle:hover, .method-note-toggle[aria-expanded="true"] { border-color: var(--red); color: var(--red); }
-.method-note-panel {
-  position: absolute; top: 20px; left: 0; z-index: 50; width: 260px;
-  background: var(--paper); border: 1px solid var(--line); padding: 10px 12px;
-  font-size: 11px; line-height: 1.5; color: var(--ink-2); font-weight: 400;
-  text-transform: none; letter-spacing: normal; font-family: var(--sans);
-  box-shadow: 0 2px 8px rgba(0,0,0,0.08);
-}
-
-/* ── ChartFrame / SectionHeader — the shared "title, takeaway, controls,
-   body, legend, note" scaffold every major chart uses now, so none of
-   this is one-off per-dashboard CSS. ─────────────────────────────── */
-.chart-frame { display: flex; flex-direction: column; gap: var(--sp-1); }
+/* ── section-header — title + one-sentence takeaway, above every real
+   section: title states the QUESTION or subject, takeaway states what
+   the current real data actually shows. ─────────────────────────── */
 .section-header { text-align: left; }
-.chart-frame-controls { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 2px; }
-.chart-frame-body { min-width: 0; }
-.chart-frame-legend { font-size: 10.5px; color: var(--ink-2); }
 
-/* ── PolicyTakeaway — the one banner-style highlight besides the Overview
-   hero; left-aligned prose everywhere it's used inline above a section,
-   the Overview hero variant gets its own dedicated full-width class. ── */
+/* ── PolicyTakeaway — a left-aligned prose banner above a section, or (with
+   tone="warning") a bordered callout for a real caveat. ─────────────── */
 .policy-takeaway {
   font-size: var(--fs-body); color: var(--ink-2); line-height: 1.5; text-align: left;
   padding: var(--sp-1) 0; border-top: 1px solid var(--line); margin-top: 2px;
@@ -646,23 +228,6 @@ a { color: inherit; }
   padding: var(--sp-2); margin: 0 0 var(--sp-2);
 }
 
-/* ── DataQualityBadge — verified/reported/uncertain/missing, one shared
-   meaning everywhere. Label text is always visible — color is never the
-   only signal. ────────────────────────────────────────────────────── */
-.quality-badge {
-  display: inline-flex; align-items: center; gap: 4px; font-size: 10px; font-weight: 600;
-  padding: 2px 7px; border: 1px solid var(--line-2); text-transform: uppercase; letter-spacing: 0.04em;
-}
-.quality-badge::before { content: ""; width: 6px; height: 6px; display: inline-block; border-radius: 50%; }
-.quality-verified { color: var(--status-verified); border-color: var(--status-verified); }
-.quality-verified::before { background: var(--status-verified); }
-.quality-reported { color: var(--ink-2); border-style: dashed; }
-.quality-reported::before { background: var(--status-reported); }
-.quality-uncertain { color: var(--status-uncertain); border-color: var(--status-uncertain); }
-.quality-uncertain::before { background: var(--status-uncertain); }
-.quality-missing { color: var(--mist); border-style: dashed; }
-.quality-missing::before { background: var(--status-missing); }
-
 /* ── ExpandableMethods — collapses the long Sources & Method prose ── */
 .expandable-methods { margin-top: var(--sp-3); }
 .expandable-methods-toggle {
@@ -672,114 +237,13 @@ a { color: inherit; }
 .expandable-methods-caret { color: var(--red); font-weight: 600; font-size: 11px; margin-left: 4px; }
 .expandable-methods-body { margin-top: var(--sp-2); font-size: var(--fs-methods); line-height: 1.6; color: var(--ink-2); }
 
-/* ── record explorer (pipeline "view all") ───────────────────────── */
-.record-explorer-backdrop {
-  position: fixed; inset: 0; z-index: 300; background: rgba(20, 22, 26, 0.55);
-  display: flex; align-items: center; justify-content: center; padding: 24px;
-}
-.record-explorer {
-  background: var(--paper); border: 1px solid var(--line); width: 100%; max-width: 720px;
-  height: 84vh; display: flex; flex-direction: column;
-}
-.record-explorer-head { display: flex; justify-content: space-between; align-items: center; padding: 12px 16px; border-bottom: 1px solid var(--line); }
-.record-explorer-controls { display: flex; gap: 10px; align-items: center; padding: 10px 16px; border-bottom: 1px solid var(--line); flex-wrap: wrap; }
-.record-explorer-search {
-  flex: 1; min-width: 160px; font-family: var(--sans); font-size: 12px; border: 1px solid var(--line-2);
-  background: var(--paper); padding: 5px 8px; border-radius: var(--r);
-}
-.record-explorer-body { flex: 1; overflow-y: auto; padding: 8px; }
-
-/* ── sankey: real horizontal scroll on narrow viewports instead of
-   compressing labels past legibility (the svg itself has a fixed min
-   pixel width, see MoneyFlowSankey.tsx) ─────────────────────────────── */
-.sankey-scroll { overflow-x: auto; }
-
-/* ── findings-led story opening ────────────────────────────────────── */
-.view-toggle { display: flex; gap: 6px; margin-bottom: 12px; }
-.findings-header { margin-bottom: 6px; }
-/* The Overview's hero leadership statement — the one intentionally
-   centered, full-width element in the app besides the global header
-   title (see the v5 layout rules: everything else stays left-aligned).
-   A lightly tinted full-width banner, not a narrow column, with generous
-   padding so it reads as the page's headline finding, not just another
-   paragraph. Text itself is generated fresh from current data every
-   render (see overviewHeadline in findings.ts) — never a hardcoded claim. */
-.finding-headline {
-  font-size: var(--fs-hero); font-weight: 700; line-height: 1.35; text-align: center;
-  max-width: none; width: 100%; padding: var(--sp-5) var(--sp-4); margin-bottom: var(--sp-4);
-  background: var(--panel-2); border: 1px solid var(--line);
-}
-.finding-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 6px; margin-bottom: 4px; }
-.finding-card { display: flex; flex-direction: column; gap: 2px; }
-.finding-label { font-family: var(--mono); font-size: 9.5px; letter-spacing: 0.06em; text-transform: uppercase; color: var(--mist); }
-.finding-value { font-size: 16px; font-weight: 700; }
-.finding-delta { font-size: 10.5px; font-weight: 600; color: var(--red); }
-
-/* ── FindingsPanel — 2-4 real, threshold-gated findings, always placed
-   after the metric row and before the first chart (section 6). ───────── */
-.findings-panel { display: flex; flex-direction: column; gap: var(--sp-2); margin-bottom: var(--sp-3); }
-.finding-item { padding: var(--sp-2) var(--sp-3); background: var(--panel-2); border-left: 3px solid var(--red); }
-.finding-text { font-size: var(--fs-body); color: var(--ink); line-height: 1.5; text-align: left; }
-.finding-meta { display: flex; align-items: center; gap: 10px; margin-top: 4px; }
-.finding-period { font-size: 10.5px; color: var(--ink-2); text-transform: uppercase; letter-spacing: 0.03em; }
-.finding-link { font: inherit; font-size: 11.5px; font-weight: 600; color: var(--red); background: none; border: none; padding: 0; cursor: pointer; }
-.finding-link:hover { text-decoration: underline; }
-.finding-context { font-size: 11px; color: var(--ink-2); line-height: 1.4; margin-top: 2px; }
-
 /* ── tooltip ────────────────────────────────────────────────────── */
 /* Fixed dark-on-white regardless of page theme — a floating overlay reads
    the same way in both themes, unlike --ink (which flips to near-white in
    dark mode and would otherwise turn this into invisible white-on-white). */
 .tip { position: fixed; transform: translate(-50%, calc(-100% - 10px)); background: #14181d; color: #fff; font-size: 10.5px; line-height: 1.5; padding: 5px 8px; border-radius: 0; pointer-events: none; z-index: 50; white-space: nowrap; }
 
-/* ── pipeline (detail view under the summary panels) ──────────────── */
-.section { padding: 16px 0; border-top: 1px solid var(--line); }
-.section-kicker { display: flex; align-items: baseline; gap: 10px; margin-bottom: 10px; }
-.section-kicker .idx { font-family: var(--mono); font-size: 10px; color: var(--red); font-weight: 600; }
-.section-kicker h2 { font-size: 14px; font-weight: 700; }
-.section-kicker .sub { font-family: var(--mono); font-size: 10px; color: var(--mist); margin-left: auto; }
-
-.pipeline { display: grid; grid-template-columns: repeat(4,1fr); gap: 6px; }
-.stage { background: var(--paper); border: 1px solid var(--line); border-radius: 0; display: flex; flex-direction: column; min-height: 160px; min-width: 0; }
-.stage-head { padding: 9px 10px 8px; border-bottom: 1px solid var(--line); }
-.stage-tag { font-family: var(--mono); font-size: 9.5px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--stage,var(--slate)); display: flex; align-items: center; gap: 6px; }
-.stage-tag .bar { width: 14px; height: 2px; background: var(--stage,var(--slate)); }
-.stage-name { font-size: 13px; font-weight: 700; margin-top: 5px; }
-.stage-count { font-family: var(--mono); font-size: 10px; color: var(--mist); margin-top: 1px; }
-.stage-blurb { font-size: 10px; color: var(--mist); margin-top: 4px; line-height: 1.35; }
-.stage-controls { display: flex; align-items: center; gap: 4px; flex-wrap: wrap; margin-top: 7px; }
-.stage-sort { display: flex; gap: 4px; margin-left: auto; }
-.stage-chip {
-  font-family: var(--mono); font-size: 9.5px; letter-spacing: 0.03em; text-transform: uppercase;
-  border: 1px solid var(--line-2); background: var(--paper); color: var(--mist);
-  padding: 2px 7px; border-radius: var(--r); cursor: pointer;
-}
-.stage-chip:hover { border-color: var(--stage,var(--slate)); color: var(--ink); }
-.stage-chip[aria-pressed="true"] { background: var(--stage,var(--surface-selected)); border-color: var(--stage,var(--surface-selected)); color: var(--on-selected); }
-/* No internal scroll — StageColumn caps its inline list to INLINE_LIMIT
-   real records and links to RecordExplorer for the rest, so four columns
-   never carry four permanently-visible nested scrollbars. */
-.stage-body { padding: 6px; flex: 1; }
-.stage-viewall { display: block; width: 100%; text-align: center; padding: 8px; border-top: 1px solid var(--line); }
-
-.ecard { position: relative; background: var(--paper); border: 1px solid var(--line); border-left: 2px solid var(--acc,var(--line-2)); border-radius: 0; padding: 7px 8px; margin: 4px 1px; }
-.ecard.dim { opacity: 0.35; }
-.ecard:hover { background: var(--panel); }
-.ecard.clickable { cursor: pointer; }
-.ecard.clickable:hover .ecard-title { color: var(--red); }
-.ecard-meta { display: flex; gap: 6px; align-items: center; flex-wrap: wrap; font-family: var(--mono); font-size: 9px; color: var(--mist); margin-bottom: 4px; }
-.ecard-badge { color: #fff; padding: 1px 4px; border-radius: 0; font-size: 8.5px; }
-.ecard-src { text-transform: uppercase; }
-.ecard-amt { color: var(--eu); font-weight: 600; }
-.ecard-title { font-size: 11.5px; line-height: 1.3; color: var(--ink); }
-.ecard-org { font-size: 10px; color: var(--mist); margin-top: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.seeded { font-family: var(--mono); font-size: 7.5px; letter-spacing: 0.06em; text-transform: uppercase; color: var(--mist); border: 1px solid var(--line-2); border-radius: 0; padding: 1px 4px; white-space: nowrap; margin-left: auto; }
-.seeded.auto { color: var(--eu); border-color: var(--eu); }
-
-.note { margin: 0 8px 3px; padding: 8px 9px; background: var(--panel); border-radius: 0; border-left: 2px solid var(--stage,var(--red)); }
-.note-h { font-size: 12px; font-weight: 600; line-height: 1.25; }
-.note-b { font-size: 10.5px; line-height: 1.45; color: var(--ink-2); margin-top: 4px; }
-
+/* ── SeriesChart's legend/empty-state ──────────────────────────────── */
 .trend-legend { display: flex; gap: 14px; flex-wrap: wrap; align-items: center; margin-top: 8px; font-family: var(--mono); font-size: 10px; color: var(--ink-2); }
 .legend-item { display: inline-flex; align-items: center; gap: 5px; }
 .swatch { width: 11px; height: 3px; display: inline-block; }
@@ -790,59 +254,36 @@ a { color: inherit; }
 .foot code { background: var(--panel-2); padding: 1px 4px; border-radius: 0; }
 .foot .sig { color: var(--red); font-weight: 600; margin-top: 10px; font-size: 11px; }
 
-@media (max-width: 1100px) { .kpirow, .kpirow-6 { grid-template-columns: repeat(2,1fr); } .row3 { grid-template-columns: 1fr; } .pipeline { grid-template-columns: 1fr 1fr; } }
-@media (max-width: 620px) { .wrap { padding: 0 14px 32px; } .pipeline { grid-template-columns: 1fr; } }
+@media (max-width: 1100px) { .kpirow, .kpirow-6 { grid-template-columns: repeat(2,1fr); } .row3 { grid-template-columns: 1fr; } }
+@media (max-width: 620px) { .wrap { padding: 0 14px 32px; } }
 @media (prefers-reduced-motion: reduce) { * { scroll-behavior: auto !important; } }
 
-/* ── responsive: map, drawer, selection bar, tables ───────────────────
-   --maxw (1440px, v5) means a 1728px and a 1440px viewport render an
-   IDENTICAL content width in this app (.wrap just centers with more side
-   margin above 1440) — there's no real layout difference to distinguish
-   the two here, so both share one 500px map height. Below 1024px (.wrap
-   itself starts narrowing) the map steps down to 440px, then to 340px
-   below 768px — three real tiers matching desktop/laptop vs. tablet vs.
-   mobile, never smaller than 340px. Always `height`, never `min-height`
-   — see the comment above .map-fill .mapbox's base rule for why a
-   definite height at every tier matters here. */
+/* ── responsive: map + KPI rows ────────────────────────────────────
+   --maxw (1440px) means a 1728px and a 1440px viewport render an
+   IDENTICAL content width (.wrap just centers with more side margin
+   above 1440) — there's no real layout difference to distinguish the two
+   here, so both share one 500px map height. Below 1024px the map steps
+   down to 440px, then to 340px below 768px — three real tiers matching
+   desktop/laptop vs. tablet vs. mobile, never smaller than 340px. Always
+   `height`, never `min-height` — a percentage-height child needs a real,
+   stable ancestor to resolve against regardless of what's rendered inside. */
 @media (max-width: 1023px) {
-  .map-fill .mapbox { height: 440px; }
-  .leader-card-row { grid-template-columns: repeat(2, 1fr); }
+  .mapbox { height: 440px; }
 }
 @media (max-width: 768px) {
-  .finding-grid { grid-template-columns: 1fr 1fr; }
   .kpirow, .kpirow-6 { grid-template-columns: repeat(2, 1fr); }
-  .selection-bar { flex-wrap: wrap; }
-  .drawer { max-width: 100%; }
-  .collab-layout { grid-template-columns: 1fr; }
-  .map-fill .mapbox { height: 340px; }
-  .finding-headline { font-size: 22px; padding: var(--sp-4) var(--sp-3); }
-  .stack-chart-row, .gap-chart-row { grid-template-columns: 1fr; gap: 4px; }
+  .mapbox { height: 340px; }
 }
 @media (max-width: 480px) {
-  .finding-grid { grid-template-columns: 1fr; }
   .kpirow, .kpirow-6 { grid-template-columns: 1fr; }
-  .leader-card-row { grid-template-columns: 1fr; }
-  .controls { flex-wrap: wrap; }
-  .record-explorer-controls { flex-direction: column; align-items: stretch; }
-  .country-profile-ranks { gap: 10px; }
-}
-
-/* ── reduced motion: disable non-essential transitions/animations,
-   Sankey particles are gated in JS (usePrefersReducedMotion) since they're
-   SVG <animateMotion> elements, not CSS ────────────────────────────── */
-@media (prefers-reduced-motion: reduce) {
-  .map-geography, .stage-chip, .chip, .pill, .drawer, .method-note-panel { transition: none !important; }
 }
 
 /* ── keyboard focus — every custom interactive element gets a visible,
    non-color-only focus ring (a shape change, not just a tint), so keyboard
    users get the same "what's active" signal mouse users get from hover ─ */
 .chip:focus-visible, .pill:focus-visible, .ghost-btn:focus-visible,
-.stage-chip:focus-visible, .drawer-link-btn:focus-visible,
-.finding-card.clickable:focus-visible,
 .lb tbody tr.clickable:focus-visible,
-.barrow.clickable:focus-visible,
-.stagecomp-row.clickable:focus-visible {
+.barrow.clickable:focus-visible {
   outline: 2px solid var(--focus-ring);
   outline-offset: 2px;
 }

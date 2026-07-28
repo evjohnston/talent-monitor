@@ -77,7 +77,7 @@ export function Overview({ ctx }: { ctx: DashboardContext }) {
 
   return (
     <div>
-      <div className="kpirow">
+      <div className="kpirow kpirow-6">
         {kpis.map((k) => (
           <KpiCard key={k.stage} label={k.label} value={k.value} caption={k.caption} />
         ))}
