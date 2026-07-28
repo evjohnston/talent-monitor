@@ -89,6 +89,7 @@ function MapBody({
   max,
   mode,
   onSelect,
+  onHoverCountry,
   active,
   emphasize,
   height,
@@ -102,6 +103,7 @@ function MapBody({
   max: number;
   mode: "count" | "range";
   onSelect?: (country: string) => void;
+  onHoverCountry?: (code: string | null) => void;
   active?: string | null;
   emphasize?: string[];
   height: number;
@@ -173,8 +175,8 @@ function MapBody({
                       hover: { outline: "none", fill: "var(--red)", cursor: code && onSelect ? "pointer" : "default" },
                       pressed: { outline: "none", fill: "var(--red)" },
                     }}
-                    onMouseMove={(e: ReactMouseEvent) => code && setTip({ x: e.clientX, y: e.clientY, code })}
-                    onMouseLeave={() => setTip(null)}
+                    onMouseMove={(e: ReactMouseEvent) => { if (code) { setTip({ x: e.clientX, y: e.clientY, code }); onHoverCountry?.(code); } }}
+                    onMouseLeave={() => { setTip(null); onHoverCountry?.(null); }}
                     onClick={() => code && onSelect?.(code)}
                     onKeyDown={(e: ReactKeyboardEvent) => { if (code && onSelect && (e.key === "Enter" || e.key === " ")) { e.preventDefault(); onSelect(code); } }}
                   />
@@ -199,6 +201,7 @@ export function WorldMap({
   unit = "",
   mode = "count",
   onSelect,
+  onHoverCountry,
   active,
   emphasize,
   dark = false,
@@ -213,6 +216,10 @@ export function WorldMap({
   // basically the same shade."
   mode?: "count" | "range";
   onSelect?: (country: string) => void;
+  // Broadcasts the hovered country up — TrackShell uses this to emphasize
+  // the same country in every other exhibit on the page (see `emphasize`
+  // below, which is how a panel RECEIVES that broadcast).
+  onHoverCountry?: (code: string | null) => void;
   active?: string | null;
   emphasize?: string[];
   dark?: boolean;
@@ -255,6 +262,7 @@ export function WorldMap({
             max={max}
             mode={mode}
             onSelect={onSelect}
+            onHoverCountry={onHoverCountry}
             active={active}
             emphasize={emphasize}
             height={820}
@@ -270,7 +278,7 @@ export function WorldMap({
   return (
     <div className="map-wrap">
       <div className="mapbox">
-        <MapBody geoData={worldLow as unknown as Record<string, unknown>} values={values} min={min} max={max} mode={mode} onSelect={onSelect} active={active} emphasize={emphasize} height={COMPACT_VIEWBOX_HEIGHT} dark={dark} unit={unit} />
+        <MapBody geoData={worldLow as unknown as Record<string, unknown>} values={values} min={min} max={max} mode={mode} onSelect={onSelect} onHoverCountry={onHoverCountry} active={active} emphasize={emphasize} height={COMPACT_VIEWBOX_HEIGHT} dark={dark} unit={unit} />
         <button className="map-expand" onClick={() => setExpanded(true)} aria-label="Expand map to full page">⤢</button>
       </div>
     </div>

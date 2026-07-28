@@ -1,0 +1,14 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "gtm-live-proxy",
+  "main": "src/index.ts",
+  "compatibility_date": "2026-07-18",
+  "observability": {
+    "enabled": true
+  },
+  // No secrets needed at all — this Worker is a plain CORS proxy for RSS
+  // feeds, nothing more. Never put real credentials in this file regardless.
+  "vars": {
+    "ALLOWED_ORIGINS": "http://localhost:5173,http://localhost:5183,https://evjohnston.github.io"
+  }
+}

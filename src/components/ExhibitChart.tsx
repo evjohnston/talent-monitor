@@ -10,7 +10,14 @@ import { BarRow } from "./BarRow.tsx";
 // purpose — this is what lets 6 new Track pages share one rendering path
 // across ~80 differently-shaped real exhibits instead of one bespoke
 // component per figure.
-export function ExhibitChart({ exhibit }: { exhibit: Exhibit }) {
+//
+// `emphasize`/`onHoverCountry` are TrackShell's cross-highlight channel: a
+// country hovered on one exhibit's map gets emphasized on every other
+// country-shaped exhibit on the same page. Only country-map and
+// timeseries/share-timeseries participate (a bare ranked-bar/leaderboard
+// row isn't reliably a country), and only WorldMap broadcasts — see
+// TrackShell.tsx for the shared state this all flows through.
+export function ExhibitChart({ exhibit, emphasize, onHoverCountry }: { exhibit: Exhibit; emphasize?: string[]; onHoverCountry?: (code: string | null) => void }) {
   if (exhibit.kind === "timeseries" || exhibit.kind === "share-timeseries") {
     const { x, series } = toSeriesChart(exhibit);
     // share-timeseries exhibits store either a raw 0-1 fraction (needs
@@ -25,6 +32,7 @@ export function ExhibitChart({ exhibit }: { exhibit: Exhibit }) {
         series={scaled}
         unitSuffix={exhibit.kind === "share-timeseries" ? "%" : ""}
         formatValue={(v) => (exhibit.kind === "share-timeseries" ? v.toFixed(1) : v.toLocaleString())}
+        emphasize={emphasize}
       />
     );
   }
@@ -39,7 +47,7 @@ export function ExhibitChart({ exhibit }: { exhibit: Exhibit }) {
     const min = vals.length ? Math.min(...vals) : 0;
     const max = vals.length ? Math.max(...vals) : 1;
     const mode = min < 0 || (max > 0 && min > max * 0.2) ? "range" : "count";
-    return <WorldMap values={cm.values} unit={cm.column} mode={mode} />;
+    return <WorldMap values={cm.values} unit={cm.column} mode={mode} emphasize={emphasize} onHoverCountry={onHoverCountry} />;
   }
 
   if (exhibit.kind === "leaderboard-years") {

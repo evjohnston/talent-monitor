@@ -57,3 +57,10 @@ ciq_output/
 talent_charts/.RData
 talent_charts/.RDataTmp
 talent_charts/.Rhistory
+
+# writing/ — the report's own Word draft manuscripts (multiple versions,
+# internal-review filenames). This repo deploys publicly to GitHub Pages;
+# unpublished draft content with review history stays local-only,
+# deliberately never committed, same "don't publish what isn't meant to be
+# public" instinct as the CapIQ raw-export rule above.
+writing/

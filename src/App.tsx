@@ -11,7 +11,16 @@ import { TrackWorkforceEntry } from "./dashboards/TrackWorkforceEntry.tsx";
 import { TrackRetentionImmigration } from "./dashboards/TrackRetentionImmigration.tsx";
 import { TrackResearchOutput } from "./dashboards/TrackResearchOutput.tsx";
 import { DashboardNavigation } from "./components/DashboardNavigation.tsx";
+import { NewsTicker } from "./components/NewsTicker.tsx";
 import { ExpandableMethods } from "./components/ChartFrame.tsx";
+import { fetchNewsRss, type NewsItem } from "./lib/sources/rss.ts";
+import { resolveNewsFeeds, NEWS_CLASSIFIER } from "./lib/newsFeeds.ts";
+
+// Still deployed under evj@stanford.edu's Cloudflare account (see
+// CLAUDE.md) — proxies the 4 news feeds that don't send their own
+// Access-Control-Allow-Origin header. VITE_WORKER_URL overrides this for
+// local Worker development (see worker/'s own README-equivalent notes).
+const WORKER_URL = import.meta.env.VITE_WORKER_URL || "https://gtm-live-proxy.evjohnston.workers.dev";
 // The "-alt" logo variants are the bare Tech Futures Lab wordmark, with no
 // sub-brand text baked in — the old logo-light/dark-bg.png had "Global Tech
 // Monitor" baked into the PNG itself, which no image edit here can retitle;
@@ -65,6 +74,19 @@ export default function App() {
       .catch(() => {});
   }, []);
 
+  // The one thing in this app that IS live: real trade/policy press,
+  // fetched once on page load (not on a timer — this isn't meant to read
+  // as a streaming feed, same reasoning CLAUDE.md gives for why the old
+  // quantum/AI app's 3-minute auto-refresh was removed). Never written to
+  // a committed file, so it doesn't reopen the "data lives on its own
+  // branch" problem the static-data architecture deliberately avoids.
+  const [newsItems, setNewsItems] = useState<NewsItem[] | null>(null);
+  useEffect(() => {
+    fetchNewsRss(resolveNewsFeeds(WORKER_URL), NEWS_CLASSIFIER)
+      .then(setNewsItems)
+      .catch(() => setNewsItems([]));
+  }, []);
+
   const exhibits = data?.exhibits ?? [];
   const exhibitsByStage = useMemo(() => {
     const by = Object.fromEntries(STAGES.map((s) => [s.id, [] as Exhibit[]])) as Record<Stage, Exhibit[]>;
@@ -104,6 +126,8 @@ export default function App() {
           </button>
         </div>
       </div>
+
+      <NewsTicker items={newsItems ?? []} loading={newsItems === null} />
 
       <div className="wrap">
         <div className="pagehead">

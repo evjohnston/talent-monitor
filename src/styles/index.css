@@ -93,6 +93,39 @@ a { color: inherit; }
 }
 .theme-toggle:hover { border-color: var(--red); color: var(--red); }
 
+/* ── breaking-news tracker — real news-shaped items only, continuously
+   scrolling by default (the motion is deliberate — this reads as a live
+   "breaking news" strip, not a static list). Pauses on hover/focus/
+   explicit pause; prev/next nudge a paused track by roughly one story via
+   an inline transform override, layered on top of the same CSS-driven
+   loop rather than replacing it with a second scroll mechanism. ──────── */
+.ticker { border-bottom: 1px solid var(--line); background: var(--panel-2); overflow: hidden; white-space: nowrap; display: flex; align-items: stretch; min-height: 30px; }
+.ticker-label {
+  flex: none; display: flex; align-items: center; gap: 5px; padding: 0 12px;
+  font-family: var(--mono); font-size: 9.5px; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase;
+  background: var(--red); color: #fff;
+}
+.live-dot { display: inline-block; width: 6px; height: 6px; border-radius: 50%; background: #1f9d55; margin-right: 5px; animation: live-pulse 1.8s ease-in-out infinite; }
+@keyframes live-pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.35; } }
+.ticker-track-wrap { flex: 1; overflow: hidden; position: relative; min-width: 0; display: flex; align-items: center; }
+.ticker-track { display: inline-flex; align-items: center; animation: ticker-scroll linear infinite; }
+.ticker-track.paused { animation-play-state: paused; }
+.ticker-item { display: inline-flex; align-items: center; gap: 6px; padding: 0 22px; font-size: 11px; color: var(--ink-2); }
+.ticker-link { font: inherit; color: inherit; text-decoration: none; }
+.ticker-link:hover { color: var(--red); }
+.ticker-tag { flex: none; font-family: var(--mono); font-size: 8.5px; letter-spacing: 0.04em; text-transform: uppercase; color: #fff; padding: 1px 4px; }
+.ticker-sep { flex: none; color: var(--line-2); }
+@keyframes ticker-scroll { from { transform: translateX(0); } to { transform: translateX(-50%); } }
+.ticker-ctrl {
+  flex: none; border: none; border-left: 1px solid var(--line); background: none; color: var(--ink-2);
+  cursor: pointer; padding: 0 10px; font-size: 13px;
+}
+.ticker-ctrl:hover { color: var(--red); background: var(--panel); }
+.ticker-empty { flex: 1; padding: 6px 12px; font-size: 11px; color: var(--mist); }
+.ticker-static-list { flex: 1; overflow-x: auto; display: flex; }
+.ticker-static-list .ticker-item { border-right: 1px solid var(--line); }
+@media (prefers-reduced-motion: reduce) { .ticker-track { animation: none; } }
+
 /* ── page head ──────────────────────────────────────────────────── */
 .pagehead { display: flex; justify-content: space-between; align-items: flex-start; padding: 16px 0 10px; gap: 12px; flex-wrap: wrap; }
 .pagehead h1 { font-size: 17px; font-weight: 700; letter-spacing: -0.01em; }
@@ -132,8 +165,26 @@ a { color: inherit; }
 .kpi.hi .delta { color: rgba(255,255,255,.85); }
 .kpi .cap { font-size: 11px; color: var(--ink-2); margin-top: 4px; line-height: 1.4; overflow-wrap: break-word; }
 .kpi.hi .cap { color: rgba(255,255,255,.75); }
+.kpi-spark { margin-top: 6px; opacity: 0.8; }
 
 .row3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; margin-bottom: 6px; }
+
+/* ── track transition — a fresh Track component mounts on every tab
+   switch, so a plain mount animation on its own root replays naturally
+   without any JS state to manage. Skipped under reduced motion, same as
+   the Sankey particles and KPI count-up. */
+@keyframes trackFadeIn { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: translateY(0); } }
+.track-enter { animation: trackFadeIn 0.35s ease-out; }
+@media (prefers-reduced-motion: reduce) { .track-enter { animation: none; } }
+
+/* ── Overview hero headline — the report's own titled thesis, quoted and
+   attributed, not a computed finding. The one intentionally centered,
+   full-width, larger-type element in the app besides the topbar. */
+.finding-headline {
+  font-size: var(--fs-hero); font-weight: 700; line-height: 1.35; text-align: center;
+  max-width: none; width: 100%; padding: var(--sp-5) var(--sp-4); margin-bottom: var(--sp-4);
+  background: var(--panel-2); border: 1px solid var(--line);
+}
 
 /* ── bar-row: one component, reused for every ranked-bar exhibit ──── */
 .barrow { display: grid; grid-template-columns: 108px 1fr 70px; align-items: center; gap: 6px; padding: 4px 0; border-top: 1px solid var(--line); }

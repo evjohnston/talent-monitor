@@ -84,6 +84,14 @@ export function SeriesChart({
     return d.trim();
   };
 
+  // `emphasize` (TrackShell's cross-highlight state) carries a real ISO
+  // code from WorldMap's onHoverCountry — a series' raw key is a country
+  // NAME as the CSV wrote it ("Germany"), not a code, so this resolves
+  // before comparing. Confirmed by hand: comparing the raw key directly
+  // against emphasize silently faded every series, since no raw name is
+  // ever a 2-letter code.
+  const isFaded = (key: string) => !!emphasize?.length && !emphasize.includes(resolveCountry(key) ?? key);
+
   function handleMove(e: MouseEvent<SVGSVGElement>) {
     const svg = svgRef.current;
     if (!svg || n === 0) return;
@@ -110,13 +118,13 @@ export function SeriesChart({
           </g>
         ))}
         {series.map((s, i) => {
-          const faded = !!emphasize?.length && !emphasize.includes(s.key);
+          const faded = isFaded(s.key);
           return <path key={s.key} d={linePath(s.values)} fill="none" stroke={colorFor(s.key, i)} strokeWidth="2" strokeLinejoin="round" opacity={faded ? 0.25 : 1} />;
         })}
         {series.map((s, i) =>
           s.values.map((v, vi) =>
             v == null ? null : (
-              <circle key={`${s.key}-${vi}`} cx={xPos(vi)} cy={yPos(v)} r={vi === n - 1 ? 3 : 1.5} fill={colorFor(s.key, i)} opacity={!!emphasize?.length && !emphasize.includes(s.key) ? 0.25 : 1} />
+              <circle key={`${s.key}-${vi}`} cx={xPos(vi)} cy={yPos(v)} r={vi === n - 1 ? 3 : 1.5} fill={colorFor(s.key, i)} opacity={isFaded(s.key) ? 0.25 : 1} />
             )
           )
         )}
