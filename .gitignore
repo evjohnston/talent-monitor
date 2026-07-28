@@ -64,3 +64,9 @@ talent_charts/.Rhistory
 # deliberately never committed, same "don't publish what isn't meant to be
 # public" instinct as the CapIQ raw-export rule above.
 writing/
+# Same treatment for reference docs dropped at the repo root rather than
+# into writing/ — a draft manuscript copy and the (likely licensed/
+# internal) Hoover style guide. Source-of-truth reading material for the
+# overhaul, never meant to be published in a public repo.
+/Talent Report*.docx
+/Hoover Style Guide*.pdf
