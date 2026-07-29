@@ -370,6 +370,20 @@ a.pill { cursor: pointer; text-decoration: none; display: inline-block; }
 .trend-legend { display: flex; gap: 14px; flex-wrap: wrap; align-items: center; margin-top: 8px; font-family: var(--mono); font-size: 10px; color: var(--ink-2); }
 .legend-item { display: inline-flex; align-items: center; gap: 5px; }
 .swatch { width: 11px; height: 3px; display: inline-block; }
+/* The >6-series picker's legend toggles (SeriesChart.tsx) — same look as
+   a plain legend item, just a real <button> so it's keyboard-reachable.
+   Hidden state is carried by opacity + strikethrough on the whole item,
+   NOT by recoloring the swatch — most non-tracked countries already
+   render in the same muted --country-other gray a "hidden" indicator
+   color would use, so graying the swatch on toggle-off would make "this
+   series is off" indistinguishable from "this series is on, but it's a
+   minor country" (confirmed by hand: FIG206's real 17-country legend
+   made this ambiguity obvious immediately). The swatch's real color
+   never changes; only the label's own presentation does. */
+.legend-item-toggle { background: none; border: none; padding: 0; font: inherit; font-family: inherit; color: inherit; cursor: pointer; }
+.legend-item-toggle[aria-pressed="false"] { opacity: 0.4; text-decoration: line-through; }
+.legend-item-toggle:hover { color: var(--red); }
+.series-picker-toggle-all { background: none; border: none; padding: 0; font: inherit; color: var(--red); font-weight: 600; cursor: pointer; text-decoration: underline; }
 .trend-note { color: var(--mist); font-style: italic; margin-left: auto; }
 /* A timeseries exhibit that mixes a real 0-1 rate column with count
    columns (see ExhibitChart.tsx) renders as two stacked charts, never one

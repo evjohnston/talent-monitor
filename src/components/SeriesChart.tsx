@@ -1,6 +1,16 @@
+import { useMemo, useState } from "react";
 import { ResponsiveLine } from "@nivo/line";
 import type { SliceTooltipProps, LineCustomSvgLayer, LineSeries } from "@nivo/line";
 import { codeFromCountryName, countryColor, countryName } from "../lib/countries.ts";
+
+// The redesign brief's own >6-series rule: some real exhibits have far
+// more series than a line chart can show legibly at once (TAB202's 3
+// parts each have 31 real country columns; FIG206 has 17). Past this
+// count, default to the biggest/most-current series rather than every
+// one at once — checked by hand against every real multi-series
+// timeseries exhibit in the app (25 of them exceed 6 series; several,
+// like TAB202, exceed it by 5x).
+const MAX_SERIES_WITHOUT_PICKER = 6;
 
 export interface Series {
   key: string; // a real country name/code resolves to that country's real color; anything else cycles the categorical palette below
@@ -81,12 +91,44 @@ export function SeriesChart({
   // before comparing.
   const isFaded = (key: string) => !!emphasize?.length && !emphasize.includes(resolveCountry(key) ?? key);
 
+  // Ranked by each series' own most recent real value, not column order —
+  // "biggest/most current" is a more useful default than "whichever six
+  // columns happened to come first in the source CSV."
+  const lastRealValue = (s: Series) => {
+    for (let i = s.values.length - 1; i >= 0; i--) { if (s.values[i] != null) return s.values[i] as number; }
+    return -Infinity;
+  };
+  const defaultVisibleKeys = useMemo(() => {
+    if (series.length <= MAX_SERIES_WITHOUT_PICKER) return new Set(series.map((s) => s.key));
+    return new Set(
+      [...series].sort((a, b) => lastRealValue(b) - lastRealValue(a)).slice(0, MAX_SERIES_WITHOUT_PICKER).map((s) => s.key)
+    );
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [series]);
+  // Deterministic from `series` alone (no Math.random/Date.now), so this
+  // initial state is identical on the server and the first client render
+  // — no hydration mismatch, and a no-JS reader sees this exact default,
+  // not an empty/unfiltered chart.
+  const [visibleKeys, setVisibleKeys] = useState(defaultVisibleKeys);
+  const needsPicker = series.length > MAX_SERIES_WITHOUT_PICKER;
+  const showingAll = visibleKeys.size === series.length;
+
+  function toggleKey(key: string) {
+    setVisibleKeys((prev) => {
+      const next = new Set(prev);
+      if (next.has(key)) next.delete(key);
+      else next.add(key);
+      return next;
+    });
+  }
+
   if (n === 0 || series.length === 0) {
     return <div className="trend-empty">No data for this exhibit.</div>;
   }
 
+  const visibleSeries = series.filter((s) => visibleKeys.has(s.key));
   const xLabels = x.map(String);
-  const data: Ser[] = series.map((s) => ({
+  const data: Ser[] = visibleSeries.map((s) => ({
     id: s.key,
     data: xLabels.map((xv, i) => ({ x: xv, y: s.values[i] })),
   }));
@@ -102,7 +144,7 @@ export function SeriesChart({
     return isFaded(key) ? "var(--line-2)" : colorFor(key, indexByKey[key] ?? 0);
   };
 
-  const showEndpointLabels = series.length <= 6;
+  const showEndpointLabels = visibleSeries.length <= MAX_SERIES_WITHOUT_PICKER;
 
   const endpointLabels: LineCustomSvgLayer<Ser> = ({ series: computedSeries, innerWidth }) => (
     <g>
@@ -146,6 +188,9 @@ export function SeriesChart({
 
   return (
     <figure style={{ margin: 0 }}>
+      {visibleSeries.length === 0 ? (
+        <div className="trend-empty">Every series is hidden — pick one below to show it again.</div>
+      ) : (
       <div style={{ width: "100%", height: DEFAULT_H }}>
         <ResponsiveLine<Ser>
           defaultWidth={DEFAULT_W}
@@ -183,13 +228,43 @@ export function SeriesChart({
           role="img"
         />
       </div>
+      )}
+      {needsPicker && (
+        <div className="trend-note" style={{ marginBottom: 4 }}>
+          Showing {visibleSeries.length} of {series.length} series, ranked by most recent value —{" "}
+          <button type="button" className="series-picker-toggle-all" onClick={() => setVisibleKeys(showingAll ? defaultVisibleKeys : new Set(series.map((s) => s.key)))}>
+            {showingAll ? `show top ${MAX_SERIES_WITHOUT_PICKER} only` : `show all ${series.length}`}
+          </button>
+          . Click any series below to add or remove it.
+        </div>
+      )}
       <figcaption className="trend-legend">
-        {series.map((s, i) => (
-          <span key={s.key} className="legend-item">
-            <span className="swatch" style={{ background: colorFor(s.key, i) }} />
-            {labelFor(s.key, s.label)}
-          </span>
-        ))}
+        {series.map((s, i) =>
+          needsPicker ? (
+            <button
+              key={s.key}
+              type="button"
+              className="legend-item legend-item-toggle"
+              aria-pressed={visibleKeys.has(s.key)}
+              onClick={() => toggleKey(s.key)}
+            >
+              {/* Swatch always shows the series' REAL color, hidden or
+                  not — most non-tracked countries already render in the
+                  same muted --country-other gray as a hidden series would
+                  have used, so graying the swatch itself would make "off"
+                  indistinguishable from "on, but a minor country." Hidden
+                  state is carried by the label's own strikethrough/opacity
+                  instead, never by recoloring the swatch. */}
+              <span className="swatch" style={{ background: colorFor(s.key, i) }} />
+              {labelFor(s.key, s.label)}
+            </button>
+          ) : (
+            <span key={s.key} className="legend-item">
+              <span className="swatch" style={{ background: colorFor(s.key, i) }} />
+              {labelFor(s.key, s.label)}
+            </span>
+          )
+        )}
       </figcaption>
     </figure>
   );

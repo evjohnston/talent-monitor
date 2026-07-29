@@ -206,6 +206,31 @@ hardcoding):
   hand-rolled SVG — migrating each to Nivo's matching component
   (`@nivo/geo`, `@nivo/bar`, `@nivo/sankey`) is real follow-up work, not
   done in the same pass as this first one.
+
+  **The redesign brief's own >6-series rule**: 25 real exhibits across
+  every stage have more than 6 numeric columns (TAB202's 3 parts each
+  have 31 real country columns; FIG206 has 17; FIG411 has 20) — a plain
+  line chart at that count is an illegible tangle, confirmed by hand on
+  FIG206 before this existed. Past `MAX_SERIES_WITHOUT_PICKER` (6),
+  `SeriesChart.tsx` defaults to the 6 series with the biggest most-recent
+  real value (not column order) and turns its legend into real toggle
+  buttons (`aria-pressed`, keyboard-reachable) plus a "show all N" link —
+  click any series to add or remove it. The default selection is computed
+  from `series` alone (no `Math.random`/`Date.now`), so it's identical on
+  the server and the first client render: a no-JS reader sees the same
+  real, sensible 6-series default a JS reader starts on, not a blank or
+  unfiltered chart. Exhibits at 6 series or fewer (the large majority)
+  render byte-for-byte the same static `<span>` legend as before this
+  existed — the picker UI doesn't appear at all below the threshold.
+
+  A real bug caught building this: a hidden series' swatch was originally
+  recolored to `--line-2` (a neutral gray) to signal "off" — but most
+  non-tracked countries already render in that same muted
+  `--country-other` gray (see `countries.ts`), so "hidden" and "visible,
+  but a minor country" became visually indistinguishable the moment a
+  real 17-country exhibit was checked by eye. Fixed by leaving the
+  swatch's real color untouched always and carrying hidden state on the
+  label itself (opacity + strikethrough) instead.
 - `country-map` → `WorldMap.tsx`. Real distinction, checked by hand: a
   **count** (works/founders by country — real-zero-floored, often
   Pareto-skewed) sqrt-compresses off a true 0 floor; a **range** (a PISA
