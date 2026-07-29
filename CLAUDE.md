@@ -225,7 +225,15 @@ hardcoding):
   the first column alone repeats across rows for these shapes and would
   otherwise collide; adjacent identical values (a display name + its own
   normalized key, e.g. TAB501's "conference" + "conf_norm") get deduped so
-  a label doesn't read "colt · colt".
+  a label doesn't read "colt · colt". A real negative value (TAB101's
+  "percent change in share" columns — a field genuinely losing
+  international share) clamps its bar to 0 width rather than the raw
+  `(value/max)*100`: an unclamped negative percent sets an invalid `width:
+  -N%`, and `BarRow`'s `.fill` has no CSS width fallback, so the browser
+  drops the whole declaration and the bar defaults to the FULL width of
+  its track — a negative value rendered as the single longest bar on the
+  page, caught by hand on TAB101. The real signed number still shows in
+  the row's own label text; only the bar itself is clamped.
 
 `ExhibitPanel.tsx` is the one building block every Track page uses: real
 title, real chart, real citation footer — never optional, since every

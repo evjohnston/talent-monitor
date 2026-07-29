@@ -109,7 +109,17 @@ export function ExhibitChart({ exhibit, emphasize, onHoverCountry }: { exhibit: 
         <BarRow
           key={`${r.label}-${i}`}
           label={r.label}
-          pct={(r.value / rb.max) * 100}
+          // Real bug, caught by hand on TAB101 (a "percent change in
+          // share" column, genuinely negative for fields that lost
+          // international share): an unclamped negative pct sets an
+          // inline `width: -N%`, which is invalid CSS — BarRow's `.fill`
+          // has no CSS-class width fallback, so the browser drops the
+          // whole declaration and the bar defaults to the FULL width of
+          // its track, rendering a negative value as the single LONGEST
+          // bar in the list. Clamped to 0 here — the real signed number
+          // still shows in `valueLabel`, this only stops the bar itself
+          // from lying about magnitude and direction.
+          pct={Math.max(0, (r.value / rb.max) * 100)}
           color="var(--red)"
           valueLabel={r.value.toLocaleString()}
           detail={`${r.label} · ${r.value.toLocaleString()} (${rb.column})`}
