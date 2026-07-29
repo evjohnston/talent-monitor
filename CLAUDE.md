@@ -651,7 +651,19 @@ guess.
   metric snapshot) — it picks a reasonable default (last real-numeric
   column, composite label) rather than a bespoke chart per exhibit. Fine
   for now; a future pass could add more `ChartKind`s if a shape recurs
-  often enough to be worth a dedicated renderer.
+  often enough to be worth a dedicated renderer. **TAB501 got exactly that
+  dedicated treatment 2026-07-29** (`src/lib/aiConferenceCatchUp.ts`,
+  dispatched by exhibit id in `ExhibitChart.tsx`, same house convention as
+  FIG303's `buildFig303`) — its real shape (one row per conference x year
+  x country, 454 rows, only China/US present) made the generic fallback
+  flatten-and-sort-by-share into a genuinely broken chart, not just a
+  disclosed simplification: the same conference's own share values across
+  many different years sorted next to each other read as "colt, colt,
+  colt..." (confirmed real, not hypothetical — that's what shipped for
+  months). Replaced with a real per-conference "first year China's share
+  reached the US's" computation, honestly labeled "Not yet" for the 12
+  conferences where China hasn't, with regression tests locking in the
+  exact colt/cvpr cases that motivated the fix.
 - **No country-compare UI yet** — real, useful, present in the old app in
   some form, but cut from this rebuild's v1 scope deliberately rather than
   ported speculatively before the new model was proven. CSV export

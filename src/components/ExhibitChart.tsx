@@ -1,5 +1,6 @@
 import type { Exhibit } from "../lib/types.ts";
 import { toSeriesChart, toCountryMapValues, toLeaderboardYears, toRankedBars, isRateShapedSeries } from "../lib/exhibitData.ts";
+import { computeAiConferenceCatchUp } from "../lib/aiConferenceCatchUp.ts";
 import { SeriesChart } from "./SeriesChart.tsx";
 import { WorldMap } from "./WorldMap.tsx";
 import { LeaderboardYears } from "./LeaderboardYears.tsx";
@@ -85,6 +86,42 @@ export function ExhibitChart({ exhibit, emphasize, onHoverCountry, onSelectCount
     const { years, rows } = toLeaderboardYears(exhibit);
     if (years.length === 0) return <div className="trend-empty">No data for this exhibit.</div>;
     return <LeaderboardYears years={years} rows={rows} nameLabel={exhibit.columns[0]} />;
+  }
+
+  // TAB501 — a real, justified one-off (see aiConferenceCatchUp.ts), same
+  // house convention as FIG303's buildFig303: a genuinely unique exhibit
+  // shape (one row per conference x year x country) gets its own real
+  // derivation instead of the generic ranked-bar fallback flattening 454
+  // rows into a meaningless flat-sorted list (confirmed broken: that's
+  // the exhibit content/report-crosswalk.csv's own note says needs "a
+  // real bespoke chart, not polish").
+  if (exhibit.id === "TAB501") {
+    const results = computeAiConferenceCatchUp(exhibit);
+    if (results.length === 0) return <div className="trend-empty">No data for this exhibit.</div>;
+    const maxLeadYears = Math.max(1, ...results.map((r) => (r.catchUpYear != null ? r.latestYear - r.catchUpYear : 0)));
+    return (
+      <div>
+        {results.map((r) => {
+          const leadYears = r.catchUpYear != null ? r.latestYear - r.catchUpYear : 0;
+          const pctChina = (r.latestChinaShare * 100).toFixed(1);
+          const pctUs = (r.latestUsShare * 100).toFixed(1);
+          return (
+            <BarRow
+              key={r.conference}
+              label={r.conference}
+              pct={(leadYears / maxLeadYears) * 100}
+              color="var(--country-cn)"
+              valueLabel={r.catchUpYear != null ? `Caught up ${r.catchUpYear}` : "Not yet"}
+              detail={
+                r.catchUpYear != null
+                  ? `${r.conference}: China's share overtook the US's in ${r.catchUpYear}. As of ${r.latestYear}, China ${pctChina}% vs. US ${pctUs}%.`
+                  : `${r.conference}: China hasn't caught up as of ${r.latestYear} — China ${pctChina}% vs. US ${pctUs}%.`
+              }
+            />
+          );
+        })}
+      </div>
+    );
   }
 
   // ranked-bar, and the generic fallback for any shape that doesn't
