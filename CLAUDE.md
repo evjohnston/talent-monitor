@@ -308,21 +308,26 @@ exhibit set too small/uniform to warrant named grouping) should reach for
 first, per "How to extend"'s own instinct against forcing structure onto
 data that doesn't call for it.
 
-**Three real hero/crosswalk discrepancies surfaced doing this** — same
-shape each time, all left unresolved on purpose rather than silently
-picked one way or the other: Graduate & Postdoctoral Training (crosswalk
-says FIG201, shipped hero is FIG207), Workforce Entry (crosswalk says
-FIG302 with FIG303 merged in, shipped hero is standalone FIG303), and
-Research Output & Competitiveness (crosswalk says FIG501 as one
-metric-switcher explorer absorbing 7 other exhibits, shipped hero is
-standalone TAB506) — the last being the largest, since it envisions a
-real interactive component that plainly doesn't exist yet, not just a
-different exhibit id. Every one of these is a real "the Phase 1 plan and
-the shipped implementation disagree" gap, not a bug in either the
-crosswalk or the shipped hero alone — worth a real editorial decision
-(rewrite the analyst notes to match the original plan, or update the
-crosswalk to match what shipped) before the next visual pass on any of
-these three stages.
+**Three real hero/crosswalk discrepancies surfaced doing this, resolved
+2026-07-29** — same shape each time: Graduate & Postdoctoral Training
+(crosswalk said FIG201, shipped hero was FIG207), Workforce Entry
+(crosswalk said FIG302 with FIG303 merged in, shipped hero was standalone
+FIG303), and Research Output & Competitiveness (crosswalk said FIG501 as
+one metric-switcher explorer absorbing 7 other exhibits, shipped hero was
+standalone TAB506). Resolved by updating `content/report-crosswalk.csv`'s
+`proposed_web_role` to match what's actually shipped (FIG207/FIG303/
+TAB506 are now that CSV's own `stage_hero` rows too), not by rewriting
+analyst notes or swapping exhibits to match the original plan — every one
+of those three stages' `data/talent/notes.ts` headlines is written about
+the SHIPPED hero's own finding, and picking a different finding to lead
+with is a real editorial-content decision, not an engineering fix, so it
+wasn't made unilaterally. The original richer plans aren't lost — each
+CSV row now says explicitly what the deferred future version would be
+(a FIG201+FIG202 count/share toggle; the full H-1B explorer with FIG303
+merged in; the Research Output metric-switcher, the largest of the three
+since it's a real interactive component that doesn't exist yet, not just
+a different exhibit id) — worth a real look if any of these three stages'
+headline finding ever gets revisited.
 
 **Click-to-pin, a real `WorldMap.tsx` `onSelect` caller, finally.** The
 Phase 0 UX audit caught this by hand: `onSelect` (the prop that makes a
