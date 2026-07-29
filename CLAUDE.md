@@ -274,10 +274,30 @@ a curated 6.
   only ever excluded `heroId`-based heroes, and `heroContent` (a custom
   ReactNode, not an exhibit id) had no exclusion mechanism at all.
 
-Rebuilt so far with `sections`: Retention & Immigration, Degree
+All 6 stages now use `sections`: Retention & Immigration, Degree
 Production, Foundation, Graduate & Postdoctoral Training, Workforce
-Entry. Research Output & Competitiveness — the last of the 6 — still
-uses the flat-grid default.
+Entry, Research Output & Competitiveness (2026-07-28). The flat-grid
+default path in `TrackShell.tsx` is unused by any current Track page but
+deliberately kept, not deleted — it's what a genuinely new stage (or an
+exhibit set too small/uniform to warrant named grouping) should reach for
+first, per "How to extend"'s own instinct against forcing structure onto
+data that doesn't call for it.
+
+**Three real hero/crosswalk discrepancies surfaced doing this** — same
+shape each time, all left unresolved on purpose rather than silently
+picked one way or the other: Graduate & Postdoctoral Training (crosswalk
+says FIG201, shipped hero is FIG207), Workforce Entry (crosswalk says
+FIG302 with FIG303 merged in, shipped hero is standalone FIG303), and
+Research Output & Competitiveness (crosswalk says FIG501 as one
+metric-switcher explorer absorbing 7 other exhibits, shipped hero is
+standalone TAB506) — the last being the largest, since it envisions a
+real interactive component that plainly doesn't exist yet, not just a
+different exhibit id. Every one of these is a real "the Phase 1 plan and
+the shipped implementation disagree" gap, not a bug in either the
+crosswalk or the shipped hero alone — worth a real editorial decision
+(rewrite the analyst notes to match the original plan, or update the
+crosswalk to match what shipped) before the next visual pass on any of
+these three stages.
 
 **A real, deliberately-unresolved discrepancy, found while rebuilding
 Graduate & Postdoctoral Training**: `content/report-crosswalk.csv` (Phase
