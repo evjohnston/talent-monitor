@@ -229,6 +229,17 @@ a.pill { cursor: pointer; text-decoration: none; display: inline-block; }
 .track-enter { animation: trackFadeIn 0.35s ease-out; }
 @media (prefers-reduced-motion: reduce) { .track-enter { animation: none; } }
 
+/* ── track-section — a named editorial group of exhibits within a stage
+   (see TrackShell.tsx's `sections` prop) — a real subheading over its own
+   row, not just another same-weight panel. Sized at --fs-section-title,
+   distinctly larger than a single exhibit panel's own <h3> title, and a
+   top border/margin heavier than the gap between ordinary rows, so a
+   reader feels a real chapter break, not a continuation of the same grid. */
+.track-section { margin-top: var(--sp-5); padding-top: var(--sp-3); border-top: 2px solid var(--ink); }
+.track-section:first-of-type { margin-top: var(--sp-3); }
+.track-section > .section-header h3 { font-size: var(--fs-section-title); font-weight: 700; }
+.track-section > .section-header { margin-bottom: var(--sp-2); }
+
 /* ── Overview hero headline — the report's own titled thesis, quoted and
    attributed, not a computed finding. The one intentionally centered,
    full-width, larger-type element in the app besides the topbar. */

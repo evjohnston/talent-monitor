@@ -238,9 +238,33 @@ number here traces to a specific cited source.
 stage set. `TrackShell.tsx` is the shared shape all 6 `Track*.tsx` files use:
 the stage's latest analyst note as a takeaway, one full-width "hero" exhibit
 (the one the note is grounded in), then every other real exhibit for that
-stage as its own panel, three to a row. **Every exhibit for a stage renders
-somewhere** — no top-N cut of the real data; a stage with 20 exhibits gets
-20 panels, not a curated 6.
+stage as its own panel. **Every exhibit for a stage renders somewhere** —
+no top-N cut of the real data; a stage with 20 exhibits gets 20 panels, not
+a curated 6.
+
+**Two ways the "every other exhibit" part renders**, both in `TrackShell.tsx`:
+- Default (no `sections` prop passed) — one flat grid, three panels a row.
+  Still every stage's actual behavior except Retention & Immigration (below).
+- `sections` — named editorial groups (`TrackSection[]`, each a real title +
+  the exhibit ids that answer it together), the publication-redesign
+  brief's own "editorial, non-grid sequence" ask, first built for
+  `TrackRetentionImmigration.tsx`: hero (the retention-gap Sankey) →
+  "What happens right after the PhD: the work-authorization pipeline"
+  (FIG603/604/605) → "Employer-side friction: the PERM backlog"
+  (FIG606/TAB604) → "Who's declining to stay, and where they go instead"
+  (FIG607/TAB601/TAB602) → "Why it matters" (FIG608/609) — grounded in
+  `docs/report-crosswalk-notes.md`'s own read of this stage's real
+  groupings, not an arbitrary chunking of 10 exhibits into rows of 3. Any
+  real exhibit NOT named in a section still renders, in a flat-grid
+  fallback after the named sections — a future data refresh adding an
+  exhibit this hand-authored list doesn't know about yet degrades to
+  "shows up, ungrouped," never "silently disappears."
+- `excludeIds` — exhibits that feed `heroContent`'s own numbers directly
+  (FIG601/602 feed `retentionFunnelSankey`) and would otherwise render
+  AGAIN as their own standalone panel, repeating what the hero already
+  shows. Real, confirmed duplication bug before this existed — `TrackShell`
+  only ever excluded `heroId`-based heroes, and `heroContent` (a custom
+  ReactNode, not an exhibit id) had no exclusion mechanism at all.
 
 `Overview.tsx`'s KPI row is six real numbers, one per stage, each read off
 that stage's own hero exhibit via `toLatestValue`/`toRankedBars` — never a
