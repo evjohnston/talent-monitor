@@ -350,6 +350,11 @@ a.pill { cursor: pointer; text-decoration: none; display: inline-block; }
    dark mode and would otherwise turn this into invisible white-on-white). */
 .tip { position: fixed; transform: translate(-50%, calc(-100% - 10px)); background: #14181d; color: #fff; font-size: 10.5px; line-height: 1.5; padding: 5px 8px; border-radius: 0; pointer-events: none; z-index: 50; white-space: nowrap; }
 
+/* @nivo/line's sliceTooltip — Nivo's own TooltipWrapper already handles
+   fixed/absolute positioning near the cursor, so this only needs the same
+   visual skin as .tip above, not its position/transform rules. */
+.nivo-tip { background: #14181d; color: #fff; font-size: 10.5px; line-height: 1.5; padding: 5px 8px; white-space: nowrap; }
+
 /* ── SeriesChart's legend/empty-state ──────────────────────────────── */
 .trend-legend { display: flex; gap: 14px; flex-wrap: wrap; align-items: center; margin-top: 8px; font-family: var(--mono); font-size: 10px; color: var(--ink-2); }
 .legend-item { display: inline-flex; align-items: center; gap: 5px; }

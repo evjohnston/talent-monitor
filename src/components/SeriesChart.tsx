@@ -1,6 +1,6 @@
-import { useMemo, useRef, useState, type MouseEvent } from "react";
+import { ResponsiveLine } from "@nivo/line";
+import type { SliceTooltipProps, LineCustomSvgLayer, LineSeries } from "@nivo/line";
 import { codeFromCountryName, countryColor, countryName } from "../lib/countries.ts";
-import { Tooltip } from "./Tooltip.tsx";
 
 export interface Series {
   key: string; // a real country name/code resolves to that country's real color; anything else cycles the categorical palette below
@@ -35,11 +35,29 @@ function labelFor(key: string, label: string): string {
   return code ? countryName(code) : label;
 }
 
+type Datum = { x: string; y: number | null };
+type Ser = LineSeries & { id: string; data: Datum[] };
+
 // A generic line chart for "x (usually year) -> one or more named numeric
-// series" — the shape most talent_charts exhibits are already in. Distinct
-// from the old quantum/AI TrendChart, which was hard-coded to countries as
-// the only possible series; here a series can be a country OR any other
-// real named dimension (degree level, test subject, visa category...).
+// series" — the shape most talent_charts exhibits are already in. Built on
+// @nivo/line (Phase 4's chosen "heavier" chart library — see CLAUDE.md's
+// chart-library note) rather than hand-rolled SVG.
+//
+// `ResponsiveLine`, not the fixed-size `Line` — confirmed by hand that
+// `Line` is the wrong choice here: it renders a real `<svg width height>`
+// but NEVER a `viewBox`, so a CSS `width:100%` override just crops the
+// fixed-pixel drawing instead of scaling it (real bug, caught visually —
+// every 3-column exhibit panel overflowed into its neighbors before this
+// fix). `ResponsiveLine` measures its real container via ResizeObserver,
+// which sounds SSR-hostile, but `defaultWidth`/`defaultHeight` below (a
+// documented react-virtualized-auto-sizer passthrough) give it a real,
+// deterministic size to render during Astro's build-time SSR pass — a
+// static reader sees an actually-sized chart, not a blank one, and it
+// self-corrects to the real measured container size the instant JS
+// hydrates. Defaults to a typical 3-column panel's width since most
+// exhibits render there, not in the wider single hero slot — the hero
+// briefly renders a touch small pre-hydration, a fine trade since it
+// self-corrects immediately, versus every 3-column panel overflowing.
 export function SeriesChart({
   x,
   series,
@@ -53,104 +71,118 @@ export function SeriesChart({
   unitSuffix?: string;
   emphasize?: string[];
 }) {
-  const svgRef = useRef<SVGSVGElement>(null);
-  const [hover, setHover] = useState<{ i: number; x: number; y: number } | null>(null);
-
   const n = x.length;
-  const W = 720, H = 260, padL = 40, padR = 14, padT = 14, padB = 26;
-  const plotW = W - padL - padR;
-  const plotH = H - padT - padB;
-
-  const { yMin, yMax } = useMemo(() => {
-    const all = series.flatMap((s) => s.values.filter((v): v is number => v != null));
-    if (all.length === 0) return { yMin: 0, yMax: 1 };
-    const rawMin = Math.min(0, ...all);
-    const rawMax = Math.max(...all);
-    const span = rawMax - rawMin || 1;
-    return { yMin: rawMin, yMax: rawMax + span * 0.08 };
-  }, [series]);
-
-  const xPos = (i: number) => padL + (n <= 1 ? 0 : (i / (n - 1)) * plotW);
-  const yPos = (v: number) => padT + (1 - (v - yMin) / (yMax - yMin || 1)) * plotH;
-
-  const linePath = (values: (number | null)[]) => {
-    let d = "";
-    let drawing = false;
-    values.forEach((v, i) => {
-      if (v == null) { drawing = false; return; }
-      d += `${drawing ? "L" : "M"} ${xPos(i).toFixed(1)} ${yPos(v).toFixed(1)} `;
-      drawing = true;
-    });
-    return d.trim();
-  };
+  const DEFAULT_W = 380, DEFAULT_H = 260;
+  const margin = { top: 14, right: 14, bottom: 26, left: 46 };
 
   // `emphasize` (TrackShell's cross-highlight state) carries a real ISO
   // code from WorldMap's onHoverCountry — a series' raw key is a country
   // NAME as the CSV wrote it ("Germany"), not a code, so this resolves
-  // before comparing. Confirmed by hand: comparing the raw key directly
-  // against emphasize silently faded every series, since no raw name is
-  // ever a 2-letter code.
+  // before comparing.
   const isFaded = (key: string) => !!emphasize?.length && !emphasize.includes(resolveCountry(key) ?? key);
-
-  function handleMove(e: MouseEvent<SVGSVGElement>) {
-    const svg = svgRef.current;
-    if (!svg || n === 0) return;
-    const rect = svg.getBoundingClientRect();
-    const relX = ((e.clientX - rect.left) / rect.width) * W;
-    const i = Math.round(((relX - padL) / plotW) * (n - 1));
-    setHover({ i: Math.max(0, Math.min(n - 1, i)), x: e.clientX, y: e.clientY });
-  }
-
-  const gridVals = [yMin, yMin + (yMax - yMin) * 0.25, yMin + (yMax - yMin) * 0.5, yMin + (yMax - yMin) * 0.75, yMax];
-  const showEndpointLabels = series.length <= 6;
 
   if (n === 0 || series.length === 0) {
     return <div className="trend-empty">No data for this exhibit.</div>;
   }
 
+  const xLabels = x.map(String);
+  const data: Ser[] = series.map((s) => ({
+    id: s.key,
+    data: xLabels.map((xv, i) => ({ x: xv, y: s.values[i] })),
+  }));
+  const indexByKey = Object.fromEntries(series.map((s, i) => [s.key, i]));
+
+  // Faded series swap to a flat neutral instead of a lowered opacity —
+  // @nivo/line's `colors` prop returns one solid color per series (no
+  // per-series opacity knob on the base line layer), so "de-emphasized"
+  // is expressed as "not colored" rather than "colored but faint." Same
+  // goal (make the relevant series stand out) via a different mechanism.
+  const colorForSeries = (s: { id: string | number }) => {
+    const key = String(s.id);
+    return isFaded(key) ? "var(--line-2)" : colorFor(key, indexByKey[key] ?? 0);
+  };
+
+  const showEndpointLabels = series.length <= 6;
+
+  const endpointLabels: LineCustomSvgLayer<Ser> = ({ series: computedSeries, innerWidth }) => (
+    <g>
+      {computedSeries.map((s) => {
+        const key = String(s.id);
+        const pts = s.data.filter((d) => d.data.y != null);
+        const last = pts[pts.length - 1];
+        if (!last) return null;
+        const atEnd = last.position.x > innerWidth - 40;
+        return (
+          <text
+            key={key}
+            x={last.position.x + (atEnd ? -6 : 6)}
+            y={last.position.y - 5}
+            textAnchor={atEnd ? "end" : "start"}
+            fontSize={9}
+            fill={colorForSeries({ id: key })}
+          >
+            {formatValue(last.data.y as number)}{unitSuffix}
+          </text>
+        );
+      })}
+    </g>
+  );
+
+  const sliceTooltip = ({ slice }: SliceTooltipProps<Ser>) => (
+    <div className="nivo-tip">
+      <div style={{ fontWeight: 600, marginBottom: 3 }}>{slice.points[0]?.data.x}</div>
+      {slice.points.map((p) => {
+        const key = String(p.seriesId);
+        const original = series.find((s) => s.key === key);
+        if (!original || p.data.y == null) return null;
+        return (
+          <div key={key}>
+            {labelFor(key, original.label)}: {formatValue(p.data.y as number)}{unitSuffix}
+          </div>
+        );
+      })}
+    </div>
+  );
+
   return (
     <figure style={{ margin: 0 }}>
-      <svg ref={svgRef} viewBox={`0 0 ${W} ${H}`} role="img" width="100%" onMouseMove={handleMove} onMouseLeave={() => setHover(null)}>
-        {gridVals.map((v, i) => (
-          <g key={i}>
-            <line x1={padL} y1={yPos(v)} x2={W - padR} y2={yPos(v)} stroke="var(--line)" strokeWidth="1" />
-            <text x={padL - 5} y={yPos(v) + 3} textAnchor="end" fontSize="9" fill="var(--mist)">{formatValue(Math.round(v * 100) / 100)}{unitSuffix}</text>
-          </g>
-        ))}
-        {series.map((s, i) => {
-          const faded = isFaded(s.key);
-          return <path key={s.key} d={linePath(s.values)} fill="none" stroke={colorFor(s.key, i)} strokeWidth="2" strokeLinejoin="round" opacity={faded ? 0.25 : 1} />;
-        })}
-        {series.map((s, i) =>
-          s.values.map((v, vi) =>
-            v == null ? null : (
-              <circle key={`${s.key}-${vi}`} cx={xPos(vi)} cy={yPos(v)} r={vi === n - 1 ? 3 : 1.5} fill={colorFor(s.key, i)} opacity={isFaded(s.key) ? 0.25 : 1} />
-            )
-          )
-        )}
-        {showEndpointLabels && series.map((s, i) => {
-          const lastIdx = s.values.map((v, vi) => (v != null ? vi : -1)).filter((vi) => vi >= 0).pop();
-          if (lastIdx == null) return null;
-          const v = s.values[lastIdx]!;
-          return (
-            <text key={`lbl-${s.key}`} x={xPos(lastIdx) + (lastIdx === n - 1 ? -6 : 6)} y={yPos(v) - 5} textAnchor={lastIdx === n - 1 ? "end" : "start"} fontSize="9" fill={colorFor(s.key, i)}>
-              {formatValue(v)}{unitSuffix}
-            </text>
-          );
-        })}
-        {hover && <line x1={xPos(hover.i)} y1={padT} x2={xPos(hover.i)} y2={H - padB} stroke="var(--ink-2)" strokeWidth="1" strokeDasharray="2 2" />}
-        <text x={padL} y={H - 6} fontSize="9" fill="var(--mist)">{x[0]}</text>
-        <text x={W - padR} y={H - 6} textAnchor="end" fontSize="9" fill="var(--mist)">{x[n - 1]}</text>
-      </svg>
-      {hover && (
-        <Tooltip x={hover.x} y={hover.y}>
-          <div style={{ fontWeight: 600, marginBottom: 3 }}>{x[hover.i]}</div>
-          {series.map((s) => {
-            const v = s.values[hover.i];
-            return v == null ? null : <div key={s.key}>{labelFor(s.key, s.label)}: {formatValue(v)}{unitSuffix}</div>;
-          })}
-        </Tooltip>
-      )}
+      <div style={{ width: "100%", height: DEFAULT_H }}>
+        <ResponsiveLine<Ser>
+          defaultWidth={DEFAULT_W}
+          defaultHeight={DEFAULT_H}
+          margin={margin}
+          data={data}
+          xScale={{ type: "point" }}
+          yScale={{ type: "linear", min: 0, max: "auto", stacked: false }}
+          curve="monotoneX"
+          colors={colorForSeries}
+          lineWidth={2}
+          enablePoints={true}
+          pointSize={4}
+          pointColor={{ from: "color" }}
+          pointBorderWidth={0}
+          enableGridX={false}
+          enableGridY={true}
+          gridYValues={5}
+          theme={{
+            grid: { line: { stroke: "var(--line)", strokeWidth: 1 } },
+            axis: {
+              ticks: { text: { fontSize: 9, fill: "var(--mist)" }, line: { stroke: "transparent" } },
+            },
+            crosshair: { line: { stroke: "var(--ink-2)", strokeWidth: 1, strokeDasharray: "2 2" } },
+          }}
+          axisLeft={{ tickValues: 5, format: (v) => `${formatValue(Number(v))}${unitSuffix}` }}
+          axisBottom={{ tickValues: [xLabels[0], xLabels[n - 1]].filter((v, i, a) => a.indexOf(v) === i) }}
+          enableSlices="x"
+          sliceTooltip={sliceTooltip}
+          enableCrosshair={true}
+          crosshairType="x"
+          useMesh={true}
+          animate={false}
+          layers={["grid", "markers", "axes", "areas", "crosshair", "lines", showEndpointLabels ? endpointLabels : "points", "points", "slices", "mesh"]}
+          role="img"
+        />
+      </div>
       <figcaption className="trend-legend">
         {series.map((s, i) => (
           <span key={s.key} className="legend-item">

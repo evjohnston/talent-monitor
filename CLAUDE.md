@@ -181,6 +181,31 @@ hardcoding):
   (needs ×100 to read as a percent), others (e.g. FIG207, whose columns are
   literally named "Percent of ... post-docs") already store a 0-100 point.
   Detected from the actual data, never assumed from `kind` alone.
+
+  **Chart library**: `SeriesChart.tsx` is built on `@nivo/line`
+  (`ResponsiveLine`, Phase 4's chosen "heavier" library over Recharts/visx
+  — Nivo alone covers all 5 `ChartKind`s including a real choropleth and
+  Sankey component, not just line/bar). `ResponsiveLine`, not the
+  fixed-size `Line` — confirmed by hand that `Line` renders a real `<svg
+  width height>` but never a `viewBox`, so a CSS `width:100%` override
+  crops the fixed-pixel drawing instead of scaling it (a real bug: every
+  3-column exhibit panel overflowed into its neighbors before this was
+  caught). `ResponsiveLine` measures its real container via
+  `ResizeObserver`, which sounds SSR-hostile, but its `defaultWidth`/
+  `defaultHeight` props (a documented `react-virtualized-auto-sizer`
+  passthrough) give it a real, deterministic size during Astro's
+  build-time SSR pass, then it self-corrects to the true measured size
+  the instant JS hydrates — confirmed both ends: the static HTML renders
+  a real, correctly-sized (not overflowing) chart, and a hovered country
+  on `WorldMap.tsx` correctly fades every other line in a same-page
+  `SeriesChart` to `--line-2` (a flat neutral swap, not a lowered opacity
+  — Nivo's `colors` prop returns one solid color per series with no
+  per-series opacity knob on the base line layer, so "de-emphasized" is
+  expressed as "not colored" here instead). The other 4 `ChartKind`s
+  (`WorldMap`/`LeaderboardYears`/`BarRow`/Sankey) are still the original
+  hand-rolled SVG — migrating each to Nivo's matching component
+  (`@nivo/geo`, `@nivo/bar`, `@nivo/sankey`) is real follow-up work, not
+  done in the same pass as this first one.
 - `country-map` → `WorldMap.tsx`. Real distinction, checked by hand: a
   **count** (works/founders by country — real-zero-floored, often
   Pareto-skewed) sqrt-compresses off a true 0 floor; a **range** (a PISA
