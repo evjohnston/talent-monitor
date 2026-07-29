@@ -360,6 +360,11 @@ a.pill { cursor: pointer; text-decoration: none; display: inline-block; }
 .legend-item { display: inline-flex; align-items: center; gap: 5px; }
 .swatch { width: 11px; height: 3px; display: inline-block; }
 .trend-note { color: var(--mist); font-style: italic; margin-left: auto; }
+/* A timeseries exhibit that mixes a real 0-1 rate column with count
+   columns (see ExhibitChart.tsx) renders as two stacked charts, never one
+   shared axis — this just spaces them apart. */
+.count-rate-split > .trend-note { margin: var(--sp-2) 0; }
+.count-rate-split > figure + .trend-note { margin-top: var(--sp-3); }
 .trend-empty { font-size: 11px; color: var(--mist); padding: 6px 0; line-height: 1.4; }
 
 .foot { padding: 16px 0 32px; font-family: var(--mono); font-size: 10px; color: var(--mist); line-height: 1.6; }
