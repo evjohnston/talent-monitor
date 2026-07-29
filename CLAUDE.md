@@ -674,23 +674,40 @@ guess.
   code to add them later.
 - **The generic `ranked-bar` fallback** is a deliberate, disclosed
   trade-off for exhibits that don't cleanly fit the other four `ChartKind`s
-  (e.g. FIG512/513's distribution-stats tables, FIG404's country+group+5-
-  metric snapshot) — it picks a reasonable default (last real-numeric
-  column, composite label) rather than a bespoke chart per exhibit. Fine
-  for now; a future pass could add more `ChartKind`s if a shape recurs
-  often enough to be worth a dedicated renderer. **TAB501 got exactly that
-  dedicated treatment 2026-07-29** (`src/lib/aiConferenceCatchUp.ts`,
-  dispatched by exhibit id in `ExhibitChart.tsx`, same house convention as
-  FIG303's `buildFig303`) — its real shape (one row per conference x year
-  x country, 454 rows, only China/US present) made the generic fallback
-  flatten-and-sort-by-share into a genuinely broken chart, not just a
-  disclosed simplification: the same conference's own share values across
-  many different years sorted next to each other read as "colt, colt,
-  colt..." (confirmed real, not hypothetical — that's what shipped for
-  months). Replaced with a real per-conference "first year China's share
-  reached the US's" computation, honestly labeled "Not yet" for the 12
-  conferences where China hasn't, with regression tests locking in the
-  exact colt/cvpr cases that motivated the fix.
+  (e.g. FIG404's country+group+5-metric snapshot) — it picks a reasonable
+  default (last real-numeric column, composite label) rather than a
+  bespoke chart per exhibit. Fine for now; a future pass could add more
+  `ChartKind`s if a shape recurs often enough to be worth a dedicated
+  renderer. Two real shapes already got exactly that dedicated treatment,
+  both 2026-07-29:
+  - **TAB501** (`src/lib/aiConferenceCatchUp.ts`, dispatched by exhibit id
+    in `ExhibitChart.tsx`, same house convention as FIG303's
+    `buildFig303`) — its real shape (one row per conference x year x
+    country, 454 rows, only China/US present) made the generic fallback
+    flatten-and-sort-by-share into a genuinely broken chart, not just a
+    disclosed simplification: the same conference's own share values
+    across many different years sorted next to each other read as "colt,
+    colt, colt..." (confirmed real, not hypothetical — that's what
+    shipped for months). Replaced with a real per-conference "first year
+    China's share reached the US's" computation, honestly labeled "Not
+    yet" for the 12 conferences where China hasn't, with regression
+    tests locking in the exact colt/cvpr cases that motivated the fix.
+  - **FIG512/FIG513's distribution-stats tables** (`toDistributionStats`
+    in `exhibitData.ts`, `BoxPlotRow.tsx`) — a real 5-number summary per
+    company (min/25th/median/75th/max, plus mean/skewness/kurtosis) that
+    the generic fallback flattened to ranking by whichever real-numeric
+    column came last (kurtosis, a real but fairly opaque statistic for a
+    policy reader), discarding the other 8 real columns. Detected
+    structurally (does the exhibit have all 5 real quantile columns?),
+    not by exhibit id — a real, recurring shape (2 exhibits share it), so
+    fixed at the general level per this section's own rule. Renders a
+    real box-and-whisker per row (sqrt-scaled, same "compress a
+    real, heavily right-skewed, zero-floored distribution" approach
+    `WorldMap.tsx`'s own "count" mode already uses) with a separate
+    median tick and mean dot — the gap between them is the whole point
+    (FIG512's DeepMind row: median 880, mean 4,110 — a handful of
+    outlier papers pull the average roughly 4.7x above the typical
+    case), invisible in a single-number ranking.
 - **No country-compare UI yet** — real, useful, present in the old app in
   some form, but cut from this rebuild's v1 scope deliberately rather than
   ported speculatively before the new model was proven. CSV export

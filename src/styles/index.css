@@ -260,6 +260,19 @@ a.pill { cursor: pointer; text-decoration: none; display: inline-block; }
 .barrow .fill { height: 100%; }
 .barrow .v { text-align: right; font-size: 10.5px; color: var(--ink-2); }
 
+/* ── boxplot-row (BoxPlotRow.tsx) — a real box-and-whisker in the same
+   label|track|value grid as .barrow, for the real 5-number-summary shape
+   (FIG512/513) the generic ranked-bar used to flatten to one column.
+   Whisker (min-max) sits center; the box (25th-75th) sits on top of it;
+   the median is a solid tick; the mean is a separate dot so the gap
+   between them — the whole point of showing a distribution, not just a
+   rank — stays visible. ─────────────────────────────────────────────── */
+.boxplot-track { position: relative; overflow: visible; }
+.boxplot-whisker { position: absolute; top: 50%; height: 1px; background: var(--slate); transform: translateY(-50%); }
+.boxplot-box { position: absolute; top: 1px; bottom: 1px; background: var(--red); opacity: 0.55; min-width: 2px; }
+.boxplot-median { position: absolute; top: 0; bottom: 0; width: 2px; background: var(--ink); }
+.boxplot-mean { position: absolute; top: 50%; width: 5px; height: 5px; border-radius: 50%; background: var(--mist); border: 1px solid var(--paper); transform: translate(-50%, -50%); }
+
 /* ── tables: leaderboards ──────────────────────────────────────────── */
 .lb { width: 100%; border-collapse: collapse; font-size: 11.5px; }
 .lb thead th { font-family: var(--mono); font-size: 9.5px; letter-spacing: 0.06em; text-transform: uppercase; color: var(--mist); font-weight: 500; text-align: left; padding: 0 0 5px; border-bottom: 1px solid var(--line-2); }

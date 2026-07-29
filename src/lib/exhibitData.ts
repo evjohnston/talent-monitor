@@ -99,6 +99,63 @@ export function toLeaderboardYears(exhibit: Exhibit): { years: string[]; rows: Y
   return { years, rows };
 }
 
+export interface DistributionStatsRow {
+  label: string;
+  mean: number;
+  min: number;
+  q1: number;
+  median: number;
+  q3: number;
+  max: number;
+  skewness?: number;
+  kurtosis?: number;
+}
+
+// A real, recurring shape (FIG512, FIG513 — a 5-number summary per
+// company/entity: min/25th/median/75th/max, plus mean/skewness/kurtosis)
+// that the generic ranked-bar fallback used to flatten into ranking by
+// whichever real-numeric column happened to come last (kurtosis — a real
+// but, for a policy reader, fairly opaque statistic), throwing away the
+// other 8 real columns entirely. Detected structurally (does the exhibit
+// have all 5 real quantile-shaped columns?), not by exhibit id — a
+// second exhibit already has this exact shape, so it's a recurring
+// pattern to fix generally, not a one-off. See BoxPlotRow.tsx for the
+// real box-and-whisker rendering this feeds.
+const DIST_STATS_COLUMNS = ["min", "25th_percentile", "median_50th", "75th_percentile", "max"] as const;
+const DIST_STATS_EXCLUDE = new Set([...DIST_STATS_COLUMNS, "mean", "std", "sum", "skewness", "kurtosis"]);
+
+export function toDistributionStats(exhibit: Exhibit): { rows: DistributionStatsRow[] } | null {
+  if (!DIST_STATS_COLUMNS.every((c) => exhibit.columns.includes(c)) || !exhibit.columns.includes("mean")) return null;
+  const labelKeys = exhibit.columns.filter((c) => !DIST_STATS_EXCLUDE.has(c));
+  const rows: DistributionStatsRow[] = [];
+  for (const r of exhibit.rows) {
+    const mean = r.mean, min = r.min, q1 = r["25th_percentile"], median = r.median_50th, q3 = r["75th_percentile"], max = r.max;
+    if (![mean, min, q1, median, q3, max].every(isNum)) continue;
+    // Same adjacent-identical-value dedup as toRankedBars — this shape
+    // has the same real Country+Company leading-columns pattern.
+    const parts: string[] = [];
+    for (const k of labelKeys) {
+      const v = String(r[k] ?? "").trim();
+      if (v && v !== parts[parts.length - 1]) parts.push(v);
+    }
+    if (parts.length === 0) continue;
+    rows.push({
+      label: parts.join(" · "),
+      mean: mean as number, min: min as number, q1: q1 as number, median: median as number, q3: q3 as number, max: max as number,
+      skewness: isNum(r.skewness) ? r.skewness : undefined,
+      kurtosis: isNum(r.kurtosis) ? r.kurtosis : undefined,
+    });
+  }
+  if (rows.length === 0) return null;
+  // Ranked by median, not mean — the more representative "typical" value
+  // for a real, heavily right-skewed distribution (citation counts: a
+  // handful of outlier papers/patents inflate the mean well above what a
+  // typical entry looks like). The mean is still shown as its own marker
+  // in the box plot itself, so the size of that gap stays visible.
+  rows.sort((a, b) => b.median - a.median);
+  return { rows };
+}
+
 // ranked-bar catch-all: every leading non-numeric column identifies a row
 // (e.g. FIG512's Country+Company, TAB604's Country+Year+Status) — joined
 // into one label, since the first column alone repeats across rows for

@@ -1,10 +1,11 @@
 import type { Exhibit } from "../lib/types.ts";
-import { toSeriesChart, toCountryMapValues, toLeaderboardYears, toRankedBars, isRateShapedSeries } from "../lib/exhibitData.ts";
+import { toSeriesChart, toCountryMapValues, toLeaderboardYears, toRankedBars, toDistributionStats, isRateShapedSeries } from "../lib/exhibitData.ts";
 import { computeAiConferenceCatchUp } from "../lib/aiConferenceCatchUp.ts";
 import { SeriesChart } from "./SeriesChart.tsx";
 import { WorldMap } from "./WorldMap.tsx";
 import { LeaderboardYears } from "./LeaderboardYears.tsx";
 import { BarRow } from "./BarRow.tsx";
+import { BoxPlotRow } from "./BoxPlotRow.tsx";
 
 // Dispatches one real Exhibit to the chart shape that fits its `kind` (see
 // scripts/import-talent-charts.ts for how `kind` gets assigned). Generic on
@@ -120,6 +121,27 @@ export function ExhibitChart({ exhibit, emphasize, onHoverCountry, onSelectCount
             />
           );
         })}
+      </div>
+    );
+  }
+
+  // A real, recurring distribution-stats shape (FIG512/513 — see
+  // toDistributionStats's own note) gets a real box-and-whisker per row
+  // instead of the generic ranked-bar fallback, which used to rank by
+  // whichever real-numeric column came last (kurtosis) and discard the
+  // other 8. Detected structurally, checked before the generic fallback
+  // below so it wins whenever the real shape matches.
+  const dist = toDistributionStats(exhibit);
+  if (dist) {
+    const domainMax = Math.max(1, ...dist.rows.map((r) => r.max));
+    return (
+      <div>
+        {dist.rows.map((r) => (
+          <BoxPlotRow key={r.label} stats={r} domainMax={domainMax} />
+        ))}
+        <div className="trend-note" style={{ marginTop: 6 }}>
+          Whisker: min–max. Bar: middle 50% (25th–75th percentile). Solid tick: median. Dot: mean — hover a row for exact values.
+        </div>
       </div>
     );
   }

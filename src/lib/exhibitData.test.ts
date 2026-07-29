@@ -6,6 +6,7 @@ import {
   toCountryMapValues,
   toLeaderboardYears,
   toRankedBars,
+  toDistributionStats,
   isRateShapedSeries,
 } from "./exhibitData.ts";
 import type { Exhibit } from "./types.ts";
@@ -193,5 +194,47 @@ describe("isRateShapedSeries", () => {
   it("treats an all-null series as vacuously in-range (name match still required)", () => {
     expect(isRateShapedSeries({ key: "Approval Rate", label: "Approval Rate", values: [null, null] })).toBe(true);
     expect(isRateShapedSeries({ key: "Count", label: "Count", values: [null, null] })).toBe(false);
+  });
+});
+
+describe("toDistributionStats", () => {
+  const distColumns = ["Country", "Company", "mean", "std", "min", "25th_percentile", "median_50th", "75th_percentile", "max", "skewness", "kurtosis"];
+
+  it("detects the real FIG512/513 5-number-summary shape and extracts every stat", () => {
+    const e = fixture(distColumns, [
+      { Country: "China", Company: "Alibaba", mean: 2367.7, std: 4584.8, min: 42, "25th_percentile": 210.5, median_50th: 652, "75th_percentile": 2406, max: 26811, skewness: 3.38, kurtosis: 11.94 },
+    ]);
+    const result = toDistributionStats(e);
+    expect(result?.rows).toEqual([
+      { label: "China · Alibaba", mean: 2367.7, min: 42, q1: 210.5, median: 652, q3: 2406, max: 26811, skewness: 3.38, kurtosis: 11.94 },
+    ]);
+  });
+
+  it("returns null for a shape missing even one of the 5 required quantile columns", () => {
+    const e = fixture(["Country", "Company", "mean", "min", "max"], [{ Country: "US", Company: "X", mean: 1, min: 0, max: 2 }]);
+    expect(toDistributionStats(e)).toBeNull();
+  });
+
+  it("ranks by median, not mean — the representative value for a real skewed distribution", () => {
+    const e = fixture(distColumns, [
+      { Country: "A", Company: "Low-median-high-mean", mean: 9000, std: 1, min: 0, "25th_percentile": 1, median_50th: 5, "75th_percentile": 10, max: 90000, skewness: 1, kurtosis: 1 },
+      { Country: "B", Company: "High-median-low-mean", mean: 100, std: 1, min: 50, "25th_percentile": 80, median_50th: 100, "75th_percentile": 120, max: 150, skewness: 1, kurtosis: 1 },
+    ]);
+    const order = toDistributionStats(e)?.rows.map((r) => r.label);
+    expect(order).toEqual(["B · High-median-low-mean", "A · Low-median-high-mean"]);
+  });
+
+  it('dedupes an adjacent identical label part, same as toRankedBars', () => {
+    const e = fixture(distColumns, [
+      { Country: "colt", Company: "colt", mean: 1, std: 1, min: 0, "25th_percentile": 0, median_50th: 1, "75th_percentile": 2, max: 3, skewness: 1, kurtosis: 1 },
+    ]);
+    expect(toDistributionStats(e)?.rows[0].label).toBe("colt");
+  });
+
+  it("skips a row missing a real quantile value rather than showing a half-real box", () => {
+    const e = fixture(distColumns, [
+      { Country: "A", Company: "Incomplete", mean: 1, std: 1, min: null, "25th_percentile": 0, median_50th: 1, "75th_percentile": 2, max: 3, skewness: 1, kurtosis: 1 },
+    ]);
+    expect(toDistributionStats(e)).toBeNull();
   });
 });
