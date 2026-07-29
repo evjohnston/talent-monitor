@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-07-28T23:31:31.824Z",
+  "generatedAt": "2026-07-29T18:11:04.374Z",
   "exhibits": [
     {
       "id": "FIG101",
@@ -16686,8 +16686,8 @@
           "Country": "Peru",
           "Group": "Other",
           "OECD Math Average": 391,
-          "K-12 (in USD)": "2,302.00",
-          "Tertiary (in USD)": "3,641.00",
+          "K-12 (in USD)": 2302,
+          "Tertiary (in USD)": 3641,
           "K-12 (% of GDP)": 0.029,
           "Tertiary (% of GDP)": 0.014,
           "Ratio": "1:1.58"
@@ -16696,8 +16696,8 @@
           "Country": "Mexico",
           "Group": "Other",
           "OECD Math Average": 395,
-          "K-12 (in USD)": "3,406.00",
-          "Tertiary (in USD)": "7,519.00",
+          "K-12 (in USD)": 3406,
+          "Tertiary (in USD)": 7519,
           "K-12 (% of GDP)": 0.03,
           "Tertiary (% of GDP)": 0.013,
           "Ratio": "1:2.21"
@@ -16706,8 +16706,8 @@
           "Country": "Chile",
           "Group": "Other",
           "OECD Math Average": 412,
-          "K-12 (in USD)": "6,602.00",
-          "Tertiary (in USD)": "11,639.00",
+          "K-12 (in USD)": 6602,
+          "Tertiary (in USD)": 11639,
           "K-12 (% of GDP)": 0.034,
           "Tertiary (% of GDP)": 0.025,
           "Ratio": "1:1.76"
@@ -16716,8 +16716,8 @@
           "Country": "Bulgaria",
           "Group": "Other",
           "OECD Math Average": 417,
-          "K-12 (in USD)": "7,624.00",
-          "Tertiary (in USD)": "12,680.00",
+          "K-12 (in USD)": 7624,
+          "Tertiary (in USD)": 12680,
           "K-12 (% of GDP)": 0.023,
           "Tertiary (% of GDP)": 0.01,
           "Ratio": "1:1.66"
@@ -16726,8 +16726,8 @@
           "Country": "Romania",
           "Group": "Other",
           "OECD Math Average": 428,
-          "K-12 (in USD)": "6,288.00",
-          "Tertiary (in USD)": "11,466.00",
+          "K-12 (in USD)": 6288,
+          "Tertiary (in USD)": 11466,
           "K-12 (% of GDP)": 0.018,
           "Tertiary (% of GDP)": 0.007,
           "Ratio": "1:1.82"
@@ -16736,8 +16736,8 @@
           "Country": "Greece",
           "Group": "Other",
           "OECD Math Average": 430,
-          "K-12 (in USD)": "8,119.00",
-          "Tertiary (in USD)": "5,620.00",
+          "K-12 (in USD)": 8119,
+          "Tertiary (in USD)": 5620,
           "K-12 (% of GDP)": 0.027,
           "Tertiary (% of GDP)": 0.012,
           "Ratio": "1.44:1"
@@ -16746,8 +16746,8 @@
           "Country": "Türkiye",
           "Group": "Other",
           "OECD Math Average": 453,
-          "K-12 (in USD)": "4,032.00",
-          "Tertiary (in USD)": "10,825.00",
+          "K-12 (in USD)": 4032,
+          "Tertiary (in USD)": 10825,
           "K-12 (% of GDP)": 0.021,
           "Tertiary (% of GDP)": 0.013,
           "Ratio": "1:2.68"
@@ -16756,8 +16756,8 @@
           "Country": "Israel",
           "Group": "Other",
           "OECD Math Average": 458,
-          "K-12 (in USD)": "12,372.00",
-          "Tertiary (in USD)": "15,057.00",
+          "K-12 (in USD)": 12372,
+          "Tertiary (in USD)": 15057,
           "K-12 (% of GDP)": 0.047,
           "Tertiary (% of GDP)": 0.013,
           "Ratio": "1:1.22"
@@ -16766,8 +16766,8 @@
           "Country": "Iceland",
           "Group": "Other",
           "OECD Math Average": 459,
-          "K-12 (in USD)": "18,287.00",
-          "Tertiary (in USD)": "20,234.00",
+          "K-12 (in USD)": 18287,
+          "Tertiary (in USD)": 20234,
           "K-12 (% of GDP)": 0.043,
           "Tertiary (% of GDP)": 0.013,
           "Ratio": "1:1.11"
@@ -16776,8 +16776,8 @@
           "Country": "Croatia",
           "Group": "Other",
           "OECD Math Average": 463,
-          "K-12 (in USD)": "8,272.00",
-          "Tertiary (in USD)": "11,429.00",
+          "K-12 (in USD)": 8272,
+          "Tertiary (in USD)": 11429,
           "K-12 (% of GDP)": 0.024,
           "Tertiary (% of GDP)": 0.01,
           "Ratio": "1:1.38"
@@ -16786,8 +16786,8 @@
           "Country": "Slovak Republic",
           "Group": "Other",
           "OECD Math Average": 464,
-          "K-12 (in USD)": "9,784.00",
-          "Tertiary (in USD)": "19,178.00",
+          "K-12 (in USD)": 9784,
+          "Tertiary (in USD)": 19178,
           "K-12 (% of GDP)": 0.031,
           "Tertiary (% of GDP)": 0.011,
           "Ratio": "1:1.96"
@@ -16796,8 +16796,8 @@
           "Country": "United States",
           "Group": "United States",
           "OECD Math Average": 465,
-          "K-12 (in USD)": "15,799.00",
-          "Tertiary (in USD)": "36,274.00",
+          "K-12 (in USD)": 15799,
+          "Tertiary (in USD)": 36274,
           "K-12 (% of GDP)": 0.035,
           "Tertiary (% of GDP)": 0.023,
           "Ratio": "1:2.3"
@@ -16806,8 +16806,8 @@
           "Country": "Norway",
           "Group": "Other",
           "OECD Math Average": 468,
-          "K-12 (in USD)": "20,407.00",
-          "Tertiary (in USD)": "29,917.00",
+          "K-12 (in USD)": 20407,
+          "Tertiary (in USD)": 29917,
           "K-12 (% of GDP)": 0.044,
           "Tertiary (% of GDP)": 0.019,
           "Ratio": "1:1.47"
@@ -16816,8 +16816,8 @@
           "Country": "Italy",
           "Group": "Other",
           "OECD Math Average": 471,
-          "K-12 (in USD)": "13,459.00",
-          "Tertiary (in USD)": "14,713.00",
+          "K-12 (in USD)": 13459,
+          "Tertiary (in USD)": 14713,
           "K-12 (% of GDP)": 0.029,
           "Tertiary (% of GDP)": 0.01,
           "Ratio": "1:1.09"
@@ -16826,8 +16826,8 @@
           "Country": "Portugal",
           "Group": "Other",
           "OECD Math Average": 472,
-          "K-12 (in USD)": "12,586.00",
-          "Tertiary (in USD)": "14,155.00",
+          "K-12 (in USD)": 12586,
+          "Tertiary (in USD)": 14155,
           "K-12 (% of GDP)": 0.036,
           "Tertiary (% of GDP)": 0.012,
           "Ratio": "1:1.12"
@@ -16836,8 +16836,8 @@
           "Country": "Spain",
           "Group": "Other",
           "OECD Math Average": 473,
-          "K-12 (in USD)": "12,231.00",
-          "Tertiary (in USD)": "17,124.00",
+          "K-12 (in USD)": 12231,
+          "Tertiary (in USD)": 17124,
           "K-12 (% of GDP)": 0.032,
           "Tertiary (% of GDP)": 0.014,
           "Ratio": "1:1.4"
@@ -16846,8 +16846,8 @@
           "Country": "Hungary",
           "Group": "Other",
           "OECD Math Average": 473,
-          "K-12 (in USD)": "7,900.00",
-          "Tertiary (in USD)": "20,476.00",
+          "K-12 (in USD)": 7900,
+          "Tertiary (in USD)": 20476,
           "K-12 (% of GDP)": 0.022,
           "Tertiary (% of GDP)": 0.012,
           "Ratio": "1:2.59"
@@ -16856,8 +16856,8 @@
           "Country": "France",
           "Group": "Other",
           "OECD Math Average": 474,
-          "K-12 (in USD)": "13,722.00",
-          "Tertiary (in USD)": "21,379.00",
+          "K-12 (in USD)": 13722,
+          "Tertiary (in USD)": 21379,
           "K-12 (% of GDP)": 0.037,
           "Tertiary (% of GDP)": 0.017,
           "Ratio": "1:1.56"
@@ -16866,8 +16866,8 @@
           "Country": "Lithuania",
           "Group": "Other",
           "OECD Math Average": 475,
-          "K-12 (in USD)": "10,030.00",
-          "Tertiary (in USD)": "15,950.00",
+          "K-12 (in USD)": 10030,
+          "Tertiary (in USD)": 15950,
           "K-12 (% of GDP)": 0.025,
           "Tertiary (% of GDP)": 0.011,
           "Ratio": "1:1.59"
@@ -16876,8 +16876,8 @@
           "Country": "Germany",
           "Group": "Other",
           "OECD Math Average": 475,
-          "K-12 (in USD)": "16,433.00",
-          "Tertiary (in USD)": "23,269.00",
+          "K-12 (in USD)": 16433,
+          "Tertiary (in USD)": 23269,
           "K-12 (% of GDP)": 0.031,
           "Tertiary (% of GDP)": 0.013,
           "Ratio": "1:1.42"
@@ -16886,8 +16886,8 @@
           "Country": "New Zealand",
           "Group": "Other",
           "OECD Math Average": 479,
-          "K-12 (in USD)": "11,112.00",
-          "Tertiary (in USD)": "18,729.00",
+          "K-12 (in USD)": 11112,
+          "Tertiary (in USD)": 18729,
           "K-12 (% of GDP)": 0.038,
           "Tertiary (% of GDP)": 0.013,
           "Ratio": "1:1.69"
@@ -16896,8 +16896,8 @@
           "Country": "Sweden",
           "Group": "Other",
           "OECD Math Average": 482,
-          "K-12 (in USD)": "15,484.00",
-          "Tertiary (in USD)": "28,823.00",
+          "K-12 (in USD)": 15484,
+          "Tertiary (in USD)": 28823,
           "K-12 (% of GDP)": 0.038,
           "Tertiary (% of GDP)": 0.015,
           "Ratio": "1:1.86"
@@ -16906,8 +16906,8 @@
           "Country": "Latvia",
           "Group": "Other",
           "OECD Math Average": 483,
-          "K-12 (in USD)": "8,355.00",
-          "Tertiary (in USD)": "12,416.00",
+          "K-12 (in USD)": 8355,
+          "Tertiary (in USD)": 12416,
           "K-12 (% of GDP)": 0.027,
           "Tertiary (% of GDP)": 0.011,
           "Ratio": "1:1.49"
@@ -16916,8 +16916,8 @@
           "Country": "Finland",
           "Group": "Other",
           "OECD Math Average": 484,
-          "K-12 (in USD)": "13,508.00",
-          "Tertiary (in USD)": "20,456.00",
+          "K-12 (in USD)": 13508,
+          "Tertiary (in USD)": 20456,
           "K-12 (% of GDP)": 0.037,
           "Tertiary (% of GDP)": 0.015,
           "Ratio": "1:1.51"
@@ -16926,8 +16926,8 @@
           "Country": "Slovenia",
           "Group": "Other",
           "OECD Math Average": 485,
-          "K-12 (in USD)": "13,005.00",
-          "Tertiary (in USD)": "21,127.00",
+          "K-12 (in USD)": 13005,
+          "Tertiary (in USD)": 21127,
           "K-12 (% of GDP)": 0.034,
           "Tertiary (% of GDP)": 0.012,
           "Ratio": "1:1.62"
@@ -16936,8 +16936,8 @@
           "Country": "Australia",
           "Group": "Other",
           "OECD Math Average": 487,
-          "K-12 (in USD)": "15,611.00",
-          "Tertiary (in USD)": "25,162.00",
+          "K-12 (in USD)": 15611,
+          "Tertiary (in USD)": 25162,
           "K-12 (% of GDP)": 0.039,
           "Tertiary (% of GDP)": 0.016,
           "Ratio": "1:1.61"
@@ -16946,8 +16946,8 @@
           "Country": "Austria",
           "Group": "Other",
           "OECD Math Average": 487,
-          "K-12 (in USD)": "18,626.00",
-          "Tertiary (in USD)": "26,190.00",
+          "K-12 (in USD)": 18626,
+          "Tertiary (in USD)": 26190,
           "K-12 (% of GDP)": 0.029,
           "Tertiary (% of GDP)": 0.018,
           "Ratio": "1:1.41"
@@ -16956,8 +16956,8 @@
           "Country": "Poland",
           "Group": "Other",
           "OECD Math Average": 489,
-          "K-12 (in USD)": "10,423.00",
-          "Tertiary (in USD)": "15,897.00",
+          "K-12 (in USD)": 10423,
+          "Tertiary (in USD)": 15897,
           "K-12 (% of GDP)": 0.03,
           "Tertiary (% of GDP)": 0.011,
           "Ratio": "1:1.53"
@@ -16966,8 +16966,8 @@
           "Country": "United Kingdom",
           "Group": "Other",
           "OECD Math Average": 489,
-          "K-12 (in USD)": "15,416.00",
-          "Tertiary (in USD)": "35,350.00",
+          "K-12 (in USD)": 15416,
+          "Tertiary (in USD)": 35350,
           "K-12 (% of GDP)": 0.04,
           "Tertiary (% of GDP)": 0.021,
           "Ratio": "1:2.29"
@@ -16976,8 +16976,8 @@
           "Country": "Denmark",
           "Group": "Other",
           "OECD Math Average": 489,
-          "K-12 (in USD)": "16,097.00",
-          "Tertiary (in USD)": "29,680.00",
+          "K-12 (in USD)": 16097,
+          "Tertiary (in USD)": 29680,
           "K-12 (% of GDP)": 0.034,
           "Tertiary (% of GDP)": 0.019,
           "Ratio": "1:1.84"
@@ -16986,8 +16986,8 @@
           "Country": "Belgium",
           "Group": "Other",
           "OECD Math Average": 489,
-          "K-12 (in USD)": "17,224.00",
-          "Tertiary (in USD)": "25,989.00",
+          "K-12 (in USD)": 17224,
+          "Tertiary (in USD)": 25989,
           "K-12 (% of GDP)": 0.04,
           "Tertiary (% of GDP)": 0.016,
           "Ratio": "1:1.51"
@@ -16996,8 +16996,8 @@
           "Country": "Ireland",
           "Group": "Other",
           "OECD Math Average": 492,
-          "K-12 (in USD)": "14,078.00",
-          "Tertiary (in USD)": "24,241.00",
+          "K-12 (in USD)": 14078,
+          "Tertiary (in USD)": 24241,
           "K-12 (% of GDP)": 0.021,
           "Tertiary (% of GDP)": 0.008,
           "Ratio": "1:1.72"
@@ -17006,8 +17006,8 @@
           "Country": "Netherlands",
           "Group": "Other",
           "OECD Math Average": 493,
-          "K-12 (in USD)": "17,287.00",
-          "Tertiary (in USD)": "24,874.00",
+          "K-12 (in USD)": 17287,
+          "Tertiary (in USD)": 24874,
           "K-12 (% of GDP)": 0.034,
           "Tertiary (% of GDP)": 0.016,
           "Ratio": "1:1.44"
@@ -17016,8 +17016,8 @@
           "Country": "Canada",
           "Group": "Other",
           "OECD Math Average": 497,
-          "K-12 (in USD)": "15,778.00",
-          "Tertiary (in USD)": "27,582.00",
+          "K-12 (in USD)": 15778,
+          "Tertiary (in USD)": 27582,
           "K-12 (% of GDP)": 0.034,
           "Tertiary (% of GDP)": 0.02,
           "Ratio": "1:1.75"
@@ -17026,8 +17026,8 @@
           "Country": "Estonia",
           "Group": "Other",
           "OECD Math Average": 510,
-          "K-12 (in USD)": "10,827.00",
-          "Tertiary (in USD)": "19,011.00",
+          "K-12 (in USD)": 10827,
+          "Tertiary (in USD)": 19011,
           "K-12 (% of GDP)": 0.032,
           "Tertiary (% of GDP)": 0.013,
           "Ratio": "1:1.76"
@@ -17036,8 +17036,8 @@
           "Country": "Korea",
           "Group": "Other",
           "OECD Math Average": 527,
-          "K-12 (in USD)": "22,486.00",
-          "Tertiary (in USD)": "14,695.00",
+          "K-12 (in USD)": 22486,
+          "Tertiary (in USD)": 14695,
           "K-12 (% of GDP)": 0.042,
           "Tertiary (% of GDP)": 0.014,
           "Ratio": "1.53:1"
@@ -17046,8 +17046,8 @@
           "Country": "Japan",
           "Group": "Other",
           "OECD Math Average": 536,
-          "K-12 (in USD)": "11,863.00",
-          "Tertiary (in USD)": "21,836.00",
+          "K-12 (in USD)": 11863,
+          "Tertiary (in USD)": 21836,
           "K-12 (% of GDP)": 0.025,
           "Tertiary (% of GDP)": 0.014,
           "Ratio": "1:1.84"
@@ -17056,8 +17056,8 @@
           "Country": "OECD average",
           "Group": "OECD average",
           "OECD Math Average": 472,
-          "K-12 (in USD)": "13,527.00",
-          "Tertiary (in USD)": "21,444.00",
+          "K-12 (in USD)": 13527,
+          "Tertiary (in USD)": 21444,
           "K-12 (% of GDP)": 0.033,
           "Tertiary (% of GDP)": 0.014,
           "Ratio": "1:1.59"
@@ -17066,8 +17066,8 @@
           "Country": "Czechia",
           "Group": "Other",
           "OECD Math Average": 487,
-          "K-12 (in USD)": "11,847.00",
-          "Tertiary (in USD)": "17,221.00",
+          "K-12 (in USD)": 11847,
+          "Tertiary (in USD)": 17221,
           "K-12 (% of GDP)": 0.031,
           "Tertiary (% of GDP)": 0.01,
           "Ratio": "1:1.45"
@@ -17076,8 +17076,8 @@
           "Country": "Luxembourg",
           "Group": "Other",
           "OECD Math Average": 483,
-          "K-12 (in USD)": "29,238.00",
-          "Tertiary (in USD)": "60,979.00",
+          "K-12 (in USD)": 29238,
+          "Tertiary (in USD)": 60979,
           "K-12 (% of GDP)": 0.029,
           "Tertiary (% of GDP)": 0.004,
           "Ratio": "1:2.09"
@@ -17086,11 +17086,190 @@
           "Country": "China",
           "Group": "Other",
           "OECD Math Average": 547,
-          "K-12 (in USD)": "4,596.00",
-          "Tertiary (in USD)": "7,157.00",
+          "K-12 (in USD)": 4596,
+          "Tertiary (in USD)": 7157,
           "K-12 (% of GDP)": 0.028,
           "Tertiary (% of GDP)": 0.013,
           "Ratio": "1:1.56"
+        }
+      ]
+    },
+    {
+      "id": "FIG405",
+      "stage": "foundation",
+      "chapter": 4,
+      "order": 405,
+      "title": "How Lopsided Is U.S. Education Spending?",
+      "kind": "country-map",
+      "sourceShort": "OECD, Education at a Glance 2025.",
+      "sourceLong": "OECD, Education at a Glance 2025: OECD Indicators (Paris: OECD Publishing, 2025), https://doi.org/10.1787/1c0d9c79-en.",
+      "sourceUrls": [
+        "https://doi.org/10.1787/1c0d9c79-en"
+      ],
+      "columns": [
+        "Country",
+        "Tertiary-to-K-12 spending ratio"
+      ],
+      "rows": [
+        {
+          "Country": "Peru",
+          "Tertiary-to-K-12 spending ratio": 1.58
+        },
+        {
+          "Country": "Mexico",
+          "Tertiary-to-K-12 spending ratio": 2.21
+        },
+        {
+          "Country": "Chile",
+          "Tertiary-to-K-12 spending ratio": 1.76
+        },
+        {
+          "Country": "Bulgaria",
+          "Tertiary-to-K-12 spending ratio": 1.66
+        },
+        {
+          "Country": "Romania",
+          "Tertiary-to-K-12 spending ratio": 1.82
+        },
+        {
+          "Country": "Greece",
+          "Tertiary-to-K-12 spending ratio": 0.69
+        },
+        {
+          "Country": "Türkiye",
+          "Tertiary-to-K-12 spending ratio": 2.68
+        },
+        {
+          "Country": "Israel",
+          "Tertiary-to-K-12 spending ratio": 1.22
+        },
+        {
+          "Country": "Iceland",
+          "Tertiary-to-K-12 spending ratio": 1.11
+        },
+        {
+          "Country": "Croatia",
+          "Tertiary-to-K-12 spending ratio": 1.38
+        },
+        {
+          "Country": "Slovak Republic",
+          "Tertiary-to-K-12 spending ratio": 1.96
+        },
+        {
+          "Country": "United States",
+          "Tertiary-to-K-12 spending ratio": 2.3
+        },
+        {
+          "Country": "Norway",
+          "Tertiary-to-K-12 spending ratio": 1.47
+        },
+        {
+          "Country": "Italy",
+          "Tertiary-to-K-12 spending ratio": 1.09
+        },
+        {
+          "Country": "Portugal",
+          "Tertiary-to-K-12 spending ratio": 1.12
+        },
+        {
+          "Country": "Spain",
+          "Tertiary-to-K-12 spending ratio": 1.4
+        },
+        {
+          "Country": "Hungary",
+          "Tertiary-to-K-12 spending ratio": 2.59
+        },
+        {
+          "Country": "France",
+          "Tertiary-to-K-12 spending ratio": 1.56
+        },
+        {
+          "Country": "Lithuania",
+          "Tertiary-to-K-12 spending ratio": 1.59
+        },
+        {
+          "Country": "Germany",
+          "Tertiary-to-K-12 spending ratio": 1.42
+        },
+        {
+          "Country": "New Zealand",
+          "Tertiary-to-K-12 spending ratio": 1.69
+        },
+        {
+          "Country": "Sweden",
+          "Tertiary-to-K-12 spending ratio": 1.86
+        },
+        {
+          "Country": "Latvia",
+          "Tertiary-to-K-12 spending ratio": 1.49
+        },
+        {
+          "Country": "Finland",
+          "Tertiary-to-K-12 spending ratio": 1.51
+        },
+        {
+          "Country": "Slovenia",
+          "Tertiary-to-K-12 spending ratio": 1.62
+        },
+        {
+          "Country": "Australia",
+          "Tertiary-to-K-12 spending ratio": 1.61
+        },
+        {
+          "Country": "Austria",
+          "Tertiary-to-K-12 spending ratio": 1.41
+        },
+        {
+          "Country": "Poland",
+          "Tertiary-to-K-12 spending ratio": 1.53
+        },
+        {
+          "Country": "United Kingdom",
+          "Tertiary-to-K-12 spending ratio": 2.29
+        },
+        {
+          "Country": "Denmark",
+          "Tertiary-to-K-12 spending ratio": 1.84
+        },
+        {
+          "Country": "Belgium",
+          "Tertiary-to-K-12 spending ratio": 1.51
+        },
+        {
+          "Country": "Ireland",
+          "Tertiary-to-K-12 spending ratio": 1.72
+        },
+        {
+          "Country": "Netherlands",
+          "Tertiary-to-K-12 spending ratio": 1.44
+        },
+        {
+          "Country": "Canada",
+          "Tertiary-to-K-12 spending ratio": 1.75
+        },
+        {
+          "Country": "Estonia",
+          "Tertiary-to-K-12 spending ratio": 1.76
+        },
+        {
+          "Country": "Korea",
+          "Tertiary-to-K-12 spending ratio": 0.65
+        },
+        {
+          "Country": "Japan",
+          "Tertiary-to-K-12 spending ratio": 1.84
+        },
+        {
+          "Country": "OECD average",
+          "Tertiary-to-K-12 spending ratio": 1.59
+        },
+        {
+          "Country": "Czechia",
+          "Tertiary-to-K-12 spending ratio": 1.45
+        },
+        {
+          "Country": "Luxembourg",
+          "Tertiary-to-K-12 spending ratio": 2.09
         }
       ]
     },
@@ -34672,6 +34851,105 @@
       ]
     },
     {
+      "id": "TAB303",
+      "stage": "workforce-entry",
+      "chapter": 3,
+      "order": 803,
+      "title": "How Has the Mix of Top H-1B Employers Changed?",
+      "kind": "ranked-bar",
+      "sourceShort": "USCIS, H-1B Employer Data Hub, 2009–2026",
+      "sourceLong": "U.S. Citizenship and Immigration Services, H-1B Employer Data Hub (Camp Springs, MD: USCIS, 2009–2026), data downloaded by the author across all available fiscal years, https://www.uscis.gov/tools/reports-and-studies/h-1b-employer-data-hub.",
+      "sourceUrls": [
+        "https://www.uscis.gov/tools/reports-and-studies/h-1b-employer-data-hub"
+      ],
+      "columns": [
+        "Company",
+        "2017 share",
+        "2025 share",
+        "Change (points)"
+      ],
+      "rows": [
+        {
+          "Company": "GOOGLE INC",
+          "2017 share": 2.2,
+          "2025 share": 8.3,
+          "Change (points)": 6.2
+        },
+        {
+          "Company": "LTIMINDTREE LIMITED",
+          "2017 share": 0,
+          "2025 share": 3.3,
+          "Change (points)": 3.3
+        },
+        {
+          "Company": "Deloitte and Subsidiaries",
+          "2017 share": 3,
+          "2025 share": 6,
+          "Change (points)": 3
+        },
+        {
+          "Company": "ERNST & YOUNG LLP",
+          "2017 share": 2.4,
+          "2025 share": 4.2,
+          "Change (points)": 1.7
+        },
+        {
+          "Company": "CAPGEMINI AMERICA INC",
+          "2017 share": 2.6,
+          "2025 share": 3.3,
+          "Change (points)": 0.7
+        },
+        {
+          "Company": "IBM and subsidiaries",
+          "2017 share": 3,
+          "2025 share": 3.1,
+          "Change (points)": 0
+        },
+        {
+          "Company": "HCL Technologies Limited and Subsidiaries",
+          "2017 share": 3.8,
+          "2025 share": 3.7,
+          "Change (points)": -0.1
+        },
+        {
+          "Company": "TATA CONSULTANCY SERVICES LIMITED",
+          "2017 share": 11.2,
+          "2025 share": 9.3,
+          "Change (points)": -1.9
+        },
+        {
+          "Company": "LARSEN & TOUBRO INFOTECH LIMITED",
+          "2017 share": 2.7,
+          "2025 share": 0.7,
+          "Change (points)": -2
+        },
+        {
+          "Company": "TECH MAHINDRA AMERICAS INC",
+          "2017 share": 3.8,
+          "2025 share": 1.7,
+          "Change (points)": -2.2
+        },
+        {
+          "Company": "WIPRO LIMITED",
+          "2017 share": 5.3,
+          "2025 share": 2.8,
+          "Change (points)": -2.5
+        },
+        {
+          "Company": "INFOSYS LIMITED",
+          "2017 share": 10.7,
+          "2025 share": 4.4,
+          "Change (points)": -6.4
+        },
+        {
+          "Company": "COGNIZANT TECHNOLOGY SOLUTIONS US CORP",
+          "2017 share": 22.1,
+          "2025 share": 6,
+          "Change (points)": -16.1
+        }
+      ]
+    },
+    {
       "id": "TAB401",
       "stage": "foundation",
       "chapter": 4,
@@ -39029,6 +39307,179 @@
       ]
     },
     {
+      "id": "TAB503",
+      "stage": "research-output",
+      "chapter": 5,
+      "order": 1003,
+      "title": "Is R&D Spending Aimed at Today or Tomorrow?",
+      "kind": "ranked-bar",
+      "sourceShort": "OECD, Main Science and Technology Indicators; NSB, Cross-National Comparisons of R&D Performance, Science and Engineering Indicators 2024.",
+      "sourceLong": "Organisation for Economic Co-operation and Development (OECD), Main Science and Technology Indicators (MSTI) Database, OECD Data Explorer, http://data-explorer.oecd.org/; National Science Board, Cross-National Comparisons of R&D Performance, Science and Engineering Indicators 2024 (Alexandria, VA: National Science Foundation, 2024), https://ncses.nsf.gov/pubs/nsb20246/cross-national-comparisons-of-r-d-performance.",
+      "sourceUrls": [
+        "http://data-explorer.oecd.org/",
+        "https://ncses.nsf.gov/pubs/nsb20246/cross-national-comparisons-of-r-d-performance"
+      ],
+      "columns": [
+        "Country",
+        "Type",
+        "1994",
+        "2004",
+        "2014",
+        "2024",
+        "Change (%)"
+      ],
+      "rows": [
+        {
+          "1994": 47.66,
+          "2004": 75.13,
+          "2014": 90.54,
+          "2024": 122.23,
+          "Country": "United States",
+          "Type": "Basic Research",
+          "Change (%)": 156.5
+        },
+        {
+          "1994": 58.85,
+          "2004": 92.38,
+          "2014": 100.15,
+          "2024": 152.87,
+          "Country": "United States",
+          "Type": "Applied Research",
+          "Change (%)": 159.8
+        },
+        {
+          "1994": 165.45,
+          "2004": 235.91,
+          "2014": 329.46,
+          "2024": 570.12,
+          "Country": "United States",
+          "Type": "Experimental Development",
+          "Change (%)": 244.6
+        },
+        {
+          "1994": 1.01,
+          "2004": 4.99,
+          "2014": 17.05,
+          "2024": 59.16,
+          "Country": "China",
+          "Type": "Basic Research",
+          "Change (%)": 5757.4
+        },
+        {
+          "1994": 4.98,
+          "2004": 17.07,
+          "2014": 38.87,
+          "2024": 101.85,
+          "Country": "China",
+          "Type": "Applied Research",
+          "Change (%)": 1945.2
+        },
+        {
+          "1994": 12.26,
+          "2004": 61.73,
+          "2014": 305.8,
+          "2024": 698.29,
+          "Country": "China",
+          "Type": "Experimental Development",
+          "Change (%)": 5595.7
+        }
+      ]
+    },
+    {
+      "id": "TAB504",
+      "stage": "research-output",
+      "chapter": 5,
+      "order": 1004,
+      "title": "How Do the U.S. and China Divide R&D Across Sectors?",
+      "kind": "ranked-bar",
+      "sourceShort": "OECD, Main Science and Technology Indicators (GERD, PPP), OECD.Stat, 1991–2024.",
+      "sourceLong": "OECD, Main Science and Technology Indicators, gross domestic expenditure on R&D (GERD) by sector of performance, converted to U.S. dollars at purchasing power parity, OECD.Stat, 1991–2024.",
+      "sourceUrls": [],
+      "columns": [
+        "Country",
+        "Type",
+        "1994",
+        "2004",
+        "2014",
+        "2024",
+        "Change (%)"
+      ],
+      "rows": [
+        {
+          "1994": 188.68,
+          "2004": 277.58,
+          "2014": 372.38,
+          "2024": 656.66,
+          "Country": "United States",
+          "Type": "Business enterprise sector",
+          "Change (%)": 248
+        },
+        {
+          "1994": 40.22,
+          "2004": 51.47,
+          "2014": 59.13,
+          "2024": 69.87,
+          "Country": "United States",
+          "Type": "Government sector",
+          "Change (%)": 73.7
+        },
+        {
+          "1994": 34.73,
+          "2004": 57.7,
+          "2014": 68.11,
+          "2024": 92.69,
+          "Country": "United States",
+          "Type": "Higher education sector",
+          "Change (%)": 166.9
+        },
+        {
+          "1994": 9,
+          "2004": 18.13,
+          "2014": 21.66,
+          "2024": 28.72,
+          "Country": "United States",
+          "Type": "Private non-profit sector",
+          "Change (%)": 219.1
+        },
+        {
+          "1994": 7.87,
+          "2004": 55.99,
+          "2014": 279.59,
+          "2024": 667.34,
+          "Country": "China",
+          "Type": "Business enterprise sector",
+          "Change (%)": 8380.3
+        },
+        {
+          "1994": 7.68,
+          "2004": 19.24,
+          "2014": 57.16,
+          "2024": 119.45,
+          "Country": "China",
+          "Type": "Government sector",
+          "Change (%)": 1456.2
+        },
+        {
+          "1994": 2.3,
+          "2004": 8.56,
+          "2014": 24.96,
+          "2024": 72.51,
+          "Country": "China",
+          "Type": "Higher education sector",
+          "Change (%)": 3046
+        },
+        {
+          "1994": null,
+          "2004": null,
+          "2014": null,
+          "2024": null,
+          "Country": "China",
+          "Type": "Private non-profit sector",
+          "Change (%)": null
+        }
+      ]
+    },
+    {
       "id": "TAB505-a",
       "stage": "research-output",
       "chapter": 5,
@@ -42581,6 +43032,93 @@
           "Status": "Certified",
           "Count": 1389,
           "Share of Total (Of Same Status)": "3.91%"
+        }
+      ]
+    },
+    {
+      "id": "TAB605",
+      "stage": "retention-immigration",
+      "chapter": 6,
+      "order": 1105,
+      "title": "How Long Are Employment-Based Green Card Waits, by Nationality?",
+      "kind": "timeseries",
+      "sourceShort": "U.S. Department of State, Visa Bulletin, 2002–2026.",
+      "sourceLong": "U.S. Department of State, Visa Bulletin (Washington, DC: U.S. Department of State, 2002–2026), data compiled by the author from individual annual Visa Bulletin publications, https://travel.state.gov/content/travel/en/legal/visa-law0/visa-bulletin.html.",
+      "sourceUrls": [
+        "https://travel.state.gov/content/travel/en/legal/visa-law0/visa-bulletin.html"
+      ],
+      "columns": [
+        "Year",
+        "Rest of World: EB1",
+        "Rest of World: EB2",
+        "Rest of World: EB3",
+        "China: EB1",
+        "China: EB2",
+        "China: EB3",
+        "India: EB1",
+        "India: EB2",
+        "India: EB3"
+      ],
+      "rows": [
+        {
+          "Year": 2005,
+          "Rest of World: EB1": 0,
+          "Rest of World: EB2": 0,
+          "Rest of World: EB3": 19,
+          "China: EB1": 16,
+          "China: EB2": 16,
+          "China: EB3": 45,
+          "India: EB1": 0,
+          "India: EB2": 0,
+          "India: EB3": 35
+        },
+        {
+          "Year": 2010,
+          "Rest of World: EB1": 0,
+          "Rest of World: EB2": 15,
+          "Rest of World: EB3": 89,
+          "China: EB1": 0,
+          "China: EB2": 55,
+          "China: EB3": 85,
+          "India: EB1": 0,
+          "India: EB2": 57,
+          "India: EB3": 104
+        },
+        {
+          "Year": 2015,
+          "Rest of World: EB1": 0,
+          "Rest of World: EB2": 28,
+          "Rest of World: EB3": 62,
+          "China: EB1": 0,
+          "China: EB2": 48,
+          "China: EB3": 60,
+          "India: EB1": 0,
+          "India: EB2": 100,
+          "India: EB3": 135
+        },
+        {
+          "Year": 2020,
+          "Rest of World: EB1": 17,
+          "Rest of World: EB2": 37,
+          "Rest of World: EB3": 46,
+          "China: EB1": 30,
+          "China: EB2": 55,
+          "China: EB3": 45,
+          "India: EB1": 42,
+          "India: EB2": 131,
+          "India: EB3": 131
+        },
+        {
+          "Year": 2025,
+          "Rest of World: EB1": 14,
+          "Rest of World: EB2": 54,
+          "Rest of World: EB3": 57,
+          "China: EB1": 31,
+          "China: EB2": 56,
+          "China: EB3": 55,
+          "India: EB1": 40,
+          "India: EB2": 149,
+          "India: EB3": 146
         }
       ]
     }

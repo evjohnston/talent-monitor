@@ -106,12 +106,37 @@ things it has to handle, not paper over:
   whether it holds a value — a blank column name is never a legitimate
   metric, and silently ranking by it (as the *last* real-numeric column)
   broke that whole exhibit before this was caught.
-- **Six exhibits are computed inline** in the report's own R pipeline from
-  other tables, with no standalone CSV to read at all (`SKIP_COMPUTED`:
-  `TAB303`, `FIG405`, `TAB503`, `TAB504`, `TAB603`, `TAB605`) — skipped and
-  logged by the importer rather than reverse-engineered or faked. Real
-  follow-up work, not a silent gap: the console output on every run prints
-  exactly which ids were skipped and why.
+- **Five of six originally-skipped exhibits are ported (2026-07-29)** —
+  `TAB303`, `FIG405`, `TAB503`, `TAB504`, `TAB605` all had no standalone
+  CSV, computed inline in the report's own R pipeline (`figures.Rmd`/
+  `tables.Rmd`) from other tables' already-real data. Each one's real R
+  formula was traced by hand and replicated as its own `build*` function
+  (`buildTab303`, `buildFig405`, `buildBookendTypeTable` for both
+  TAB503/TAB504 — they share one real shape, just different source
+  exhibits and category columns — and `buildTab605`), called from `main()`
+  the same way `buildFig303` already was. `TAB605` needed its own real
+  source files too: `TAB605a/b/c.csv` exist in `talent_charts/data/` but
+  were never given their own `titles_and_sources.csv` row (they're
+  `build_eb_combined_table`'s own R-side inputs, not independently citable
+  exhibits) — read directly by id via the same `readExhibitCsv` any other
+  exhibit uses, bypassing the normal `finalIds` loop.
+
+  Porting these surfaced a real, separately-fixed bug: `FIG405`'s own
+  derivation needs FIG404's `K-12 (in USD)`/`Tertiary (in USD)` columns as
+  numbers, but `coerce()` only recognized plain digit strings — a
+  thousands-comma-formatted value like `"2,302.00"` silently stayed a
+  string, invisible to `numericColumns()`. Confirmed by hand this was the
+  ONLY exhibit in the real imported data affected (checked every string
+  value across every exhibit for the pattern before touching shared
+  `coerce()` logic) — fixed there now, not worked around locally, so
+  FIG404's own existing chart benefits too, not just the new derivation.
+
+  `TAB603` alone is still skipped (`SKIP_COMPUTED = ["TAB603"]`) — its own
+  real R source (`build_sector_bookend_table`) reads `AF60`/`AF61`,
+  genuinely archived exhibits the report's own authors cut before the
+  final manuscript. Porting it means first deciding whether to import
+  archived source data at all — a real, separate architectural call, not
+  made unilaterally alongside five formula replications.
 
 **No live source, no cron.** None of these ~25 source families update
 faster than annual/biennial, and the CSVs are already the report's finished
@@ -635,11 +660,13 @@ guess.
 
 ## Known gaps
 
-- **Six exhibits not yet ported** (`TAB303`, `FIG405`, `TAB503`, `TAB504`,
-  `TAB603`, `TAB605`) — computed inline in the report's own R pipeline from
-  other tables, not a standalone CSV; logged by the importer every run
-  (`SKIP_COMPUTED` in `scripts/import-talent-charts.ts`). Real follow-up:
-  trace each one's real R computation and port it, don't guess at a number.
+- **One exhibit still not ported**: `TAB603` — computed inline in the
+  report's own R pipeline (`build_sector_bookend_table`) from `AF60`/
+  `AF61`, genuinely archived exhibits (see below), not from a standalone
+  CSV. The other five originally in this bucket (`TAB303`, `FIG405`,
+  `TAB503`, `TAB504`, `TAB605`) are ported — see the "Ingestion" section's
+  own note on each one's real derivation. Porting `TAB603` means first
+  deciding whether to import archived source data at all.
 - **The 77 archived (`AF`/`AT`-prefixed) exhibits** are real data, cut from
   the report's final version — not imported, not rendered anywhere. Worth
   revisiting if a future "extended data" section is wanted; the importer
