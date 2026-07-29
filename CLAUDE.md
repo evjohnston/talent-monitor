@@ -274,6 +274,22 @@ a curated 6.
   only ever excluded `heroId`-based heroes, and `heroContent` (a custom
   ReactNode, not an exhibit id) had no exclusion mechanism at all.
 
+Rebuilt so far with `sections`: Retention & Immigration, Degree
+Production, Foundation, Graduate & Postdoctoral Training. Workforce Entry
+and Research Output & Competitiveness still use the flat-grid default.
+
+**A real, deliberately-unresolved discrepancy, found while rebuilding
+Graduate & Postdoctoral Training**: `content/report-crosswalk.csv` (Phase
+1's own crosswalk) designates FIG201 as this stage's `stage_hero`, but the
+actual shipped `TrackGraduateTraining.tsx` has always used FIG207. Left as
+FIG207 in the rebuild — this stage's analyst note in `data/talent/notes.ts`
+is written about FIG207's own postdoc-composition finding, and swapping
+the hero without also rewriting that note's editorial content would leave
+the headline finding and the hero visual telling two different stories.
+Worth a real look in a future pass (either update the crosswalk's own
+plan to match reality, or rewrite the note and switch the hero to match
+the original plan) — not silently resolved either direction here.
+
 `Overview.tsx`'s KPI row is six real numbers, one per stage, each read off
 that stage's own hero exhibit via `toLatestValue`/`toRankedBars` — never a
 fabricated summary/index number.
