@@ -73,3 +73,7 @@ writing/
 # overhaul, never meant to be published in a public repo.
 /Talent Report*.docx
 /Hoover Style Guide*.pdf
+# Same treatment — Hoover's own 2023 visual brand guide (logo art, brand
+# Pantone/hex values, licensed Synthese/Gotham/Garamond font names).
+# Licensed/internal, reference-only, never meant to be published here.
+/HooverBrandingGuide*.pdf

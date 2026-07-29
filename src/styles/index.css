@@ -6,25 +6,38 @@
    cautionary takeaway. Nothing else gets color. */
 :root {
   --red: #98002e;
-  /* The publication-redesign brief's supplied Hoover palette — --red above
-     already matches --hoover-red exactly (confirmed by hand, not
-     coincidence: this app's red was picked to read as "Hoover Red" from
-     the start). --hoover-warm/--gray-light/--gray are new: named here,
-     not yet wired into the rendered neutral axis below (--ink/--slate/
-     --mist/--line/--panel are a cooler blue-gray scheme tuned separately
-     for contrast) — recoloring that whole axis to these warmer official
-     tones is a real visual change with wide blast radius, deliberately
-     left as its own follow-up rather than done silently inside this
-     token-naming pass. See CLAUDE.md's "Hoover style guide" note: the
-     April 2026 style guide is copyediting-only (grammar/punctuation/
-     terminology) and specifies no color, type, or logo guidance — these
-     4 hex values came directly from the redesign brief itself, not
-     extracted from that document.
+  /* Confirmed against HooverBrandingGuide2023.pdf (repo root, gitignored
+     — see CLAUDE.md's "Hoover branding guide" note). Two DIFFERENT
+     official palettes exist and it matters which one a web app should
+     use:
+       - Pantone 404/877/8401 (--hoover-warm/-gray-light/-gray below) are
+         the PRINT/logo palette (the tower-symbol logo itself is reproduced
+         in these) — 8401 specifically is reserved "to be used by the
+         Hoover Legacy Society," not general-purpose.
+       - Appendix C, "Website Colors and Fonts," is the actual web palette
+         (--web-* below) — a blue-gray secondary family, not the print
+         palette's warm taupe/silver. This app's existing --slate/--mist/
+         --panel/--panel-2 were independently tuned to almost exactly this
+         real family already (confirmed by hand: e.g. old --mist #7c8794
+         vs. the brand guide's #718D9B differ by only a few RGB points) —
+         so those four are now snapped to the literal brand-guide hex
+         instead of the close-but-invented value that predated this check.
+     --red already matched Website Primary #98002E exactly before this
+     check — not a coincidence, this app's accent was picked to read as
+     Hoover Red from the start.
   */
-  --hoover-red: #98002e;
-  --hoover-warm: #887e6f;
-  --hoover-gray-light: #a7a9ac;
-  --hoover-gray: #777575;
+  --hoover-warm: #887e6f; /* Pantone 404 — print/logo only, not the web palette */
+  --hoover-gray-light: #a7a9ac; /* Pantone 877 Silver — print/logo only */
+  --hoover-gray: #777575; /* Pantone 8401 Silver — Hoover Legacy Society use only, not general-purpose */
+  --web-primary-black: #000000;
+  --web-secondary-blue-light: #adbec7;
+  --web-secondary-blue: #718d9b;
+  --web-secondary-blue-dark: #43555f;
+  --web-secondary-oxblood: #4e0806;
+  --web-secondary-gray-50: #f8f8f8;
+  --web-secondary-gray-100: #e8e8e8;
+  --web-secondary-gray-300: #b9b9b9;
+  --web-secondary-gray-600: #707070;
   /* Continent tones — not used for country badges/bars/lines (see
      --country-* below for that); reused as a small, restrained
      categorical palette for named series that AREN'T countries (degree
@@ -42,8 +55,16 @@
   --country-eu: #b08343; --country-other: #8a93a3;
   /* One cautionary status color, for PolicyTakeaway's warning tone. */
   --status-uncertain: #b3862e;
-  --ink: #14181d; --ink-2: #3a434e; --slate: #5c6773; --mist: #7c8794;
-  --line: #dfe2e5; --line-2: #cdd3da; --panel: #f4f5f6; --panel-2: #eef1f4; --paper: #ffffff;
+  /* --ink/--ink-2/--line are kept as previously tuned — no exact match in
+     the brand guide's 8-color web secondary set, and inventing an
+     interpolated "brand-adjacent" shade for these would be less honest
+     than just tuning for contrast directly. --slate/--mist/--panel/
+     --panel-2/--paper below ARE literal brand-guide values (--paper was
+     already an exact #ffffff match to Website Primary white). */
+  --ink: #14181d; --ink-2: #3a434e;
+  --slate: var(--web-secondary-blue-dark); --mist: var(--web-secondary-blue);
+  --line: #dfe2e5; --line-2: var(--web-secondary-blue-light);
+  --panel: var(--web-secondary-gray-50); --panel-2: var(--web-secondary-gray-100); --paper: #ffffff;
   --sans: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
   --mono: "SF Mono", "IBM Plex Mono", ui-monospace, "Cascadia Code", Menlo, monospace;
   --maxw: 1440px;

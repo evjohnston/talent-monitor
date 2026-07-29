@@ -406,31 +406,67 @@ gradients, or a second radius value. See git history / the design-system
 section of any pre-2026-07-28 commit for the full original rationale if
 needed — the rules didn't change, only the subject being rendered did.
 
-**The publication-redesign brief's supplied Hoover palette** (`--hoover-red:
-#98002E`, `--hoover-warm: #887E6F`, `--hoover-gray-light: #A7A9AC`,
-`--hoover-gray: #777575`) is now named in `index.css` as real tokens.
-`--hoover-red` already matched this app's existing `--red` exactly — not a
-coincidence, this app's accent was picked to read as Hoover Red from the
-start. The other three aren't wired into the rendered neutral axis yet
-(`--ink`/`--slate`/`--mist`/`--line`/`--panel` are a cooler blue-gray scale,
-tuned separately for contrast) — recoloring that whole axis toward these
-warmer official tones is a real, wide-blast-radius visual change, left as
-its own follow-up rather than folded silently into naming the tokens.
+### Hoover brand sources (two documents, two different jobs)
 
-**A real finding, worth flagging before any typography/logo work**: "Hoover
-Style Guide April 2026.pdf" (repo root, gitignored — see `.gitignore`'s
-note on reference materials) is copyediting-only. Every page of it is
-Chicago Manual of Style-based prose guidance — capitalization, punctuation,
-number formatting, terminology (its own table of contents: Editorial
-Process, Author Submissions, Style Essentials, Usage Guide). It specifies
-zero color, typeface, logo, or layout guidance. Genuinely useful for the
-later editorial pass (Phase 10/11 of the redesign brief — e.g., "58,131"
-vs. spelling out numbers under one hundred, "US" vs. "U.S.", em/en dash
-usage), but not a source for Phase 3's visual-identity questions. The 4
-hex values above came directly from the redesign brief itself, not
-extracted from this document — if a separate Hoover visual brand guide
-(logo files, an approved typeface, spacing rules) exists somewhere, it
-hasn't been supplied yet.
+**"Hoover Style Guide April 2026.pdf"** (repo root, gitignored — see
+`.gitignore`'s note on reference materials) is copyediting-only. Every
+page of it is Chicago Manual of Style-based prose guidance —
+capitalization, punctuation, number formatting, terminology (its own
+table of contents: Editorial Process, Author Submissions, Style
+Essentials, Usage Guide). It specifies zero color, typeface, logo, or
+layout guidance. Genuinely useful for the later editorial pass (Phase
+10/11 of the redesign brief — e.g., "58,131" vs. spelling out numbers
+under one hundred, "US" vs. "U.S.", em/en dash usage), but not a source
+for visual-identity questions — a real finding worth knowing before
+searching it for color/type answers again.
+
+**"HooverBrandingGuide2023.pdf"** (repo root, gitignored, supplied after
+the above was discovered) is the real visual brand guide, and it draws a
+distinction worth preserving carefully: it has TWO separate official
+palettes for two different jobs.
+
+- **Print/logo palette** (Pantone 404/877/8401 — the primary Hoover
+  tower-symbol logo itself is reproduced in these): named in `index.css`
+  as `--hoover-warm: #887E6F` (404), `--hoover-gray-light: #A7A9AC`
+  (877), `--hoover-gray: #777575` (8401). **8401 is reserved "to be used
+  by the Hoover Legacy Society"** per the guide's own text — not a
+  general-purpose neutral, don't reach for it as one.
+- **Website palette** (the guide's own Appendix C, "Website Colors and
+  Fonts" — a genuinely different, blue-gray secondary family, not the
+  print palette's warm taupe/silver): Primary `#98002E` / `#887E6F` /
+  `#000000` / `#FFFFFF`; Secondary `#ADBEC7` `#718D9B` `#43555F`
+  `#4E0806` `#F8F8F8` `#E8E8E8` `#B9B9B9` `#707070` — named in
+  `index.css` as `--web-secondary-*`. This app's `--slate`/`--mist`/
+  `--panel`/`--panel-2` were independently tuned to almost exactly this
+  real family already (confirmed by hand: the old invented `--mist
+  #7c8794` differed from the guide's real `#718D9B` by only a few RGB
+  points) — those four, plus `--line-2`, are now snapped to the literal
+  brand-guide hex instead of the close-but-invented value that predated
+  this check. `--ink`/`--ink-2`/`--line` are deliberately left as
+  previously tuned — no exact brand-guide match exists for those roles,
+  and inventing an interpolated "brand-adjacent" shade would be less
+  honest than tuning for contrast directly, same reasoning as the
+  country/continent color rules above.
+
+**Fonts**: the brand guide specifies **Synthese** (Bold/Regular/Light/Book
+Oblique) as the official website font family — separate from Adobe
+Garamond Pro/Gotham, which are the PRINT typefaces. This app still uses
+Inter (`--sans` in `index.css`), not Synthese — no Synthese font files or
+license have been supplied yet, and Inter was kept as a placeholder rather
+than guessed at with a lookalike. Swapping this in is real follow-up work
+once font files/a license are available.
+
+**Logo**: the brand guide's primary mark is a Hoover Tower icon + "HOOVER
+INSTITUTION" wordmark (Gotham) in lockup, horizontal and vertical forms —
+this app's current masthead still shows the pre-existing "Tech Futures
+Lab" wordmark (`src/assets/logos/logo-{light,dark}-bg-alt.png`), not
+Hoover's own mark. No Hoover logo asset files (SVG/high-res PNG) have been
+supplied yet either — extracting raster art directly from the brand
+guide PDF was considered and deliberately not done without checking
+first, since whether this becomes a solo Hoover mark or a Hoover+TFL
+cobrand lockup (the guide has an explicit cobranding pattern: entities
+separated by a vertical hairline) is a real identity decision, not just
+an asset-quality one.
 
 ## Known gaps
 
