@@ -275,8 +275,9 @@ a curated 6.
   ReactNode, not an exhibit id) had no exclusion mechanism at all.
 
 Rebuilt so far with `sections`: Retention & Immigration, Degree
-Production, Foundation, Graduate & Postdoctoral Training. Workforce Entry
-and Research Output & Competitiveness still use the flat-grid default.
+Production, Foundation, Graduate & Postdoctoral Training, Workforce
+Entry. Research Output & Competitiveness — the last of the 6 — still
+uses the flat-grid default.
 
 **A real, deliberately-unresolved discrepancy, found while rebuilding
 Graduate & Postdoctoral Training**: `content/report-crosswalk.csv` (Phase
