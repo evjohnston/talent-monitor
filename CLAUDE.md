@@ -482,11 +482,21 @@ removed going forward.
 **Kept and repointed**, not rewritten from scratch: `KpiCard`, `BarRow`,
 `Tooltip`, `PanelTabs`, `ChartFrame.tsx` (`SectionHeader`/`EmptyState`/
 `ExpandableMethods`/`PolicyTakeaway`), `MethodNote`, `NoteCard`, `Card`,
-`countries.ts`, `continentMap.ts`, `format.ts`, `csvExport.ts`,
-`chartLabels.ts`, `useReducedMotion.ts`, the dashboard nav (6 stage tabs +
-Overview, driven by `STAGES` instead of a hardcoded 4-item array — now
-`DashboardNav.astro`, a real `<a href>` list rather than a React tab
-strip, see "Astro migration" below).
+`countries.ts`, `continentMap.ts`, `format.ts`, `chartLabels.ts`,
+`useReducedMotion.ts`, the dashboard nav (6 stage tabs + Overview, driven
+by `STAGES` instead of a hardcoded 4-item array — now `DashboardNav.astro`,
+a real `<a href>` list rather than a React tab strip, see "Astro
+migration" below).
+
+`csvExport.ts` is NOT on this list, despite this section (and the "Known
+gaps" section below) both having claimed for several sessions that it
+was — a real, confirmed documentation error, not a correction of
+anything that actually changed. This same rebuild commit's own diff
+shows `csvExport.ts` deleted, yet its own rewritten CLAUDE.md immediately
+claimed the file survived; nothing since caught the mismatch, since
+nothing needed the export UI until it did (see "Known gaps"). Rebuilt
+2026-07-28 (same implementation the old file had, read from git history)
+once this was noticed, and wired into `ExhibitPanel.tsx`.
 `Leaderboard.tsx` and `WorldMap.tsx` were kept but edited to drop their
 `Entry`/`TrendPoint`/`aggregate.ts` dependencies down to plain generic
 props (`{ name, country?, value }[]` and `{ values: Record<string,
@@ -618,11 +628,12 @@ guess.
   column, composite label) rather than a bespoke chart per exhibit. Fine
   for now; a future pass could add more `ChartKind`s if a shape recurs
   often enough to be worth a dedicated renderer.
-- **No country-compare or CSV-export UI yet** — both real, useful, and
-  present in the old app in some form, but cut from this rebuild's v1 scope
-  deliberately rather than ported speculatively before the new model was
-  proven. `csvExport.ts`'s `downloadCsv()` still exists and works if this
-  gets picked back up.
+- **No country-compare UI yet** — real, useful, present in the old app in
+  some form, but cut from this rebuild's v1 scope deliberately rather than
+  ported speculatively before the new model was proven. CSV export
+  (`csvExport.ts`'s `downloadCsv()`) is no longer a gap — every
+  `ExhibitPanel` has a real "Download this exhibit's data (CSV)" control
+  in its methodology drawer as of 2026-07-28.
 - **No live top-up for the research-output stage.** The report's own
   OpenAlex-derived exhibits (FIG502/503/512/513, etc.) are static, same as
   everything else here — re-wiring a live OpenAlex pull as a supplement is

@@ -354,6 +354,7 @@ a.pill { cursor: pointer; text-decoration: none; display: inline-block; }
 .expandable-methods-caret::before { content: "▼ Open methodology"; }
 .expandable-methods[open] .expandable-methods-caret::before { content: "▲ Close"; }
 .expandable-methods-body { margin-top: var(--sp-2); font-size: var(--fs-methods); line-height: 1.6; color: var(--ink-2); }
+.download-csv-btn { margin-top: var(--sp-2); font-size: var(--fs-methods); }
 
 /* ── tooltip ────────────────────────────────────────────────────── */
 /* Fixed dark-on-white regardless of page theme — a floating overlay reads
