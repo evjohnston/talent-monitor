@@ -354,36 +354,51 @@ since it's a real interactive component that doesn't exist yet, not just
 a different exhibit id) — worth a real look if any of these three stages'
 headline finding ever gets revisited.
 
-**Click-to-pin, a real `WorldMap.tsx` `onSelect` caller, finally.** The
-Phase 0 UX audit caught this by hand: `onSelect` (the prop that makes a
-map country keyboard/click-operable) existed in `WorldMap.tsx` — real
-`tabIndex`/`role="button"`/`onKeyDown` handling, fully built — but no
-caller anywhere in the app ever passed it, so no map was clickable or
-keyboard-reachable at all. `TrackShell.tsx` now owns a `pinnedCountry`
-state alongside its existing hover-based `emphasizeCountry`: clicking (or
-pressing Enter/Space on) a country pins the cross-highlight so it survives
-after the mouse leaves the map, with a real "Pinned: `<country>` — Clear"
-bar shown above the page's panels so a reader always has a visible way to
-know a pin is active and clear it. A hover always takes priority over a
-pin while it's actively happening (`effectiveCountry = emphasizeCountry ??
-pinnedCountry`) — a quick peek at a different country doesn't require
-unpinning first.
+**Click-to-pin, a real `WorldMap.tsx` `onSelect` caller, finally — and
+country-compare mode.** The Phase 0 UX audit caught this by hand:
+`onSelect` (the prop that makes a map country keyboard/click-operable)
+existed in `WorldMap.tsx` — real `tabIndex`/`role="button"`/`onKeyDown`
+handling, fully built — but no caller anywhere in the app ever passed it,
+so no map was clickable or keyboard-reachable at all. `TrackShell.tsx`
+now owns a `pinnedCountries` list alongside its existing hover-based
+`emphasizeCountry`: clicking (or pressing Enter/Space on) a country pins
+the cross-highlight so it survives after the mouse leaves the map, with a
+real "Pinned/Comparing: `<countries>` — Clear" bar (one removable chip per
+pinned country) shown above the page's panels. A hover always takes
+priority over pins while it's actively happening (`effectiveCountries =
+emphasizeCountry ? [emphasizeCountry] : pinnedCountries`) — a quick peek
+at a different country doesn't require unpinning first.
 
-**The pin round-trips through the URL** (`?country=XX`, `src/lib/
-urlState.ts`'s `readPinnedCountryFromUrl`/`writePinnedCountryToUrl`) — a
-pinned view is a real, shareable/bookmarkable link, not state that
-vanishes on reload. `replaceState`, not `pushState` (clicking through
-several countries shouldn't spam back-button history, same reasoning the
-old `writeDashboard` used before routes replaced it). SSR-safe by
-construction, not by luck: `pinnedCountry` starts `null` on BOTH the
-server render and the client's first render (no lazy `window`-reading
-initializer), so hydration always matches; the real `?country=` value is
-only read in a mount effect, the same pattern `ThemeToggle.tsx` already
-uses for its own initial value. A no-JS reader loading a shared
-`?country=CN` link sees the real page content but no pin (reading the URL
-needs the client-side effect) — an honest, expected degradation, not a
-bug. A hand-edited `?country=` value that isn't a real 2-letter shape is
-dropped silently rather than pinned and printed verbatim.
+This became real country-*compare* mode almost for free: clicking a
+second country ADDS to the pinned set rather than replacing it, since
+`emphasize`/`isFaded` in `SeriesChart.tsx` and `WorldMap.tsx` already did
+a real array-membership check (`.includes`), not an equality check
+against one value — no changes needed in either chart component, only to
+how `TrackShell` manages the pinned set (`handleSelect` toggles
+membership; a second click on an already-pinned country removes just
+that one). The bar's own label switches from "Pinned" to "Comparing" once
+more than one country is pinned, and gains a "Clear all" alongside each
+chip's individual remove button.
+
+**The pinned set round-trips through the URL** (`?countries=US,CN`,
+`src/lib/urlState.ts`'s `readPinnedCountriesFromUrl`/
+`writePinnedCountriesToUrl`) — a pinned/compared view is a real,
+shareable/bookmarkable link, not state that vanishes on reload.
+`replaceState`, not `pushState` (clicking through several countries
+shouldn't spam back-button history, same reasoning the old
+`writeDashboard` used before routes replaced it). The original single-
+country `?country=XX` param (from before compare mode existed) is still
+READ for backward compatibility with any already-shared link, merged into
+the new list, but never WRITTEN again. SSR-safe by construction, not by
+luck: `pinnedCountries` starts `[]` on BOTH the server render and the
+client's first render (no lazy `window`-reading initializer), so
+hydration always matches; the real `?countries=` value is only read in a
+mount effect, the same pattern `ThemeToggle.tsx` already uses for its own
+initial value. A no-JS reader loading a shared `?countries=US,CN` link
+sees the real page content but no pins (reading the URL needs the
+client-side effect) — an honest, expected degradation, not a bug. Any
+entry that isn't a real 2-letter shape is dropped silently rather than
+pinned and printed verbatim.
 
 `Overview.tsx`'s KPI row is six real numbers, one per stage, each read off
 that stage's own hero exhibit via `toLatestValue`/`toRankedBars` — never a
@@ -708,12 +723,15 @@ guess.
     (FIG512's DeepMind row: median 880, mean 4,110 — a handful of
     outlier papers pull the average roughly 4.7x above the typical
     case), invisible in a single-number ranking.
-- **No country-compare UI yet** — real, useful, present in the old app in
-  some form, but cut from this rebuild's v1 scope deliberately rather than
-  ported speculatively before the new model was proven. CSV export
-  (`csvExport.ts`'s `downloadCsv()`) is no longer a gap — every
-  `ExhibitPanel` has a real "Download this exhibit's data (CSV)" control
-  in its methodology drawer as of 2026-07-28.
+- **Country-compare and CSV export are both no longer gaps.** Compare
+  mode (2026-07-29) is TrackShell's own pin-to-highlight generalized to a
+  real pinned SET, round-tripped through `?countries=US,CN` — see the
+  "Click-to-pin" note above. CSV export (`csvExport.ts`'s `downloadCsv()`,
+  2026-07-28) gives every `ExhibitPanel` a real "Download this exhibit's
+  data (CSV)" control in its methodology drawer. Both were real, useful,
+  present in the old app in some form, cut from this rebuild's v1 scope
+  deliberately rather than ported speculatively before the new model was
+  proven — now built for real, not spoken for.
 - **No live top-up for the research-output stage.** The report's own
   OpenAlex-derived exhibits (FIG502/503/512/513, etc.) are static, same as
   everything else here — re-wiring a live OpenAlex pull as a supplement is

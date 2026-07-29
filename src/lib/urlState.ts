@@ -7,30 +7,44 @@ import type { Stage } from "./types.ts";
 // plain <a href>, see DashboardNav.astro).
 export type Dashboard = "overview" | Stage;
 
-const COUNTRY_PARAM = "country";
+const COUNTRIES_PARAM = "countries";
+// The original single-country param, from before country-compare mode
+// (see CLAUDE.md's "Click-to-pin" note) generalized one pin into a real
+// list. Still READ, for backward compatibility with any already-shared
+// ?country=XX link, but never WRITTEN — every pin/compare action from
+// here on produces a real ?countries=XX,YY link instead.
+const LEGACY_COUNTRY_PARAM = "country";
 
-// TrackShell.tsx's click-to-pin state (see CLAUDE.md's "Click-to-pin"
-// note), round-tripped through ?country=XX so a pinned view is a real,
-// shareable/bookmarkable URL, not state that vanishes on reload. Guarded
-// for SSR — Astro renders TrackShell's static markup at build time, when
-// `window` doesn't exist; both functions are no-ops there, and the real
-// read happens client-side after hydration (see TrackShell.tsx's mount
-// effect) so the server-rendered "no pin" output and the client's first
-// render still match, avoiding a hydration mismatch.
-export function readPinnedCountryFromUrl(): string | null {
-  if (typeof window === "undefined") return null;
-  const raw = new URLSearchParams(window.location.search).get(COUNTRY_PARAM);
-  // Only a real 2-letter shape is trusted — a hand-edited/garbage
-  // ?country= value falls through to "no pin" rather than being pinned
-  // as-is and printing verbatim in the "Pinned: X" bar.
-  return raw && /^[A-Za-z]{2}$/.test(raw) ? raw.toUpperCase() : null;
+function isCountryCode(v: string): boolean {
+  return /^[A-Za-z]{2}$/.test(v);
 }
 
-export function writePinnedCountryToUrl(code: string | null) {
+// TrackShell.tsx's click-to-pin/compare state, round-tripped through
+// ?countries=US,CN so a pinned/compared view is a real, shareable/
+// bookmarkable URL, not state that vanishes on reload. Guarded for SSR —
+// Astro renders TrackShell's static markup at build time, when `window`
+// doesn't exist; both functions are no-ops there, and the real read
+// happens client-side after hydration (see TrackShell.tsx's mount effect)
+// so the server-rendered "no pin" output and the client's first render
+// still match, avoiding a hydration mismatch.
+export function readPinnedCountriesFromUrl(): string[] {
+  if (typeof window === "undefined") return [];
+  const params = new URLSearchParams(window.location.search);
+  const fromNew = (params.get(COUNTRIES_PARAM) ?? "").split(",").map((s) => s.trim()).filter(isCountryCode);
+  const fromLegacy = params.get(LEGACY_COUNTRY_PARAM);
+  const merged = fromLegacy && isCountryCode(fromLegacy) ? [...fromNew, fromLegacy] : fromNew;
+  // Only a real 2-letter shape is trusted per entry — a hand-edited/
+  // garbage value is dropped rather than pinned as-is and printed
+  // verbatim in the "Pinned" bar. De-duplicated, uppercased.
+  return [...new Set(merged.map((c) => c.toUpperCase()))];
+}
+
+export function writePinnedCountriesToUrl(codes: string[]) {
   if (typeof window === "undefined") return;
   const p = new URLSearchParams(window.location.search);
-  if (code) p.set(COUNTRY_PARAM, code);
-  else p.delete(COUNTRY_PARAM);
+  p.delete(LEGACY_COUNTRY_PARAM);
+  if (codes.length > 0) p.set(COUNTRIES_PARAM, codes.join(","));
+  else p.delete(COUNTRIES_PARAM);
   const query = p.toString();
   // replaceState, not pushState — same reasoning readDashboard/
   // writeDashboard used to (see git history on this file): clicking

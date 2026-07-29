@@ -4,7 +4,7 @@ import type { DashboardContext } from "./types.ts";
 import { ExhibitPanel } from "../components/ExhibitPanel.tsx";
 import { PolicyTakeaway, SectionHeader } from "../components/ChartFrame.tsx";
 import { countryName } from "../lib/countries.ts";
-import { readPinnedCountryFromUrl, writePinnedCountryToUrl } from "../lib/urlState.ts";
+import { readPinnedCountriesFromUrl, writePinnedCountriesToUrl } from "../lib/urlState.ts";
 
 // A named group of exhibits within a stage — see TrackRetentionImmigration
 // for the first real use. Real editorial reasoning, not an arbitrary
@@ -41,9 +41,18 @@ export interface TrackSection {
 // interactivity for WorldMap.tsx's own onSelect prop, which every current
 // caller left unwired until now (a real gap the Phase 0 UX audit caught:
 // "no map is clickable or keyboard-reachable anywhere in the app today").
-// A hover always takes priority over a pin while it's active (a quick
-// peek at a different country doesn't require unpinning first), falling
-// back to the pinned country the moment the mouse leaves.
+// A hover always takes priority over pins while it's active (a quick peek
+// at a different country doesn't require unpinning first), falling back
+// to the pinned set the moment the mouse leaves.
+//
+// Country-compare mode: pinning isn't limited to one country — click a
+// second (or third...) country and it joins the pinned set rather than
+// replacing it, since `emphasize`/`isFaded` in SeriesChart.tsx and
+// WorldMap.tsx already do a real array-membership check (`.includes`),
+// not an equality check against a single value — no changes needed there
+// to support comparing several countries at once, only to how TrackShell
+// manages the pinned set itself. Click an already-pinned country again to
+// remove just that one.
 export function TrackShell({
   ctx,
   stage,
@@ -63,32 +72,36 @@ export function TrackShell({
   sections?: TrackSection[];
 }) {
   const [emphasizeCountry, setEmphasizeCountry] = useState<string | null>(null);
-  // Starts null on both the server render and the client's first render
+  // Starts empty on both the server render and the client's first render
   // (no lazy `window`-reading initializer) so hydration always matches —
-  // the real ?country= value, if any, is only read after mount, the same
-  // SSR-safety pattern ThemeToggle.tsx already uses for its own initial
-  // value. One harmless extra render right after mount when a pin IS
-  // present in the URL; no hydration-mismatch warning either way.
-  const [pinnedCountry, setPinnedCountry] = useState<string | null>(null);
+  // the real ?countries= value, if any, is only read after mount, the
+  // same SSR-safety pattern ThemeToggle.tsx already uses for its own
+  // initial value. One harmless extra render right after mount when a
+  // pin IS present in the URL; no hydration-mismatch warning either way.
+  const [pinnedCountries, setPinnedCountries] = useState<string[]>([]);
   useEffect(() => {
-    const fromUrl = readPinnedCountryFromUrl();
-    if (fromUrl) setPinnedCountry(fromUrl);
+    const fromUrl = readPinnedCountriesFromUrl();
+    if (fromUrl.length > 0) setPinnedCountries(fromUrl);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
   useEffect(() => {
-    writePinnedCountryToUrl(pinnedCountry);
-  }, [pinnedCountry]);
+    writePinnedCountriesToUrl(pinnedCountries);
+  }, [pinnedCountries]);
   const exhibits = ctx.exhibitsByStage[stage];
   const note = ctx.latestNote[stage];
   const hero = heroId ? exhibits.find((e) => e.id === heroId) : undefined;
   const excluded = new Set([...(excludeIds ?? []), ...(hero ? [hero.id] : [])]);
   const rest = exhibits.filter((e) => !excluded.has(e.id));
 
-  const effectiveCountry = emphasizeCountry ?? pinnedCountry;
-  const emphasize = effectiveCountry ? [effectiveCountry] : undefined;
-  // Click the same pinned country again to unpin — the natural toggle a
-  // reader expects, same as clicking an already-active filter chip.
-  const handleSelect = (code: string) => setPinnedCountry((prev) => (prev === code ? null : code));
+  const effectiveCountries = emphasizeCountry ? [emphasizeCountry] : pinnedCountries;
+  const emphasize = effectiveCountries.length > 0 ? effectiveCountries : undefined;
+  // Click an already-pinned country again to remove just that one; click
+  // a new one and it joins the set — this is what turns "pin" into
+  // "compare" (see this file's own top-of-function note).
+  const handleSelect = (code: string) =>
+    setPinnedCountries((prev) => (prev.includes(code) ? prev.filter((c) => c !== code) : [...prev, code]));
+  const clearPin = (code: string) => setPinnedCountries((prev) => prev.filter((c) => c !== code));
+  const clearAllPins = () => setPinnedCountries([]);
 
   function renderRow(row: Exhibit[]) {
     return (
@@ -133,10 +146,22 @@ export function TrackShell({
   return (
     <div className="track-enter" key={stage}>
       {note && <PolicyTakeaway>{note.headline} — {note.body}</PolicyTakeaway>}
-      {pinnedCountry && (
+      {pinnedCountries.length > 0 && (
         <div className="pinned-country-bar">
-          Pinned: <strong>{countryName(pinnedCountry)}</strong> — highlighted on every map/chart below.
-          <button type="button" className="ghost-btn" onClick={() => setPinnedCountry(null)}>Clear</button>
+          <span>{pinnedCountries.length > 1 ? "Comparing:" : "Pinned:"}</span>
+          {pinnedCountries.map((code) => (
+            <span className="pinned-country-chip" key={code}>
+              {countryName(code)}
+              <button type="button" aria-label={`Remove ${countryName(code)}`} onClick={() => clearPin(code)}>×</button>
+            </span>
+          ))}
+          <span className="pinned-country-hint">highlighted on every map/chart below</span>
+          {pinnedCountries.length > 1 && (
+            <button type="button" className="ghost-btn" onClick={clearAllPins}>Clear all</button>
+          )}
+          {pinnedCountries.length === 1 && (
+            <button type="button" className="ghost-btn" onClick={clearAllPins}>Clear</button>
+          )}
         </div>
       )}
       {heroContent}
