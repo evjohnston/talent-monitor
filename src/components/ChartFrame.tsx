@@ -4,21 +4,34 @@ import type { ReactNode } from "react";
 // every real section — title states the QUESTION or subject, takeaway
 // states what the current real data actually shows, so a reader gets an
 // answer before they have to read the chart itself.
+//
+// `level` picks the real heading tag, not just a font size — every page's
+// actual hierarchy is h1 (page title, BaseLayout) -> h2 (a named
+// TrackShell section, or a stage's hero exhibit) -> h3 (an individual
+// exhibit panel within one of those). Defaults to 3 since most callers
+// are a plain exhibit panel; TrackShell/Overview pass 2 for their own
+// section-level headers. Picking the wrong level here is exactly what
+// axe-core's heading-order check caught (every page had ONLY h3s below
+// h1, a real skipped level) — fixed at this shared component rather than
+// per call site, same "general level, not one-off" rule as elsewhere.
 export function SectionHeader({
   title,
   takeaway,
   note,
+  level = 3,
 }: {
   title: ReactNode;
   takeaway?: ReactNode;
   note?: ReactNode;
+  level?: 2 | 3;
 }) {
+  const Heading = level === 2 ? "h2" : "h3";
   return (
     <div className="section-header">
-      <h3>
+      <Heading>
         <span>{title}</span>
         {note}
-      </h3>
+      </Heading>
       {takeaway && <div className="panel-takeaway">{takeaway}</div>}
     </div>
   );

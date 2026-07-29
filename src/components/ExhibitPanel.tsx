@@ -14,16 +14,22 @@ export function ExhibitPanel({
   emphasize,
   onHoverCountry,
   onSelectCountry,
+  headingLevel,
 }: {
   exhibit: Exhibit;
   takeaway?: string;
   emphasize?: string[];
   onHoverCountry?: (code: string | null) => void;
   onSelectCountry?: (code: string) => void;
+  // A stage's single full-width hero exhibit sits one level above an
+  // ordinary panel in the page's real heading hierarchy (see
+  // ChartFrame.tsx's SectionHeader) — TrackShell passes 2 for that one
+  // case; every regular panel leaves this unset and gets the default h3.
+  headingLevel?: 2 | 3;
 }) {
   return (
     <div className="panel">
-      <SectionHeader title={exhibit.title} takeaway={takeaway} />
+      <SectionHeader title={exhibit.title} takeaway={takeaway} level={headingLevel} />
       <ExhibitChart exhibit={exhibit} emphasize={emphasize} onHoverCountry={onHoverCountry} onSelectCountry={onSelectCountry} />
       <ExpandableMethods summary={exhibit.sourceShort}>
         <p>{exhibit.sourceLong}</p>

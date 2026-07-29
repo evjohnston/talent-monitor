@@ -135,7 +135,16 @@ function MapBody({
         width={800}
         height={height}
         style={{ width: "100%", height: "100%", display: "block" }}
-        role="img"
+        // role="img" on an element that CONTAINS focusable descendants is
+        // an invalid ARIA combination (WAI-ARIA's img role implies one
+        // atomic, non-interactive unit) — caught by axe-core's
+        // nested-interactive check, since every <Geography> below gets
+        // tabIndex=0/role="button" whenever onSelect is wired up. A
+        // read-only map (no onSelect, no focusable children) is
+        // genuinely one image; an interactive one is genuinely a group
+        // of buttons — the real role differs by which map this is, not
+        // a single label that happens to fit either.
+        role={onSelect ? "group" : "img"}
         aria-label="World map, shaded by real per-country value — each country is individually labeled with its real number, keyboard-navigable"
       >
         <CentroidCapture geoData={geoData} onReady={handleCentroids} />

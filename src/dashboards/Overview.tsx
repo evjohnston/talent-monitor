@@ -135,6 +135,7 @@ export function Overview({ ctx }: { ctx: DashboardContext }) {
       {twoStreams.nodes.length > 0 && (
         <div className="panel">
           <SectionHeader
+            level={2}
             title="Two Streams of Talent"
             takeaway="Domestic and international talent feed the American STEM workforce very differently at each degree level — international students are a small share of bachelor's degrees, roughly half of master's, and over a third of doctorates."
           />
@@ -154,6 +155,7 @@ export function Overview({ ctx }: { ctx: DashboardContext }) {
 
       <div className="panel">
         <SectionHeader
+          level={2}
           title="What's happening at each stage of the pipeline"
           takeaway="Six stages, six real findings — click through to a stage for the full exhibit set behind each one."
         />

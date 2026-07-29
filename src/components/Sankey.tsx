@@ -108,7 +108,14 @@ export function Sankey({
         width={width}
         style={{ minWidth: Math.min(width, 320), maxWidth: "100%" }}
         height={height}
-        role="img"
+        // Unlike WorldMap.tsx (which has a genuine non-interactive mode
+        // and keeps role="img" for it), every node here is ALWAYS
+        // focusable/clickable — role="img" on their container is
+        // unconditionally invalid ARIA (an img role can't contain
+        // interactive descendants), caught by axe-core's
+        // nested-interactive check. "group" is the accurate role for a
+        // set of interactive node buttons with an overall aria-label.
+        role="group"
         aria-label={ariaLabel}
         onClick={() => setPinnedNode(null)}
       >
@@ -186,7 +193,7 @@ export function Sankey({
                 {n.label}
               </text>
               {n.detail && (
-                <text x={isSource ? x0 - 8 : x1 + 8} y={(y0 + y1) / 2 + 10} textAnchor={isSource ? "end" : "start"} fontSize={10} fill="var(--mist)">
+                <text x={isSource ? x0 - 8 : x1 + 8} y={(y0 + y1) / 2 + 10} textAnchor={isSource ? "end" : "start"} fontSize={10} fill="var(--slate)">
                   {n.detail}
                 </text>
               )}

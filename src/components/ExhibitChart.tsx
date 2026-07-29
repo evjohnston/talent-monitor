@@ -45,7 +45,7 @@ export function ExhibitChart({ exhibit, emphasize, onHoverCountry, onSelectCount
       if (rateSeries.length > 0 && countSeries.length > 0) {
         return (
           <div className="count-rate-split">
-            <SeriesChart x={x} series={countSeries} formatValue={(v) => v.toLocaleString()} emphasize={emphasize} />
+            <SeriesChart x={x} series={countSeries} formatValue={(v) => v.toLocaleString()} emphasize={emphasize} ariaLabel={`${exhibit.title} — counts`} />
             <div className="trend-note">Rate, same years, separate axis (a 0-1 rate can't share a scale with counts in the thousands):</div>
             <SeriesChart
               x={x}
@@ -53,6 +53,7 @@ export function ExhibitChart({ exhibit, emphasize, onHoverCountry, onSelectCount
               unitSuffix="%"
               formatValue={(v) => v.toFixed(1)}
               emphasize={emphasize}
+              ariaLabel={`${exhibit.title} — rate`}
             />
           </div>
         );
@@ -66,6 +67,7 @@ export function ExhibitChart({ exhibit, emphasize, onHoverCountry, onSelectCount
         unitSuffix={exhibit.kind === "share-timeseries" ? "%" : ""}
         formatValue={(v) => (exhibit.kind === "share-timeseries" ? v.toFixed(1) : v.toLocaleString())}
         emphasize={emphasize}
+        ariaLabel={exhibit.title}
       />
     );
   }

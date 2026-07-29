@@ -127,7 +127,7 @@ export function TrackShell({
       if (items.length === 0) return null;
       return (
         <div className="track-section" key={s.title}>
-          <SectionHeader title={s.title} />
+          <SectionHeader title={s.title} level={2} />
           {renderRow(items)}
         </div>
       );
@@ -165,7 +165,7 @@ export function TrackShell({
         </div>
       )}
       {heroContent}
-      {hero && <ExhibitPanel exhibit={hero} emphasize={emphasize} onHoverCountry={setEmphasizeCountry} onSelectCountry={handleSelect} />}
+      {hero && <ExhibitPanel exhibit={hero} emphasize={emphasize} onHoverCountry={setEmphasizeCountry} onSelectCountry={handleSelect} headingLevel={2} />}
       {body}
       {exhibits.length === 0 && !heroContent && <div className="trend-empty">No exhibits imported for this stage yet.</div>}
     </div>

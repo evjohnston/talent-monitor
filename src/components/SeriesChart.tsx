@@ -74,12 +74,18 @@ export function SeriesChart({
   formatValue = (v) => v.toLocaleString(),
   unitSuffix = "",
   emphasize,
+  ariaLabel,
 }: {
   x: (string | number)[];
   series: Series[];
   formatValue?: (v: number) => string;
   unitSuffix?: string;
   emphasize?: string[];
+  // Nivo's own <svg role="img"> otherwise ships with no accessible name
+  // at all (confirmed by an axe-core audit: svg-img-alt on every chart on
+  // every page) — ResponsiveLine forwards this straight to its
+  // SvgWrapper's aria-label, same as `role`/`isFocusable` below.
+  ariaLabel?: string;
 }) {
   const n = x.length;
   const DEFAULT_W = 380, DEFAULT_H = 260;
@@ -212,7 +218,7 @@ export function SeriesChart({
           theme={{
             grid: { line: { stroke: "var(--line)", strokeWidth: 1 } },
             axis: {
-              ticks: { text: { fontSize: 9, fill: "var(--mist)" }, line: { stroke: "transparent" } },
+              ticks: { text: { fontSize: 9, fill: "var(--slate)" }, line: { stroke: "transparent" } },
             },
             crosshair: { line: { stroke: "var(--ink-2)", strokeWidth: 1, strokeDasharray: "2 2" } },
           }}
@@ -226,6 +232,7 @@ export function SeriesChart({
           animate={false}
           layers={["grid", "markers", "axes", "areas", "crosshair", "lines", showEndpointLabels ? endpointLabels : "points", "points", "slices", "mesh"]}
           role="img"
+          ariaLabel={ariaLabel}
         />
       </div>
       )}

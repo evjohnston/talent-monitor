@@ -818,3 +818,83 @@ Korea," "Republic of Korea," and bare "Korea" to the same code. Writing
 `i18n-iso-countries`' own fuzzy matching, so `toCountryMapValues()` was
 silently dropping South Korea's real data point from FIG608's world map
 the entire time. Fixed with `countries.ts`'s new `EXTRA_NAME_ALIASES`.
+
+## Accessibility
+
+An `axe-core`/Playwright sweep (2026-07-29, scratchpad-only script — not a
+committed test yet, see "Known gaps") across all 7 routes found 6 real
+violation categories, every one of them a genuine, systemic pattern hit on
+every page rather than a one-off: fixed at the general/shared-component
+level per this file's own rule, not per exhibit. Re-running the same sweep
+after the fixes below returns **zero violations on all 7 pages.**
+
+- **`color-contrast`** — `--mist` (`#718D9B`, a real Hoover-website-derived
+  token) only hits 3.5:1 against white/panel backgrounds, short of WCAG
+  AA's 4.5:1 for normal text, and it was used as TEXT color everywhere
+  (topbar meta, ticker captions, table headers, chart axis ticks, trend
+  notes/captions, the footer). Not a one-off tuning call: computed real
+  contrast ratios by hand for every candidate token first (see this
+  session's own math) before picking a fix, same discipline as every
+  other shared-token change in this file. Fixed by swapping every TEXT
+  usage of `--mist` to `--slate` (`#43555F`, the SAME real brand family's
+  already-existing darker sibling — 7.3-7.8:1 light, 5.1-6.0:1 dark, no
+  new color invented) — `--mist`'s own value is untouched, so anything
+  still using it for a non-text purpose (`.boxplot-mean`'s marker dot,
+  which only needs WCAG's lower 3:1 non-text bar) is unaffected. Also
+  caught: `.ticker-sep` used `--line-2` (a border-only token, 1.6-1.9:1)
+  as TEXT color — same `--slate` fix. A second, separate real cause
+  surfaced only after the first fix (112 nodes on `/graduate-training/`
+  alone): `SeriesChart.tsx`'s hidden-series legend toggle used
+  `opacity: 0.4` on the whole button to signal "off," which blends
+  `--ink-2` down to a measured ~2:1 against a white panel — an opacity
+  trick doesn't respect contrast the way a real color swap does. Fixed by
+  moving the dimming to `color: var(--slate)` + the existing
+  strikethrough on the text, keeping `opacity: 0.4` only on the `.swatch`
+  span (a real decorative color match, not text a reader needs to read).
+- **`heading-order`** — every page had real content below `<h1>` at
+  ONLY `<h3>` (`ChartFrame.tsx`'s `SectionHeader`, used for both a
+  `TrackSection`'s own group title and every individual exhibit panel
+  title) — a real skipped level, not a false positive: a screen-reader
+  user's "jump to next heading" navigation had no real middle tier to
+  land on. Fixed by giving `SectionHeader` a real `level` prop (2 or 3,
+  default 3) reflecting the page's ACTUAL hierarchy: `<h1>` page title ->
+  `<h2>` a TrackShell named section or a stage's one full-width hero
+  exhibit -> `<h3>` an individual exhibit panel within either. `TrackShell`
+  passes `headingLevel={2}` (a new `ExhibitPanel` prop) to its own hero
+  panel and `level={2}` to each section's `SectionHeader`; `Overview.tsx`
+  and `TrackRetentionImmigration.tsx`'s own top-level `SectionHeader`s
+  (Two Streams, What's Happening, The Retention Gap) do the same. No
+  visual change — `.section-header`'s CSS targets the class, not the tag.
+- **`landmark-one-main` / `region`** — `BaseLayout.astro` had no `<main>`
+  at all (a plain `<div class="wrap">`), so masthead content (logo, ticker,
+  page head) sat outside every landmark. Fixed with real `<header>`
+  (topbar + news ticker) and `<main class="wrap">` (page head, nav, page
+  content, footer) elements — `<footer class="foot">` was already a real
+  footer tag, just newly nested inside the new `<main>`. `region` mostly
+  resolved as a direct consequence, since axe's `region` nodes were
+  exactly the masthead content this same fix now contains.
+- **`nested-interactive`** — `WorldMap.tsx`'s outer `<svg role="img">`
+  contained per-country `<Geography>` elements with `tabIndex={0}
+  role="button"` whenever `onSelect` was wired (i.e. on every real map in
+  this app) — an invalid ARIA combination (`role="img"` implies one
+  atomic, non-interactive unit). Same bug, independently, in
+  `Sankey.tsx`'s outer `<svg role="img">` around its always-clickable node
+  `<g role="button">`s. Fixed by making `WorldMap`'s outer role
+  conditional (`onSelect ? "group" : "img"` — a real non-interactive mode
+  still exists there) and `Sankey`'s unconditional (`"group"` — every node
+  is always interactive, no read-only variant to preserve).
+- **`svg-img-alt`** — every Nivo-rendered `<svg role="img">`
+  (`SeriesChart.tsx`) shipped with no accessible name at all — confirmed
+  `ResponsiveLine` forwards a real `ariaLabel` prop straight to its
+  internal `SvgWrapper`'s `aria-label` (checked directly against
+  `@nivo/core`'s source, not assumed from the type surface). `ExhibitChart.tsx`
+  now passes the real exhibit title (or `"{title} — counts"`/`"{title} —
+  rate"` for the two-chart count/rate split) through as `ariaLabel` at
+  every `SeriesChart` call site. `WorldMap.tsx`/`Sankey.tsx`'s own
+  hand-rolled SVGs already had real `aria-label`s — only the Nivo one was
+  missing this.
+
+Not yet done: no automated a11y check runs in CI (the sweep above was a
+manual scratchpad script, `@axe-core/playwright` isn't a committed
+dependency) — a real follow-up, same "zero to something, not zero to
+comprehensive" caveat as the Vitest suite above.

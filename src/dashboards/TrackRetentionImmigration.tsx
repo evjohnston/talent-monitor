@@ -11,6 +11,7 @@ export function TrackRetentionImmigration({ ctx }: { ctx: DashboardContext }) {
   const heroContent = funnel.nodes.length > 0 && (
     <div className="panel">
       <SectionHeader
+        level={2}
         title="The Retention Gap"
         takeaway={
           funnel.intendToStay != null

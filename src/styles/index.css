@@ -133,7 +133,7 @@ a { color: inherit; }
   position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%);
   height: 32px; width: auto; display: block;
 }
-.topbar-meta { margin-left: auto; font-family: var(--mono); font-size: 10px; color: var(--mist); display: flex; gap: 14px; flex-wrap: wrap; align-items: center; }
+.topbar-meta { margin-left: auto; font-family: var(--mono); font-size: 10px; color: var(--slate); display: flex; gap: 14px; flex-wrap: wrap; align-items: center; }
 .theme-toggle {
   border: 1px solid var(--line-2); background: var(--paper); color: var(--ink-2);
   width: 24px; height: 24px; border-radius: var(--r); cursor: pointer; font-size: 12px;
@@ -162,14 +162,14 @@ a { color: inherit; }
 .ticker-link { font: inherit; color: inherit; text-decoration: none; }
 .ticker-link:hover { color: var(--red); }
 .ticker-tag { flex: none; font-family: var(--mono); font-size: 8.5px; letter-spacing: 0.04em; text-transform: uppercase; color: #fff; padding: 1px 4px; }
-.ticker-sep { flex: none; color: var(--line-2); }
+.ticker-sep { flex: none; color: var(--slate); }
 @keyframes ticker-scroll { from { transform: translateX(0); } to { transform: translateX(-50%); } }
 .ticker-ctrl {
   flex: none; border: none; border-left: 1px solid var(--line); background: none; color: var(--ink-2);
   cursor: pointer; padding: 0 10px; font-size: 13px;
 }
 .ticker-ctrl:hover { color: var(--red); background: var(--panel); }
-.ticker-empty { flex: 1; padding: 6px 12px; font-size: 11px; color: var(--mist); }
+.ticker-empty { flex: 1; padding: 6px 12px; font-size: 11px; color: var(--slate); }
 .ticker-static-list { flex: 1; overflow-x: auto; display: flex; }
 .ticker-static-list .ticker-item { border-right: 1px solid var(--line); }
 @media (prefers-reduced-motion: reduce) { .ticker-track { animation: none; } }
@@ -177,7 +177,7 @@ a { color: inherit; }
 /* ── page head ──────────────────────────────────────────────────── */
 .pagehead { display: flex; justify-content: space-between; align-items: flex-start; padding: 16px 0 10px; gap: 12px; flex-wrap: wrap; }
 .pagehead h1 { font-size: 17px; font-weight: 700; letter-spacing: -0.01em; }
-.pagehead .sub { color: var(--mist); font-size: 11px; margin-top: 2px; }
+.pagehead .sub { color: var(--slate); font-size: 11px; margin-top: 2px; }
 
 /* ── controls: shared button/pill/chip language, no radius ───────── */
 .pill, .chip, .ghost-btn { font-family: var(--sans); font-size: 11px; border-radius: var(--r); border: 1px solid var(--line-2); background: var(--paper); color: var(--ink-2); padding: 4px 10px; cursor: pointer; }
@@ -275,14 +275,14 @@ a.pill { cursor: pointer; text-decoration: none; display: inline-block; }
 
 /* ── tables: leaderboards ──────────────────────────────────────────── */
 .lb { width: 100%; border-collapse: collapse; font-size: 11.5px; }
-.lb thead th { font-family: var(--mono); font-size: 9.5px; letter-spacing: 0.06em; text-transform: uppercase; color: var(--mist); font-weight: 500; text-align: left; padding: 0 0 5px; border-bottom: 1px solid var(--line-2); }
+.lb thead th { font-family: var(--mono); font-size: 9.5px; letter-spacing: 0.06em; text-transform: uppercase; color: var(--slate); font-weight: 500; text-align: left; padding: 0 0 5px; border-bottom: 1px solid var(--line-2); }
 .lb thead th.right { text-align: right; }
 .lb tbody td { padding: 5px 0; border-bottom: 1px solid var(--line); vertical-align: middle; }
 .lb tbody tr:last-child td { border-bottom: none; }
 .lb tbody tr.clickable { cursor: pointer; }
 .lb tbody tr.clickable:hover { background: var(--panel); }
 .lb tbody tr.active { background: var(--panel-2); }
-.lb .rank { font-family: var(--mono); color: var(--mist); width: 20px; }
+.lb .rank { font-family: var(--mono); color: var(--slate); width: 20px; }
 .lb .org-name { font-weight: 500; color: var(--ink); }
 .lb .count { font-family: var(--mono); font-variant-numeric: tabular-nums; color: var(--ink-2); }
 .lb .right { text-align: right; }
@@ -326,7 +326,7 @@ a.pill { cursor: pointer; text-decoration: none; display: inline-block; }
    repeated inside each button. */
 .dashboard-nav-heading {
   font-family: var(--sans); font-size: 9px; font-weight: 600; letter-spacing: 0.08em;
-  text-transform: uppercase; color: var(--mist); margin: 10px 0 4px;
+  text-transform: uppercase; color: var(--slate); margin: 10px 0 4px;
 }
 .dashboard-nav { display: flex; gap: 4px; flex-wrap: wrap; margin: 0 0 12px; border-bottom: 1px solid var(--line); padding-bottom: 10px; }
 .dashboard-nav-btn {
@@ -419,18 +419,26 @@ a.pill { cursor: pointer; text-decoration: none; display: inline-block; }
    made this ambiguity obvious immediately). The swatch's real color
    never changes; only the label's own presentation does. */
 .legend-item-toggle { background: none; border: none; padding: 0; font: inherit; font-family: inherit; color: inherit; cursor: pointer; }
-.legend-item-toggle[aria-pressed="false"] { opacity: 0.4; text-decoration: line-through; }
+/* Text color + strikethrough, not opacity, carries "this series is
+   hidden" — axe-core caught the previous opacity:0.4 approach failing
+   WCAG AA (it blends --ink-2 down to ~2:1 against a white/paper panel,
+   confirmed by hand: rgb(58,67,78) at 40% opacity over white measures
+   #b0b4b8). --slate keeps the same "quieter than active" signal at a
+   real 7.7:1. The swatch alone still dims — it's decorative color
+   matching, not text a reader needs to resolve. */
+.legend-item-toggle[aria-pressed="false"] { color: var(--slate); text-decoration: line-through; }
+.legend-item-toggle[aria-pressed="false"] .swatch { opacity: 0.4; }
 .legend-item-toggle:hover { color: var(--red); }
 .series-picker-toggle-all { background: none; border: none; padding: 0; font: inherit; color: var(--red); font-weight: 600; cursor: pointer; text-decoration: underline; }
-.trend-note { color: var(--mist); font-style: italic; margin-left: auto; }
+.trend-note { color: var(--slate); font-style: italic; margin-left: auto; }
 /* A timeseries exhibit that mixes a real 0-1 rate column with count
    columns (see ExhibitChart.tsx) renders as two stacked charts, never one
    shared axis — this just spaces them apart. */
 .count-rate-split > .trend-note { margin: var(--sp-2) 0; }
 .count-rate-split > figure + .trend-note { margin-top: var(--sp-3); }
-.trend-empty { font-size: 11px; color: var(--mist); padding: 6px 0; line-height: 1.4; }
+.trend-empty { font-size: 11px; color: var(--slate); padding: 6px 0; line-height: 1.4; }
 
-.foot { padding: 16px 0 32px; font-family: var(--mono); font-size: 10px; color: var(--mist); line-height: 1.6; }
+.foot { padding: 16px 0 32px; font-family: var(--mono); font-size: 10px; color: var(--slate); line-height: 1.6; }
 .foot code { background: var(--panel-2); padding: 1px 4px; border-radius: 0; }
 .foot .sig { color: var(--red); font-weight: 600; margin-top: 10px; font-size: 11px; }
 

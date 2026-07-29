@@ -50,20 +50,32 @@ const description = "A pipeline view of U.S. STEM talent, from foundation throug
     </script>
   </head>
   <body>
-    <div class="topbar">
-      <div class="topbar-inner">
-        <img class="wordmark-logo" src={logoLightBg.src} data-dark-src={logoDarkBg.src} alt="Hoover Institution" />
-        <span class="topbar-meta">
-          <span>● static build</span>
-          <span title="Imported from talent_charts/ — see CLAUDE.md's Ingestion section">{generated}</span>
-        </span>
-        <ThemeToggle client:load />
+    <!--
+      Real <header>/<main>/<footer> landmarks — confirmed missing by an
+      axe-core accessibility audit (landmark-one-main: no <main> at all;
+      region: masthead/ticker/pagehead content sat outside any landmark,
+      both a direct consequence of the same gap). Everything persistent
+      across every page (logo, ticker) is <header>; the one thing that's
+      genuinely this page's own content is <main>; the citation/coverage
+      note stays a real <footer>, nested inside <main> since it's the
+      talent-pipeline content's own footer, not unrelated site chrome.
+    -->
+    <header>
+      <div class="topbar">
+        <div class="topbar-inner">
+          <img class="wordmark-logo" src={logoLightBg.src} data-dark-src={logoDarkBg.src} alt="Hoover Institution" />
+          <span class="topbar-meta">
+            <span>● static build</span>
+            <span title="Imported from talent_charts/ — see CLAUDE.md's Ingestion section">{generated}</span>
+          </span>
+          <ThemeToggle client:load />
+        </div>
       </div>
-    </div>
 
-    <NewsTickerLoader client:load />
+      <NewsTickerLoader client:load />
+    </header>
 
-    <div class="wrap">
+    <main class="wrap">
       <div class="pagehead">
         <div>
           <h1>Global Talent Monitor</h1>
@@ -89,7 +101,7 @@ const description = "A pipeline view of U.S. STEM talent, from foundation throug
         </ExpandableMethods>
         <div class="sig">Ideas Advancing Freedom</div>
       </footer>
-    </div>
+    </main>
 
     <script is:inline>
       // Swaps the wordmark to the dark-bg variant when data-theme is
