@@ -6,6 +6,25 @@
    cautionary takeaway. Nothing else gets color. */
 :root {
   --red: #98002e;
+  /* The publication-redesign brief's supplied Hoover palette — --red above
+     already matches --hoover-red exactly (confirmed by hand, not
+     coincidence: this app's red was picked to read as "Hoover Red" from
+     the start). --hoover-warm/--gray-light/--gray are new: named here,
+     not yet wired into the rendered neutral axis below (--ink/--slate/
+     --mist/--line/--panel are a cooler blue-gray scheme tuned separately
+     for contrast) — recoloring that whole axis to these warmer official
+     tones is a real visual change with wide blast radius, deliberately
+     left as its own follow-up rather than done silently inside this
+     token-naming pass. See CLAUDE.md's "Hoover style guide" note: the
+     April 2026 style guide is copyediting-only (grammar/punctuation/
+     terminology) and specifies no color, type, or logo guidance — these
+     4 hex values came directly from the redesign brief itself, not
+     extracted from that document.
+  */
+  --hoover-red: #98002e;
+  --hoover-warm: #887e6f;
+  --hoover-gray-light: #a7a9ac;
+  --hoover-gray: #777575;
   /* Continent tones — not used for country badges/bars/lines (see
      --country-* below for that); reused as a small, restrained
      categorical palette for named series that AREN'T countries (degree

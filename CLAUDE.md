@@ -406,6 +406,32 @@ gradients, or a second radius value. See git history / the design-system
 section of any pre-2026-07-28 commit for the full original rationale if
 needed — the rules didn't change, only the subject being rendered did.
 
+**The publication-redesign brief's supplied Hoover palette** (`--hoover-red:
+#98002E`, `--hoover-warm: #887E6F`, `--hoover-gray-light: #A7A9AC`,
+`--hoover-gray: #777575`) is now named in `index.css` as real tokens.
+`--hoover-red` already matched this app's existing `--red` exactly — not a
+coincidence, this app's accent was picked to read as Hoover Red from the
+start. The other three aren't wired into the rendered neutral axis yet
+(`--ink`/`--slate`/`--mist`/`--line`/`--panel` are a cooler blue-gray scale,
+tuned separately for contrast) — recoloring that whole axis toward these
+warmer official tones is a real, wide-blast-radius visual change, left as
+its own follow-up rather than folded silently into naming the tokens.
+
+**A real finding, worth flagging before any typography/logo work**: "Hoover
+Style Guide April 2026.pdf" (repo root, gitignored — see `.gitignore`'s
+note on reference materials) is copyediting-only. Every page of it is
+Chicago Manual of Style-based prose guidance — capitalization, punctuation,
+number formatting, terminology (its own table of contents: Editorial
+Process, Author Submissions, Style Essentials, Usage Guide). It specifies
+zero color, typeface, logo, or layout guidance. Genuinely useful for the
+later editorial pass (Phase 10/11 of the redesign brief — e.g., "58,131"
+vs. spelling out numbers under one hundred, "US" vs. "U.S.", em/en dash
+usage), but not a source for Phase 3's visual-identity questions. The 4
+hex values above came directly from the redesign brief itself, not
+extracted from this document — if a separate Hoover visual brand guide
+(logo files, an approved typeface, spacing rules) exists somewhere, it
+hasn't been supplied yet.
+
 ## Known gaps
 
 - **Six exhibits not yet ported** (`TAB303`, `FIG405`, `TAB503`, `TAB504`,
