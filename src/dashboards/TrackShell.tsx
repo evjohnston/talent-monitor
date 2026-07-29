@@ -3,6 +3,7 @@ import type { Exhibit, Stage } from "../lib/types.ts";
 import type { DashboardContext } from "./types.ts";
 import { ExhibitPanel } from "../components/ExhibitPanel.tsx";
 import { PolicyTakeaway, SectionHeader } from "../components/ChartFrame.tsx";
+import { countryName } from "../lib/countries.ts";
 
 // A named group of exhibits within a stage — see TrackRetentionImmigration
 // for the first real use. Real editorial reasoning, not an arbitrary
@@ -34,7 +35,14 @@ export interface TrackSection {
 // exhibit's map emphasizes that same country on every other exhibit on
 // this page that has a country dimension (see ExhibitChart.tsx/
 // WorldMap.tsx's emphasize/onHoverCountry — this is just the shared state
-// they both already knew how to use).
+// they both already knew how to use), and clicking a country PINS that
+// highlight so it survives after the mouse leaves the map — real
+// interactivity for WorldMap.tsx's own onSelect prop, which every current
+// caller left unwired until now (a real gap the Phase 0 UX audit caught:
+// "no map is clickable or keyboard-reachable anywhere in the app today").
+// A hover always takes priority over a pin while it's active (a quick
+// peek at a different country doesn't require unpinning first), falling
+// back to the pinned country the moment the mouse leaves.
 export function TrackShell({
   ctx,
   stage,
@@ -54,18 +62,23 @@ export function TrackShell({
   sections?: TrackSection[];
 }) {
   const [emphasizeCountry, setEmphasizeCountry] = useState<string | null>(null);
+  const [pinnedCountry, setPinnedCountry] = useState<string | null>(null);
   const exhibits = ctx.exhibitsByStage[stage];
   const note = ctx.latestNote[stage];
   const hero = heroId ? exhibits.find((e) => e.id === heroId) : undefined;
   const excluded = new Set([...(excludeIds ?? []), ...(hero ? [hero.id] : [])]);
   const rest = exhibits.filter((e) => !excluded.has(e.id));
 
-  const emphasize = emphasizeCountry ? [emphasizeCountry] : undefined;
+  const effectiveCountry = emphasizeCountry ?? pinnedCountry;
+  const emphasize = effectiveCountry ? [effectiveCountry] : undefined;
+  // Click the same pinned country again to unpin — the natural toggle a
+  // reader expects, same as clicking an already-active filter chip.
+  const handleSelect = (code: string) => setPinnedCountry((prev) => (prev === code ? null : code));
 
   function renderRow(row: Exhibit[]) {
     return (
       <div className="row3" key={row.map((e) => e.id).join("-")}>
-        {row.map((e) => <ExhibitPanel key={e.id} exhibit={e} emphasize={emphasize} onHoverCountry={setEmphasizeCountry} />)}
+        {row.map((e) => <ExhibitPanel key={e.id} exhibit={e} emphasize={emphasize} onHoverCountry={setEmphasizeCountry} onSelectCountry={handleSelect} />)}
       </div>
     );
   }
@@ -105,8 +118,14 @@ export function TrackShell({
   return (
     <div className="track-enter" key={stage}>
       {note && <PolicyTakeaway>{note.headline} — {note.body}</PolicyTakeaway>}
+      {pinnedCountry && (
+        <div className="pinned-country-bar">
+          Pinned: <strong>{countryName(pinnedCountry)}</strong> — highlighted on every map/chart below.
+          <button type="button" className="ghost-btn" onClick={() => setPinnedCountry(null)}>Clear</button>
+        </div>
+      )}
       {heroContent}
-      {hero && <ExhibitPanel exhibit={hero} emphasize={emphasize} onHoverCountry={setEmphasizeCountry} />}
+      {hero && <ExhibitPanel exhibit={hero} emphasize={emphasize} onHoverCountry={setEmphasizeCountry} onSelectCountry={handleSelect} />}
       {body}
       {exhibits.length === 0 && !heroContent && <div className="trend-empty">No exhibits imported for this stage yet.</div>}
     </div>

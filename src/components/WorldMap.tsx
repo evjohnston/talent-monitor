@@ -169,7 +169,7 @@ function MapBody({
                     className="map-geography"
                     tabIndex={code && onSelect ? 0 : -1}
                     role={code && onSelect ? "button" : undefined}
-                    aria-label={code ? `${countryName(code)}, ${hasValue ? value.toLocaleString() : "no data"} ${unit}` : undefined}
+                    aria-label={code ? `${countryName(code)}, ${hasValue ? value.toLocaleString() : "no data"} ${unit}${onSelect ? ", press Enter to pin" : ""}` : undefined}
                     style={{
                       default: { outline: "none", transition: "fill 0.2s" },
                       hover: { outline: "none", fill: "var(--red)", cursor: code && onSelect ? "pointer" : "default" },
@@ -189,7 +189,7 @@ function MapBody({
       {tip && (
         <Tooltip x={tip.x} y={tip.y}>
           {countryName(tip.code)} · {tip.code in values ? `${values[tip.code].toLocaleString()} ${unit}` : "no data"}
-          {onSelect ? " · click to filter" : ""}
+          {onSelect ? " · click to pin" : ""}
         </Tooltip>
       )}
     </>

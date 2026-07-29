@@ -17,7 +17,10 @@ import { BarRow } from "./BarRow.tsx";
 // timeseries/share-timeseries participate (a bare ranked-bar/leaderboard
 // row isn't reliably a country), and only WorldMap broadcasts — see
 // TrackShell.tsx for the shared state this all flows through.
-export function ExhibitChart({ exhibit, emphasize, onHoverCountry }: { exhibit: Exhibit; emphasize?: string[]; onHoverCountry?: (code: string | null) => void }) {
+// `onSelectCountry` is the same idea for a CLICK, not a hover — WorldMap's
+// own onSelect prop, wired all the way through so a click pins the
+// cross-highlight (see TrackShell.tsx's pinnedCountry state).
+export function ExhibitChart({ exhibit, emphasize, onHoverCountry, onSelectCountry }: { exhibit: Exhibit; emphasize?: string[]; onHoverCountry?: (code: string | null) => void; onSelectCountry?: (code: string) => void }) {
   if (exhibit.kind === "timeseries" || exhibit.kind === "share-timeseries") {
     const { x, series } = toSeriesChart(exhibit);
     // share-timeseries exhibits store either a raw 0-1 fraction (needs
@@ -75,7 +78,7 @@ export function ExhibitChart({ exhibit, emphasize, onHoverCountry }: { exhibit: 
     const min = vals.length ? Math.min(...vals) : 0;
     const max = vals.length ? Math.max(...vals) : 1;
     const mode = min < 0 || (max > 0 && min > max * 0.2) ? "range" : "count";
-    return <WorldMap values={cm.values} unit={cm.column} mode={mode} emphasize={emphasize} onHoverCountry={onHoverCountry} />;
+    return <WorldMap values={cm.values} unit={cm.column} mode={mode} emphasize={emphasize} onHoverCountry={onHoverCountry} onSelect={onSelectCountry} />;
   }
 
   if (exhibit.kind === "leaderboard-years") {

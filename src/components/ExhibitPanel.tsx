@@ -13,16 +13,18 @@ export function ExhibitPanel({
   takeaway,
   emphasize,
   onHoverCountry,
+  onSelectCountry,
 }: {
   exhibit: Exhibit;
   takeaway?: string;
   emphasize?: string[];
   onHoverCountry?: (code: string | null) => void;
+  onSelectCountry?: (code: string) => void;
 }) {
   return (
     <div className="panel">
       <SectionHeader title={exhibit.title} takeaway={takeaway} />
-      <ExhibitChart exhibit={exhibit} emphasize={emphasize} onHoverCountry={onHoverCountry} />
+      <ExhibitChart exhibit={exhibit} emphasize={emphasize} onHoverCountry={onHoverCountry} onSelectCountry={onSelectCountry} />
       <ExpandableMethods summary={exhibit.sourceShort}>
         <p>{exhibit.sourceLong}</p>
         {exhibit.sourceUrls.map((u) => (

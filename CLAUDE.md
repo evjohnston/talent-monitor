@@ -324,17 +324,20 @@ crosswalk or the shipped hero alone — worth a real editorial decision
 crosswalk to match what shipped) before the next visual pass on any of
 these three stages.
 
-**A real, deliberately-unresolved discrepancy, found while rebuilding
-Graduate & Postdoctoral Training**: `content/report-crosswalk.csv` (Phase
-1's own crosswalk) designates FIG201 as this stage's `stage_hero`, but the
-actual shipped `TrackGraduateTraining.tsx` has always used FIG207. Left as
-FIG207 in the rebuild — this stage's analyst note in `data/talent/notes.ts`
-is written about FIG207's own postdoc-composition finding, and swapping
-the hero without also rewriting that note's editorial content would leave
-the headline finding and the hero visual telling two different stories.
-Worth a real look in a future pass (either update the crosswalk's own
-plan to match reality, or rewrite the note and switch the hero to match
-the original plan) — not silently resolved either direction here.
+**Click-to-pin, a real `WorldMap.tsx` `onSelect` caller, finally.** The
+Phase 0 UX audit caught this by hand: `onSelect` (the prop that makes a
+map country keyboard/click-operable) existed in `WorldMap.tsx` — real
+`tabIndex`/`role="button"`/`onKeyDown` handling, fully built — but no
+caller anywhere in the app ever passed it, so no map was clickable or
+keyboard-reachable at all. `TrackShell.tsx` now owns a `pinnedCountry`
+state alongside its existing hover-based `emphasizeCountry`: clicking (or
+pressing Enter/Space on) a country pins the cross-highlight so it survives
+after the mouse leaves the map, with a real "Pinned: `<country>` — Clear"
+bar shown above the page's panels so a reader always has a visible way to
+know a pin is active and clear it. A hover always takes priority over a
+pin while it's actively happening (`effectiveCountry = emphasizeCountry ??
+pinnedCountry`) — a quick peek at a different country doesn't require
+unpinning first.
 
 `Overview.tsx`'s KPI row is six real numbers, one per stage, each read off
 that stage's own hero exhibit via `toLatestValue`/`toRankedBars` — never a

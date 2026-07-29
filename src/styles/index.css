@@ -343,6 +343,19 @@ a.pill { cursor: pointer; text-decoration: none; display: inline-block; }
   padding: var(--sp-2); margin: 0 0 var(--sp-2);
 }
 
+/* ── pinned-country-bar — TrackShell.tsx's click-to-pin state (a real
+   WorldMap.tsx onSelect caller, finally — see that file's own dead-prop
+   note in CLAUDE.md). Reuses --surface-selected/--on-selected, the same
+   "this is the active thing" treatment .dashboard-nav-btn[aria-current]
+   already uses, rather than inventing a second "selected" visual language. */
+.pinned-country-bar {
+  display: flex; align-items: center; gap: var(--sp-2); font-size: var(--fs-body);
+  background: var(--surface-selected); color: var(--on-selected);
+  padding: var(--sp-2) var(--sp-3); margin: 0 0 var(--sp-2);
+}
+.pinned-country-bar .ghost-btn { margin-left: auto; background: transparent; border-color: var(--on-selected); color: var(--on-selected); }
+.pinned-country-bar .ghost-btn:hover { border-color: var(--red); color: var(--red); }
+
 /* ── ExpandableMethods — collapses the long Sources & Method prose ── */
 .expandable-methods { margin-top: var(--sp-3); }
 .expandable-methods-toggle {
