@@ -1,9 +1,10 @@
-import { useState, type ReactNode } from "react";
+import { useEffect, useState, type ReactNode } from "react";
 import type { Exhibit, Stage } from "../lib/types.ts";
 import type { DashboardContext } from "./types.ts";
 import { ExhibitPanel } from "../components/ExhibitPanel.tsx";
 import { PolicyTakeaway, SectionHeader } from "../components/ChartFrame.tsx";
 import { countryName } from "../lib/countries.ts";
+import { readPinnedCountryFromUrl, writePinnedCountryToUrl } from "../lib/urlState.ts";
 
 // A named group of exhibits within a stage — see TrackRetentionImmigration
 // for the first real use. Real editorial reasoning, not an arbitrary
@@ -62,7 +63,21 @@ export function TrackShell({
   sections?: TrackSection[];
 }) {
   const [emphasizeCountry, setEmphasizeCountry] = useState<string | null>(null);
+  // Starts null on both the server render and the client's first render
+  // (no lazy `window`-reading initializer) so hydration always matches —
+  // the real ?country= value, if any, is only read after mount, the same
+  // SSR-safety pattern ThemeToggle.tsx already uses for its own initial
+  // value. One harmless extra render right after mount when a pin IS
+  // present in the URL; no hydration-mismatch warning either way.
   const [pinnedCountry, setPinnedCountry] = useState<string | null>(null);
+  useEffect(() => {
+    const fromUrl = readPinnedCountryFromUrl();
+    if (fromUrl) setPinnedCountry(fromUrl);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+  useEffect(() => {
+    writePinnedCountryToUrl(pinnedCountry);
+  }, [pinnedCountry]);
   const exhibits = ctx.exhibitsByStage[stage];
   const note = ctx.latestNote[stage];
   const hero = heroId ? exhibits.find((e) => e.id === heroId) : undefined;

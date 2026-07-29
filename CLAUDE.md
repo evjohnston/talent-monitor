@@ -339,6 +339,22 @@ pin while it's actively happening (`effectiveCountry = emphasizeCountry ??
 pinnedCountry`) — a quick peek at a different country doesn't require
 unpinning first.
 
+**The pin round-trips through the URL** (`?country=XX`, `src/lib/
+urlState.ts`'s `readPinnedCountryFromUrl`/`writePinnedCountryToUrl`) — a
+pinned view is a real, shareable/bookmarkable link, not state that
+vanishes on reload. `replaceState`, not `pushState` (clicking through
+several countries shouldn't spam back-button history, same reasoning the
+old `writeDashboard` used before routes replaced it). SSR-safe by
+construction, not by luck: `pinnedCountry` starts `null` on BOTH the
+server render and the client's first render (no lazy `window`-reading
+initializer), so hydration always matches; the real `?country=` value is
+only read in a mount effect, the same pattern `ThemeToggle.tsx` already
+uses for its own initial value. A no-JS reader loading a shared
+`?country=CN` link sees the real page content but no pin (reading the URL
+needs the client-side effect) — an honest, expected degradation, not a
+bug. A hand-edited `?country=` value that isn't a real 2-letter shape is
+dropped silently rather than pinned and printed verbatim.
+
 `Overview.tsx`'s KPI row is six real numbers, one per stage, each read off
 that stage's own hero exhibit via `toLatestValue`/`toRankedBars` — never a
 fabricated summary/index number.
