@@ -43,17 +43,35 @@ const COMMON_NAME_REVERSE: Record<string, string> = Object.fromEntries(
   Object.entries(COMMON_NAME).map(([code, name]) => [name.toLowerCase(), code])
 );
 
+// Extra resolvable aliases for codeFromCountryName() ONLY, not for
+// countryName()'s display direction — i18n-iso-countries' own fuzzy
+// matching already resolves "South Korea" and "Republic of Korea" to KR
+// (confirmed by hand), but not the bare word "Korea" alone, which is
+// exactly what FIG608's own real data uses. Real, confirmed bug found by
+// countries.test.ts, not a hypothetical: toCountryMapValues() drops any
+// row whose name doesn't resolve, so FIG608's map was silently missing
+// South Korea's real data point entirely before this existed. KR's own
+// ISO display name is already "South Korea" (countryName("KR") needs no
+// COMMON_NAME override), so this only extends what INPUT text resolves,
+// not what gets displayed.
+const EXTRA_NAME_ALIASES: Record<string, string> = {
+  korea: "KR",
+};
+
 // Reverse of countryName() — a human-readable name (as typed into a URL's
 // ?countries=china,india, or read back out of one) to the real alpha-2 code
 // every other lookup in this app keys off. i18n-iso-countries' own fuzzy
 // name matching handles most cases; COMMON_NAME_REVERSE covers the same
 // handful this file already overrides for display (e.g. "china" rather
-// than "People's Republic of China").
+// than "People's Republic of China"); EXTRA_NAME_ALIASES covers real
+// source-data names that need no display override but still don't
+// resolve via the library alone.
 export function codeFromCountryName(name: string): string | null {
   const trimmed = name.trim();
   if (!trimmed) return null;
   const lower = trimmed.toLowerCase();
   if (COMMON_NAME_REVERSE[lower]) return COMMON_NAME_REVERSE[lower];
+  if (EXTRA_NAME_ALIASES[lower]) return EXTRA_NAME_ALIASES[lower];
   return countries.getAlpha2Code(trimmed, "en") ?? null;
 }
 

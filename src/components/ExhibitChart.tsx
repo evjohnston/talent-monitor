@@ -1,5 +1,5 @@
 import type { Exhibit } from "../lib/types.ts";
-import { toSeriesChart, toCountryMapValues, toLeaderboardYears, toRankedBars } from "../lib/exhibitData.ts";
+import { toSeriesChart, toCountryMapValues, toLeaderboardYears, toRankedBars, isRateShapedSeries } from "../lib/exhibitData.ts";
 import { SeriesChart } from "./SeriesChart.tsx";
 import { WorldMap } from "./WorldMap.tsx";
 import { LeaderboardYears } from "./LeaderboardYears.tsx";
@@ -31,27 +31,12 @@ export function ExhibitChart({ exhibit, emphasize, onHoverCountry }: { exhibit: 
     // count columns (FIG603: Received/Approved/Denied in the thousands
     // alongside an Approval Rate column never above 1) — a real bug,
     // caught by hand and flagged in content/report-crosswalk.csv's own
-    // caveat: "count and rate must not share an axis." Requires BOTH a
-    // rate-shaped VALUE RANGE and a rate-suggesting COLUMN NAME —
-    // magnitude alone isn't enough: TAB404's real "North America"/
-    // "Antarctica" study-abroad columns are genuine counts that just
-    // happen to stay under 1.5 (few students report either), and
-    // multiplying those by 100 and labeling them "%" would fabricate a
-    // unit that was never there. Checked against every real timeseries
-    // exhibit by hand before shipping this (FIG106/FIG504/FIG603/TAB201
-    // are real rate+count mixes and get the fix; TAB404 correctly
-    // doesn't).
+    // caveat: "count and rate must not share an axis." See
+    // exhibitData.ts's isRateShapedSeries (and its own test file) for the
+    // detection rule and why magnitude alone isn't enough.
     if (exhibit.kind === "timeseries" && scaled.length > 1) {
-      const isRateShaped = (s: (typeof scaled)[number]) =>
-        // \b alone isn't enough — "_" counts as a word character, so
-        // \bshare\b would miss "US_Share" the same way it (correctly)
-        // misses "doctorates." Normalizing underscores to spaces first
-        // fixes the real column-name shape without reopening the
-        // "doctorates" false match.
-        /\brate\b|\bpercent\b|\bshare\b|%/i.test(s.label.replace(/_/g, " ")) &&
-        s.values.every((v) => v == null || Math.abs(v) <= 1.5);
-      const rateSeries = scaled.filter(isRateShaped);
-      const countSeries = scaled.filter((s) => !isRateShaped(s));
+      const rateSeries = scaled.filter(isRateShapedSeries);
+      const countSeries = scaled.filter((s) => !isRateShapedSeries(s));
       if (rateSeries.length > 0 && countSeries.length > 0) {
         return (
           <div className="count-rate-split">

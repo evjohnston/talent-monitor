@@ -1,3 +1,19 @@
+// Pure CSV-text construction, split out from downloadCsv below so it's
+// testable without a DOM (jsdom/happy-dom) — see csvExport.test.ts. A
+// value containing a comma, quote, or newline gets quoted with internal
+// quotes doubled, standard CSV escaping; `null`/`undefined` become an
+// empty field, not the string "null".
+export function rowsToCsv(rows: Record<string, unknown>[]): string {
+  if (rows.length === 0) return "";
+  const headers = Object.keys(rows[0]);
+  const escape = (v: unknown) => {
+    const s = v == null ? "" : String(v);
+    return /[",\n]/.test(s) ? `"${s.replace(/"/g, '""')}"` : s;
+  };
+  const lines = [headers.join(","), ...rows.map((r) => headers.map((h) => escape(r[h])).join(","))];
+  return lines.join("\n");
+}
+
 // "Download this exhibit's real rows" — a plain client-side CSV export,
 // no server/new dependency needed. Existed in the pre-rebuild app,
 // deleted along with the rest of the Entry-shaped drawer machinery during
@@ -7,14 +23,9 @@
 // every exhibit a real "download data" control per the redesign brief's
 // own per-visual metadata requirement.
 export function downloadCsv(filename: string, rows: Record<string, unknown>[]) {
-  if (rows.length === 0) return;
-  const headers = Object.keys(rows[0]);
-  const escape = (v: unknown) => {
-    const s = v == null ? "" : String(v);
-    return /[",\n]/.test(s) ? `"${s.replace(/"/g, '""')}"` : s;
-  };
-  const lines = [headers.join(","), ...rows.map((r) => headers.map((h) => escape(r[h])).join(","))];
-  const blob = new Blob([lines.join("\n")], { type: "text/csv;charset=utf-8" });
+  const csv = rowsToCsv(rows);
+  if (!csv) return;
+  const blob = new Blob([csv], { type: "text/csv;charset=utf-8" });
   const url = URL.createObjectURL(blob);
   const a = document.createElement("a");
   a.href = url;

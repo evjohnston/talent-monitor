@@ -25,6 +25,22 @@ function yearColumns(exhibit: Exhibit): string[] {
   return exhibit.columns.slice(1).filter((c) => /^\d{4}$/.test(c.trim()));
 }
 
+// A series counts as rate-shaped only when its real values ALL sit within
+// [-1.5, 1.5] AND its name contains a rate/percent/share word — magnitude
+// alone isn't enough (TAB404's real "Antarctica" study-abroad count is a
+// genuine count that just happens to stay under 1.5), and an unanchored
+// name match on "rate" isn't enough either (it would wrongly catch
+// "doctorates"). Underscores are normalized to spaces first so "US_Share"
+// still matches \bshare\b, which — being a real word-character in regex —
+// it otherwise wouldn't. Used by ExhibitChart.tsx to split a timeseries
+// that mixes a real rate column in among count columns (FIG603) onto its
+// own axis instead of a shared one — see content/report-crosswalk.csv's
+// own FIG603 caveat.
+export function isRateShapedSeries(s: Series): boolean {
+  return /\brate\b|\bpercent\b|\bshare\b|%/i.test(s.label.replace(/_/g, " ")) &&
+    s.values.every((v) => v == null || Math.abs(v) <= 1.5);
+}
+
 // timeseries / share-timeseries: first column is the x-axis (usually
 // "Year"), every other real-numeric column is its own series.
 export function toSeriesChart(exhibit: Exhibit): { x: (string | number)[]; series: Series[] } {

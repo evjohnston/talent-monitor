@@ -682,8 +682,41 @@ npm run gen-continent-map     # regenerate src/lib/continentMap.ts (only if the 
 npm run dev
 npm run build
 npm run typecheck
+npm test                      # src/lib/*.test.ts — vitest, no config file needed for this
 ```
 
 On a fresh clone, `public/data/talent.json` is already committed — `npm run
 dev` works immediately with no fetch/import step needed. Only re-run
 `import-talent-charts` after `talent_charts/` itself changes.
+
+## Tests
+
+`npm test` (vitest, zero config file — Vite's own default TS transform is
+enough for plain unit tests) runs `src/lib/*.test.ts`: pure-function tests
+for the data-transform helpers (`exhibitData.ts`), country name/color
+resolution (`countries.ts`), and CSV export (`csvExport.ts`). No jsdom/
+happy-dom environment is configured, so these only cover logic that
+doesn't touch the DOM — no component-render tests yet, and
+`csvExport.ts`'s actual `downloadCsv()` (a thin DOM side effect: create a
+Blob, click a synthetic `<a>`) is deliberately untested directly; only its
+extracted pure `rowsToCsv()` is. Wired into `.github/workflows/
+build-and-deploy.yml` as a real step before `Build` — runs on every push
+to `main` and every PR against it (a PR run stops after test+build, never
+deploys; see that job's own `if:` guard).
+
+This is a real "zero to something," not "zero to comprehensive" — no
+Playwright/E2E tests exist yet (every UI verification this session ran by
+hand, via a scratchpad Playwright script, not as a committed test),
+`ExhibitChart.tsx`'s own dispatch logic isn't covered, and neither is
+`sankeyData.ts`'s derived-cohort math. Real follow-up, not silently
+considered "done" — grow this file by file as new logic gets touched,
+same instinct as everything else in "Known gaps."
+
+**A real bug this test suite caught immediately**: `docs/report-crosswalk-
+notes.md` had claimed `codeFromCountryName()` already resolved "South
+Korea," "Republic of Korea," and bare "Korea" to the same code. Writing
+`countries.test.ts` found that claim was only 2/3 true — the bare word
+"Korea" (exactly what FIG608's real data uses) didn't resolve via
+`i18n-iso-countries`' own fuzzy matching, so `toCountryMapValues()` was
+silently dropping South Korea's real data point from FIG608's world map
+the entire time. Fixed with `countries.ts`'s new `EXTRA_NAME_ALIASES`.

@@ -9,6 +9,11 @@ on:
   # 3-hour cron existed to poll live sources that no longer exist here.
   push:
     branches: [main]
+  # Test + build (never deploy — see the `deploy` job's own `if:` guard)
+  # on any PR targeting main, so a real regression is a failed check on
+  # the PR itself, not something only discovered after it's already live.
+  pull_request:
+    branches: [main]
   # Allow manual runs from the Actions tab.
   workflow_dispatch:
 
@@ -34,6 +39,13 @@ jobs:
 
       - run: npm ci
 
+      # src/lib/*.test.ts — pure-function unit tests (data transforms,
+      # country resolution, CSV export). No jsdom/browser environment
+      # configured, so this only covers logic that doesn't touch the DOM;
+      # see CLAUDE.md's testing section for what's covered and what isn't.
+      - name: Test
+        run: npm test
+
       # public/data/talent.json is a normal committed file (see CLAUDE.md) —
       # this build reads it straight off the checkout, same as any other
       # static asset. No fetch/import step runs here.
@@ -43,11 +55,16 @@ jobs:
           GTM_BASE: /${{ github.event.repository.name }}/
 
       - uses: actions/upload-pages-artifact@v3
+        if: github.event_name == 'push'
         with:
           path: dist
 
   deploy:
     needs: build
+    # Only a push to main deploys — a pull_request run stops after
+    # test+build above, as a status check on the PR, never touching the
+    # live site.
+    if: github.event_name == 'push'
     runs-on: ubuntu-latest
     environment:
       name: github-pages
