@@ -118,12 +118,20 @@ a { color: inherit; }
 /* Absolutely positioned and centered on .topbar-inner itself, not just
    "centered in the leftover flex space" — a flex-based center would drift
    off-true-center as soon as the left and right groups have different
-   total widths. Height matches .theme-toggle's fixed 24px so it lines up
-   with the row's other fixed-height elements; width is intentionally
-   unset/auto so the browser scales off the image's real aspect ratio. */
+   total widths. Width is intentionally unset/auto so the browser scales
+   off the image's real aspect ratio.
+   Height is 32px, not .theme-toggle's 24px — Hoover's own horizontal
+   lockup (tower symbol + two-line "HOOVER INSTITUTION" wordmark) is a
+   wider, more detailed mark than the old single-line Tech Futures Lab
+   wordmark this replaced, and needs a little more room for the tower
+   icon's linework to read as a tower rather than a smudge. 32px keeps the
+   topbar's own height (still governed by its other, unchanged 24px
+   elements) comfortably taller than the logo, and roughly matches the
+   brand guide's own stated minimum WIDTH for this lockup (7/8 in ≈ 84px
+   at 96dpi ≈ this logo's real aspect ratio at a 32px height). */
 .wordmark-logo {
   position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%);
-  height: 24px; width: auto; display: block;
+  height: 32px; width: auto; display: block;
 }
 .topbar-meta { margin-left: auto; font-family: var(--mono); font-size: 10px; color: var(--mist); display: flex; gap: 14px; flex-wrap: wrap; align-items: center; }
 .theme-toggle {

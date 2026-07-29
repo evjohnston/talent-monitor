@@ -5,12 +5,17 @@ import { NewsTickerLoader } from "../components/NewsTickerLoader.tsx";
 import { ThemeToggle } from "../components/ThemeToggle.tsx";
 import { ExpandableMethods } from "../components/ChartFrame.tsx";
 import type { Dashboard } from "../lib/urlState.ts";
-// The "-alt" logo variants are the bare Tech Futures Lab wordmark, with no
-// sub-brand text baked in — the old logo-light/dark-bg.png had "Global Tech
-// Monitor" baked into the PNG itself; "Global Talent Monitor" is instead
-// the pagehead's own real <h1> text below.
-import logoLightBg from "../assets/logos/logo-light-bg-alt.png";
-import logoDarkBg from "../assets/logos/logo-dark-bg-alt.png";
+// Hoover Institution's own primary logo (tower symbol + "HOOVER
+// INSTITUTION" wordmark, horizontal lockup) — solo Hoover identity, not
+// the old Tech Futures Lab wordmark this masthead used to show. Extracted
+// from HooverBrandingGuide2023.pdf's own Primary Logos page (a real,
+// solid-fill vector lockup at print-vector quality, not a lossy photo) as
+// two flat-color raster variants: black for a light background, white for
+// a dark one — both explicitly sanctioned reproduction colors per that
+// guide's own Logo Colors page. See CLAUDE.md's "Hoover brand sources"
+// section for the full extraction/attribution notes.
+import logoLightBg from "../assets/logos/hoover-logo-light-bg.png";
+import logoDarkBg from "../assets/logos/hoover-logo-dark-bg.png";
 
 interface Props {
   active: Dashboard;
@@ -47,7 +52,7 @@ const description = "A pipeline view of U.S. STEM talent, from foundation throug
   <body>
     <div class="topbar">
       <div class="topbar-inner">
-        <img class="wordmark-logo" src={logoLightBg.src} data-dark-src={logoDarkBg.src} alt="Tech Futures Lab" />
+        <img class="wordmark-logo" src={logoLightBg.src} data-dark-src={logoDarkBg.src} alt="Hoover Institution" />
         <span class="topbar-meta">
           <span>● static build</span>
           <span title="Imported from talent_charts/ — see CLAUDE.md's Ingestion section">{generated}</span>

@@ -456,17 +456,29 @@ license have been supplied yet, and Inter was kept as a placeholder rather
 than guessed at with a lookalike. Swapping this in is real follow-up work
 once font files/a license are available.
 
-**Logo**: the brand guide's primary mark is a Hoover Tower icon + "HOOVER
-INSTITUTION" wordmark (Gotham) in lockup, horizontal and vertical forms —
-this app's current masthead still shows the pre-existing "Tech Futures
-Lab" wordmark (`src/assets/logos/logo-{light,dark}-bg-alt.png`), not
-Hoover's own mark. No Hoover logo asset files (SVG/high-res PNG) have been
-supplied yet either — extracting raster art directly from the brand
-guide PDF was considered and deliberately not done without checking
-first, since whether this becomes a solo Hoover mark or a Hoover+TFL
-cobrand lockup (the guide has an explicit cobranding pattern: entities
-separated by a vertical hairline) is a real identity decision, not just
-an asset-quality one.
+**Logo**: the masthead now shows Hoover's own primary mark (solo, not a
+Hoover+TFL cobrand — decided by hand rather than guessed, since the
+brand guide's own cobranding pattern of entities separated by a vertical
+hairline would have been just as easy to build if that had been the
+call). No separate SVG/vector logo asset file was supplied, so
+`src/assets/logos/hoover-logo-{light,dark}-bg.png` were produced by
+extracting the brand guide's own Primary Logos page: `pdftocairo`/
+`pdftoppm` (installed via `brew install poppler`) rendered that page at
+600 DPI, a small Python/Pillow script isolated the horizontal lockup by
+its real fill color (warm-gray #887E6F, distinguished from the page's
+black body text and cyan measurement guides by requiring a warm R>B
+cast, not just color distance — plain distance alone was catching
+anti-aliased gray text pixels that happen to sit close to 887E6F on the
+gray axis) and re-rendered it as flat black-on-transparent and
+white-on-transparent PNGs — both explicitly sanctioned reproduction
+colors per the guide's own Logo Colors page, not colors invented for
+this purpose. `.wordmark-logo`'s height went from the old wordmark's
+24px to 32px in `index.css` — the tower icon's linework needs more room
+than the old single-line Tech Futures Lab wordmark did to read as a
+tower rather than a smudge. A real vector source file, if one becomes
+available later, would still be the better long-term asset — this
+raster extraction is a solid, real, on-brand stand-in, not a placeholder
+guess.
 
 ## Known gaps
 
