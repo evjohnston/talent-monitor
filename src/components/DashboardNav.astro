@@ -1,0 +1,25 @@
+---
+import { STAGES } from "../lib/types.ts";
+import type { Dashboard } from "../lib/urlState.ts";
+
+interface Props {
+  active: Dashboard;
+}
+const { active } = Astro.props;
+const base = import.meta.env.BASE_URL;
+const DASHBOARDS: { key: Dashboard; label: string; href: string }[] = [
+  { key: "overview", label: "Overview", href: base },
+  ...STAGES.map((s) => ({ key: s.id as Dashboard, label: s.label, href: `${base}${s.id}/` })),
+];
+---
+<!-- Real <a href> per stage, not a JS tab switch — each stage is its own
+     Astro route now (see src/pages/), so this nav works with JS disabled
+     and is a real, crawlable, keyboard-reachable link list. -->
+<div class="dashboard-nav-heading">Track</div>
+<nav class="dashboard-nav" aria-label="Dashboards">
+  {DASHBOARDS.map((d) => (
+    <a class="dashboard-nav-btn" href={d.href} aria-current={active === d.key ? "page" : undefined}>
+      {d.label}
+    </a>
+  ))}
+</nav>

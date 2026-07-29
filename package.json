@@ -5,15 +5,17 @@
   "type": "module",
   "description": "Global Talent Monitor — a pipeline view of U.S. STEM talent, from foundation through degree production, graduate training, workforce entry, retention/immigration, and research output.",
   "scripts": {
-    "dev": "vite",
-    "build": "tsc -b && vite build",
-    "preview": "vite preview",
+    "dev": "astro dev",
+    "build": "tsc -b --noEmit && astro build",
+    "preview": "astro preview",
     "import-talent-charts": "tsx scripts/import-talent-charts.ts",
     "gen-continent-map": "tsx scripts/gen-continent-map.ts",
     "typecheck": "tsc -b --noEmit",
     "test": "vitest run"
   },
   "dependencies": {
+    "@astrojs/react": "^6.0.2",
+    "astro": "^7.1.5",
     "d3-geo": "^3.1.1",
     "d3-sankey": "^0.12.3",
     "i18n-iso-countries": "^7.14.0",
@@ -28,7 +30,6 @@
     "@types/react": "^18.3.12",
     "@types/react-dom": "^18.3.1",
     "@types/react-simple-maps": "^3.0.6",
-    "@vitejs/plugin-react": "^4.3.4",
     "tsx": "^4.19.2",
     "typescript": "^5.6.3",
     "vite": "^6.0.3",

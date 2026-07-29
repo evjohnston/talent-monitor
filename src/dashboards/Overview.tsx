@@ -171,7 +171,7 @@ export function Overview({ ctx }: { ctx: DashboardContext }) {
               ) : (
                 <p className="trend-note">{s.blurb}</p>
               )}
-              <button className="pill" onClick={() => ctx.navigate(s.id)}>Open {s.label} →</button>
+              <a className="pill" href={`${import.meta.env.BASE_URL}${s.id}/`}>Open {s.label} →</a>
             </div>
           );
         })}

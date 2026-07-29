@@ -1,4 +1,4 @@
-import { useState, type ReactNode } from "react";
+import type { ReactNode } from "react";
 
 // The plain-language title + one-sentence takeaway pattern used above
 // every real section — title states the QUESTION or subject, takeaway
@@ -39,15 +39,19 @@ export function PolicyTakeaway({ children, tone = "default" }: { children: React
 
 // Collapses the long, real Sources & Method prose by default so a reader
 // isn't asked to read methodology before the page's own findings — the
-// full text is one click away, never deleted or shortened.
+// full text is one click away, never deleted or shortened. A native
+// <details>/<summary> rather than useState-gated JSX: with JS disabled
+// (the Astro migration's static-fallback requirement) a conditionally-
+// rendered body would be missing from the HTML entirely, not just hidden
+// — <details> puts the real text in the DOM and lets the browser handle
+// open/close with zero script, same visual affordance via CSS below.
 export function ExpandableMethods({ summary, children }: { summary: ReactNode; children: ReactNode }) {
-  const [open, setOpen] = useState(false);
   return (
-    <div className="expandable-methods">
-      <button className="expandable-methods-toggle" onClick={() => setOpen((o) => !o)} aria-expanded={open}>
-        {summary} <span className="expandable-methods-caret">{open ? "▲ Close" : "▼ Open methodology"}</span>
-      </button>
-      {open && <div className="expandable-methods-body">{children}</div>}
-    </div>
+    <details className="expandable-methods">
+      <summary className="expandable-methods-toggle">
+        {summary} <span className="expandable-methods-caret" />
+      </summary>
+      <div className="expandable-methods-body">{children}</div>
+    </details>
   );
 }

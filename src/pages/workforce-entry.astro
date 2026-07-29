@@ -1,0 +1,12 @@
+---
+import BaseLayout from "../layouts/BaseLayout.astro";
+import { TrackWorkforceEntry } from "../dashboards/TrackWorkforceEntry.tsx";
+import { buildDashboardContext, formatGenerated } from "../lib/buildContext.ts";
+import { loadTalentData } from "../lib/loadTalentData.ts";
+
+const data = loadTalentData();
+const ctx = buildDashboardContext(data);
+---
+<BaseLayout active="workforce-entry" generated={formatGenerated(data)}>
+  <TrackWorkforceEntry ctx={ctx} client:load />
+</BaseLayout>

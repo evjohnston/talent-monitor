@@ -221,6 +221,115 @@ somewhere** — no top-N cut of the real data; a stage with 20 exhibits gets
 that stage's own hero exhibit via `toLatestValue`/`toRankedBars` — never a
 fabricated summary/index number.
 
+## Astro migration (2026-07-28, static-first rendering)
+
+The app was a pure client-rendered Vite + React SPA through the talent
+rebuild above — real HTML was one empty `<div id="root">`, and every
+title, finding, chart, and citation existed only after JS ran. A later
+publication-redesign pass (see `content/report-crosswalk.csv` and
+`docs/current-*-audit.md` for the fuller audit this came out of) requires
+real per-stage URLs and a working no-JS floor (titles, findings, source
+notes, and chart output must all survive JS being off), so the app moved
+from Vite's plain React plugin to **Astro**, in static-output mode, with
+`@astrojs/react` for islands. Astro was chosen over a hand-rolled
+prerender step specifically because it turns both requirements into one
+change: each stage becomes a real file-route under `src/pages/`, and
+Astro's default behavior for any framework component — server-render its
+real static markup at build time, THEN hydrate — gives real content
+without JS for free, with no separate prerendering pipeline to maintain.
+
+- **Routing.** `src/pages/index.astro` (Overview) plus one `.astro` file
+  per stage (`foundation.astro`, `degree-production.astro`, etc.) replace
+  the old single `App.tsx`'s internal `dashboard` state + `?dashboard=`
+  query param (`src/lib/urlState.ts` is now just the `Dashboard` type, not
+  read/write helpers). `src/layouts/BaseLayout.astro` is the shared shell
+  (masthead, `DashboardNav.astro`'s real `<a href>` list, footer) every
+  page wraps its content in.
+- **Data loading moved from client fetch to build time.** The old
+  `App.tsx` fetched `public/data/talent.json` in a `useEffect` and
+  silently swallowed a failed fetch (`.catch(() => {})` — a real,
+  audited bug: no user-facing error state existed). Every `.astro` page
+  now reads that same committed file directly off disk at build time via
+  `src/lib/loadTalentData.ts` (Node `fs`, resolved from `process.cwd()`
+  — NOT `import.meta.url`, since Astro relocates a module into
+  `dist/.prerender/chunks/` during build and an `import.meta.url`-relative
+  path would resolve against that relocated location instead of the real
+  project root) and `src/lib/buildContext.ts` (the same
+  `exhibitsByStage`/`latestNote` grouping `App.tsx` used to compute
+  client-side, moved to one shared function). There is no runtime fetch
+  of `talent.json` left to fail.
+- **`DashboardContext`** (`src/dashboards/types.ts`) dropped `dashboard`,
+  `navigate`, and `dark` — a framework-component prop passed from an
+  `.astro` page must serialize to JSON for hydration, and cross-page
+  navigation is now a real link, not client state. The one caller that
+  used `ctx.navigate` (Overview's "Open `<stage>` →" pill) is now a plain
+  `<a href>`.
+- **Islands are `client:load`, not `client:only`** — every `Overview`/
+  `Track*.tsx` component still renders its full real output (KPI numbers,
+  exhibit panels, chart SVGs, Sankey ribbons) at build time; the client
+  bundle only adds interactivity (hover tooltips, cross-highlight,
+  methodology disclosure) on top of markup that was already there. Two
+  real bugs surfaced and got fixed specifically because they'd never been
+  checked without JS before:
+  - `ChartFrame.tsx`'s `ExpandableMethods` used to gate its whole body
+    behind `useState(false)` — with JS off, the conditionally-rendered
+    body was never in the DOM at all, not just visually hidden. It's now
+    a native `<details>/<summary>`, so the real methodology text ships in
+    the static HTML and expands with zero script; the old ▲/▼ toggle text
+    is now pure CSS (`.expandable-methods[open] .expandable-methods-caret`).
+  - `useCountUp.ts` used to initialize its displayed value at `0` and
+    animate up to the real target only inside a mount effect — meaning
+    every KPI on the Overview page rendered as a literal "0" before JS
+    ran. It now initializes at the real target and the mount effect
+    resets to 0 and animates back up as a JS-only reveal layered on top,
+    so the number is always real, JS or not.
+- **A real SSR/hydration bug, found and fixed by hand** — `Sankey.tsx`'s
+  particle dots (`sankeyParticles.ts`) compute their lane geometry via
+  `Math.sin`-based hashing, which returned values differing from Node
+  (the build's SSR pass) to the browser (the client hydration pass) by a
+  couple of floating-point ULPs despite identical inputs — enough for
+  React to log a real hydration-mismatch warning on every page with a
+  Sankey, confirmed by hand (server/client `path`/`r` strings differed
+  only from the 12th significant digit onward). Fixed by rounding every
+  coordinate to 2 decimals before it goes into the SVG attribute string —
+  an SVG doesn't need float64 precision, and rounding removes the
+  cross-engine noise entirely.
+- **News ticker and theme toggle stay client-only** (`NewsTickerLoader.tsx`,
+  `ThemeToggle.tsx`, both `client:load`) — deliberately, not an oversight:
+  the ticker is genuinely live-fetched per page load (see its own section
+  below) and the toggle is a real click interaction, so neither has a
+  meaningful no-JS version. The toggle's *default* theme (light, unless
+  `localStorage`/`prefers-color-scheme` says dark) still renders correctly
+  without JS; a blocking inline `<script>` in `BaseLayout.astro`'s `<head>`
+  sets the real value before first paint so a returning dark-mode reader
+  never sees a light flash, the same problem a client-only `useEffect`
+  would have caused either way.
+- **Astro-only client env vars need the `PUBLIC_` prefix**, not Vite's old
+  `VITE_` — `NewsTickerLoader.tsx` reads `PUBLIC_WORKER_URL` now, not
+  `VITE_WORKER_URL`.
+- **Commands are unchanged at the `npm run` layer** (`dev`/`build`/
+  `preview`/`typecheck`), but now shell out to `astro`, not `vite`,
+  underneath — `vite.config.ts`/`index.html`/`src/main.tsx`/`src/App.tsx`
+  are gone, replaced by `astro.config.mjs` and `src/pages/`.
+  `npm run typecheck` (`tsc -b --noEmit`) still only checks `.ts`/`.tsx`;
+  `.astro` frontmatter is checked by `astro build` itself, not by `tsc`.
+- **Known follow-up, not yet done** — the Cloudflare Worker's
+  `ALLOWED_ORIGINS` (`worker/wrangler.jsonc`) has been updated in source
+  to add `astro dev`'s default port (`localhost:4321`, replacing Vite's
+  old `:5173` as the primary local origin) but **not yet redeployed** —
+  until someone runs `wrangler deploy` from `worker/`, the live news
+  ticker will log CORS errors against a local `astro dev` server (it still
+  fails soft to an empty ticker, so this isn't a broken feature, just a
+  noisy local console). Deploying is a real change to a shared live
+  service, so it wasn't done without asking first, consistent with this
+  file's own instinct to flag anything that touches shared/production
+  state rather than doing it silently.
+- **Known follow-up, not yet done** — every page still ships the full
+  `exhibits` corpus to its React island's hydration payload, not just
+  that stage's own slice — unchanged from the old SPA's behavior, and a
+  legitimate future performance pass, not something this migration tried
+  to also fix in the same change.
+
 ## What didn't survive the rebuild
 
 Deleted outright, not adapted, because none of it maps onto exhibit-shaped
@@ -255,8 +364,10 @@ removed going forward.
 `Tooltip`, `PanelTabs`, `ChartFrame.tsx` (`SectionHeader`/`EmptyState`/
 `ExpandableMethods`/`PolicyTakeaway`), `MethodNote`, `NoteCard`, `Card`,
 `countries.ts`, `continentMap.ts`, `format.ts`, `csvExport.ts`,
-`chartLabels.ts`, `useReducedMotion.ts`, `DashboardNavigation` (now 6 stage
-tabs + Overview, driven by `STAGES` instead of a hardcoded 4-item array).
+`chartLabels.ts`, `useReducedMotion.ts`, the dashboard nav (6 stage tabs +
+Overview, driven by `STAGES` instead of a hardcoded 4-item array — now
+`DashboardNav.astro`, a real `<a href>` list rather than a React tab
+strip, see "Astro migration" below).
 `Leaderboard.tsx` and `WorldMap.tsx` were kept but edited to drop their
 `Entry`/`TrendPoint`/`aggregate.ts` dependencies down to plain generic
 props (`{ name, country?, value }[]` and `{ values: Record<string,

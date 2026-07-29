@@ -1,5 +1,8 @@
 node_modules
 dist
+# Astro's generated-types/content cache (astro.config.mjs) — build output,
+# not source, same treatment as dist/.
+.astro
 *.local
 .DS_Store
 .vscode/*

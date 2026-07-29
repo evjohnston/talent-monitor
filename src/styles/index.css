@@ -134,6 +134,10 @@ a { color: inherit; }
 /* ── controls: shared button/pill/chip language, no radius ───────── */
 .pill, .chip, .ghost-btn { font-family: var(--sans); font-size: 11px; border-radius: var(--r); border: 1px solid var(--line-2); background: var(--paper); color: var(--ink-2); padding: 4px 10px; cursor: pointer; }
 .pill { cursor: default; }
+/* Only the Overview "Open <stage> →" pill is a real link (the rest are
+   static badges) — anchors default to underline/blue, so undo that here
+   rather than on the shared .pill rule. */
+a.pill { cursor: pointer; text-decoration: none; display: inline-block; }
 .chip:hover, .ghost-btn:hover { border-color: var(--slate); color: var(--ink); }
 .chip[aria-pressed="true"] { background: var(--surface-selected); border-color: var(--surface-selected); color: var(--on-selected); }
 .ghost-btn:hover { border-color: var(--red); color: var(--red); }
@@ -256,9 +260,10 @@ a { color: inherit; }
 .dashboard-nav-btn {
   font-family: var(--sans); font-size: 13px; font-weight: 700; border: 1px solid var(--line-2); border-bottom: 3px solid var(--line-2);
   background: var(--paper); color: var(--ink-2); padding: 7px 14px 5px; border-radius: var(--r); cursor: pointer;
+  text-decoration: none; display: inline-block;
 }
 .dashboard-nav-btn:hover { border-color: var(--slate); color: var(--ink); }
-.dashboard-nav-btn[aria-pressed="true"] {
+.dashboard-nav-btn[aria-current="page"] {
   background: var(--surface-selected); border-color: var(--surface-selected); border-bottom-color: var(--red); color: var(--on-selected);
 }
 
@@ -282,10 +287,13 @@ a { color: inherit; }
 /* ── ExpandableMethods — collapses the long Sources & Method prose ── */
 .expandable-methods { margin-top: var(--sp-3); }
 .expandable-methods-toggle {
-  background: none; border: none; padding: 0; font: inherit; font-size: 12px; color: var(--ink-2);
-  cursor: pointer; text-align: left; display: block; width: 100%;
+  list-style: none; font: inherit; font-size: 12px; color: var(--ink-2);
+  cursor: pointer; display: block; width: 100%;
 }
+.expandable-methods-toggle::-webkit-details-marker { display: none; }
 .expandable-methods-caret { color: var(--red); font-weight: 600; font-size: 11px; margin-left: 4px; }
+.expandable-methods-caret::before { content: "▼ Open methodology"; }
+.expandable-methods[open] .expandable-methods-caret::before { content: "▲ Close"; }
 .expandable-methods-body { margin-top: var(--sp-2); font-size: var(--fs-methods); line-height: 1.6; color: var(--ink-2); }
 
 /* ── tooltip ────────────────────────────────────────────────────── */

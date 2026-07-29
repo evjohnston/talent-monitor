@@ -1,0 +1,12 @@
+---
+import BaseLayout from "../layouts/BaseLayout.astro";
+import { TrackGraduateTraining } from "../dashboards/TrackGraduateTraining.tsx";
+import { buildDashboardContext, formatGenerated } from "../lib/buildContext.ts";
+import { loadTalentData } from "../lib/loadTalentData.ts";
+
+const data = loadTalentData();
+const ctx = buildDashboardContext(data);
+---
+<BaseLayout active="graduate-training" generated={formatGenerated(data)}>
+  <TrackGraduateTraining ctx={ctx} client:load />
+</BaseLayout>
