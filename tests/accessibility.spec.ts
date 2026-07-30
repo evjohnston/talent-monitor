@@ -26,6 +26,12 @@ const ROUTES = [
   "countries/united-states/",
   "countries/china/",
   "countries/india/",
+  "countries/united-kingdom/",
+  "countries/germany/",
+  "countries/south-korea/",
+  "countries/japan/",
+  "countries/canada/",
+  "countries/australia/",
 ];
 
 for (const route of ROUTES) {
