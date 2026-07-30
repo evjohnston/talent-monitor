@@ -198,6 +198,35 @@ jobs:
         env:
           GTM_BASE: /${{ github.event.repository.name }}/
 
+      # lighthouserc.cjs — real, verified performance/accessibility/best-
+      # practices/SEO budgets (issue #17), run against the real
+      # production build (LHCI starts its own `npm run preview` server,
+      # same pattern the gallery/data-review own-build test steps already
+      # use). Thresholds were set from an ACTUAL 3-run median baseline
+      # against this exact build, not copied from a generic scope doc —
+      # see CLAUDE.md's "Lighthouse performance budgets" section for the
+      # real per-route numbers this was measured against and the tracked
+      # follow-up optimization issue for the real, disclosed performance
+      # gap under Lighthouse's own default mobile-simulated throttling.
+      # A real, blocking gate, unlike the visual-regression step — a
+      # threshold breach here is a genuine performance regression, not
+      # cross-machine pixel noise.
+      - name: Lighthouse CI budgets
+        run: npm run test:lighthouse
+        env:
+          GTM_BASE: /${{ github.event.repository.name }}/
+
+      # scripts/report-bundle-size.ts — a real, visible log of every real
+      # JS chunk's size and public/data/talent.json's own payload size on
+      # every build, not a silent, unchecked number. A historical byte-
+      # diffing budget (this issue's own "prevent unexplained growth
+      # above N%" ask) needs a committed baseline to diff against, which
+      # is real, larger follow-up work — this is the honest, achievable
+      # v1: visibility now, enforcement once a real baseline exists to
+      # enforce against.
+      - name: Bundle size report
+        run: npm run report:bundle-size
+
       # scripts/generate-downloads.ts — build-time PNG chart images and
       # per-stage ZIP CSV bundles (see CLAUDE.md's "Per-chart downloads"
       # section), only needed on a real deploy, not a PR status check —

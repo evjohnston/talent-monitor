@@ -827,6 +827,8 @@ npm run test:gallery          # tests/gallery/*.spec.ts — real gallery content
 npm run review:data           # scripts/generate-data-review.ts — one real record per exhibit, CSV+JSON to dist/dev/data-review/; fails on real data problems; needs `npm run build` first
 npm run test:data-review-hidden  # tests/data-review-hidden.spec.ts — confirms /dev/data-review/ is hidden in a normal build; needs `npm run build` first
 npm run test:data-review      # tests/data-review/*.spec.ts — real review-sheet content; builds its own PUBLIC_ENABLE_DATA_REVIEW=true dist/ via playwright.data-review.config.ts
+npm run test:lighthouse       # lighthouserc.cjs — real, measured Lighthouse budgets (9 routes, 3 runs each); needs `npm run build` first
+npm run report:bundle-size    # scripts/report-bundle-size.ts — real per-build JS chunk/data-payload sizes; needs `npm run build` first
 ```
 
 On a fresh clone, `public/data/talent.json` is already committed — `npm run
@@ -1202,6 +1204,80 @@ Overview sequence itself reuses), and `scroll-behavior` computes to
 Nothing new this session introduces its own scroll-triggered or
 decorative animation to gate — the scrollytelling's core mechanic is
 plain CSS `position: sticky`, which isn't an animation at all.
+
+## Lighthouse performance budgets (2026-07-30)
+
+Closes #17, the fourth of six features deliberately deferred when the
+methodology/downloads/overview backlog (#2) closed — see `docs/
+CLAUDE_CODE_SIX_DEFERRED_FEATURES.md` and tracking issue #13.
+`lighthouserc.cjs` (`@lhci/cli`, `npm run test:lighthouse`),
+`scripts/report-bundle-size.ts` (`npm run report:bundle-size`).
+
+**Every threshold is a real, measured number, not copied from the source
+scope doc's own generic placeholders.** Ran `npx lhci autorun` by hand
+(3 runs/route, LHCI's own median-of-N aggregation) against a real
+production build before writing a single assertion. The real median
+baseline: Accessibility 0.96-1.00, Best Practices 0.93-0.96, SEO 1.00
+across every one of the 9 real routes; Performance 0.42-0.73 under
+Lighthouse's own default mobile-simulated throttling — a real, disclosed
+gap (tracked in follow-up issue #23 with the exact per-route numbers),
+not hidden behind an inflated threshold. Copying the scope doc's own
+proposed `>= 0.85` Performance floor verbatim would have failed every
+single route on day one — exactly the "permanently failing CI job"
+anti-pattern that issue's own text explicitly warns against.
+
+**A real, second discrepancy caught checking WHY accessibility wasn't a
+perfect 1.00 everywhere**: `/downloads/` scores 0.96, losing 0.04 to
+Lighthouse's own `target-size` audit flagging its dense 91-row table's
+inline text links. This is the SAME real WCAG 2.5.8 exemption (inline
+links within a text block don't need the 24×24 minimum target size)
+already reasoned through and confirmed correct during the 2026-07-30
+responsive/reduced-motion pass — `tests/accessibility.spec.ts`'s own
+axe-core sweep already passes 0 violations on this exact route. Lighthouse's
+automated check simply doesn't apply that same nuance. Rather than set
+Accessibility's floor at the real observed 0.96 (leaving only 0.01 real
+margin against ordinary run-to-run variance — not a stable gate), it's
+set at 0.90, still a genuinely high, meaningful bar.
+
+**Verified the gate actually fails on a real breach, not assumed** —
+same discipline as every other test-suite addition this session:
+temporarily set an impossible `minScore: 0.99` for Performance, reran,
+confirmed a real `Assertion failed. Exiting with status code 1.` with
+the actual measured score printed, then restored the real config.
+
+**A real config-format bug, fixed twice, not once** — a static
+`lighthouserc.json` can't read `GTM_BASE` (the same real base-path
+problem `playwright.config.ts`'s own comment already documents, fixed
+here the same way: a `.js`/`.cjs` config computing the URL list at
+require-time instead). The FIRST fix (`lighthouserc.js`) still failed
+for a real, different reason: this repo's `package.json` declares
+`"type": "module"`, so a `.js` file using CommonJS `module.exports`
+throws `ReferenceError: module is not defined in ES module scope` —
+confirmed by hand, not guessed. Renamed to `.cjs`, which forces CommonJS
+regardless of that setting; a real, subtle process mistake was also
+caught here (editing the config file while an earlier background `lhci
+autorun` was still mid-run corrupted that run's own assert step with
+"No assertions to use" — fixed by never touching the config file while a
+run is in flight, and rerunning clean).
+
+**`scripts/report-bundle-size.ts`** — a real, visible per-build report of
+every JS chunk's actual size (30 real chunks, ~1.46MB total, largest
+`vendor-nivo` at 400KB) plus `public/data/talent.json`'s own real payload
+size (1.15MB) — flagging anything past the same real 800KB threshold
+`astro.config.mjs`'s own `manualChunks` split already established (see
+"Build chunking"). Deliberately a visibility report, not a historical
+byte-diffing budget system — the scope doc's own "prevent unexplained
+growth above N%" ask needs a committed baseline to diff against, which
+is real, larger follow-up work, not invented here as a half-built
+mechanism with nothing real to diff against yet.
+
+CI wiring: `npm run test:lighthouse` runs as a real, BLOCKING gate
+(unlike the non-blocking visual-regression step — a threshold breach
+here is a genuine measured regression, not cross-machine pixel noise),
+positioned after the "Rebuild for production" step so it always audits
+the real, flag-off production build, never a dev-tool-flagged one.
+`npm run report:bundle-size` runs alongside it as a real, always-visible
+log line, not a silent number nobody checks.
 
 ## Data review sheet (2026-07-30)
 
