@@ -618,3 +618,15 @@ input:focus-visible, select:focus-visible, button:focus-visible {
 .chart-annotation-btn { display: block; width: 100%; text-align: left; background: none; border: none; padding: 3px 0; font: inherit; font-size: 11px; color: var(--slate); cursor: pointer; }
 .chart-annotation-btn:hover { color: var(--ink); }
 .chart-annotation-detail { font-size: 11px; color: var(--ink-2); padding: 2px 0 6px 12px; border-left: 2px solid var(--line-2); margin-left: 2px; }
+
+/* ── explorer catalog (issue #18) ─────────────────────────────────────── */
+.explorer-results { list-style: none; margin: 0; padding: 0; }
+.explorer-result { display: flex; align-items: center; gap: var(--sp-3); padding: var(--sp-2) 0; border-top: 1px solid var(--line); }
+.explorer-result-main { flex: 1; min-width: 0; }
+.explorer-result-title { font-weight: 600; margin-bottom: 2px; }
+.explorer-result-preview { flex: none; }
+.explorer-result-actions { flex: none; }
+@media (max-width: 620px) {
+  .explorer-result { flex-wrap: wrap; }
+  .explorer-result-preview { display: none; }
+}

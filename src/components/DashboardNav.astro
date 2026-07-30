@@ -15,6 +15,7 @@ const DASHBOARDS: { key: Dashboard; label: string; href: string }[] = [
 // own row so "Track" (the STAGES-driven nav above) still reads as exactly
 // the 6-stage pipeline plus Overview it always has.
 const REFERENCE: { key: Dashboard; label: string; href: string }[] = [
+  { key: "explorer", label: "Explorer", href: `${base}explorer/` },
   { key: "methodology", label: "Methodology", href: `${base}methodology/` },
   { key: "downloads", label: "Downloads", href: `${base}downloads/` },
 ];
