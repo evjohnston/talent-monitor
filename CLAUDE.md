@@ -822,6 +822,8 @@ npm test                      # src/lib/*.test.ts — vitest (vitest.config.ts o
 npm run test:a11y             # tests/accessibility.spec.ts — playwright + axe-core; needs `npm run build` first
 npm run test:interaction      # tests/interaction.spec.ts — real keyboard/download checks; needs `npm run build` first
 npm run test:visual           # tests/visual-regression.spec.ts — scoped pixel-diff snapshots; needs `npm run build` first
+npm run test:gallery-hidden   # tests/gallery-hidden.spec.ts — confirms /dev/components/ is hidden in a normal build; needs `npm run build` first
+npm run test:gallery          # tests/gallery/*.spec.ts — real gallery content; builds its own PUBLIC_ENABLE_DEV_GALLERY=true dist/ via playwright.gallery.config.ts
 ```
 
 On a fresh clone, `public/data/talent.json` is already committed — `npm run
@@ -1197,6 +1199,94 @@ Overview sequence itself reuses), and `scroll-behavior` computes to
 Nothing new this session introduces its own scroll-triggered or
 decorative animation to gate — the scrollytelling's core mechanic is
 plain CSS `position: sticky`, which isn't an animation at all.
+
+## Internal component gallery (2026-07-30)
+
+Closes #14, the first of six features deliberately deferred when the
+methodology/downloads/overview backlog (#2) closed — see `docs/
+CLAUDE_CODE_SIX_DEFERRED_FEATURES.md` for the full locked scope of all
+six, and issue #13 for the tracking issue. `src/pages/dev/components.astro`
++ `src/dashboards/ComponentGallery.tsx` + `src/dev/fixtures/
+galleryExhibits.ts`.
+
+**Real components, real (but small, local) data — never a mocked visual
+replica.** Every chart example on the page is a real `ExhibitPanel`
+rendering one of 10 small fixture `Exhibit` objects (`src/dev/fixtures/
+galleryExhibits.ts`) through the exact same `ExhibitChart` dispatch every
+real Track page uses — including its own real `MethodologyDrawer`,
+citation, and CSV/JSON/SVG download buttons. Fixtures cover one example
+per real `ChartKind` (timeseries, share-timeseries, leaderboard-years,
+ranked-bar, country-map in both count and range mode), plus a >6-series
+picker trigger, a real missing (`null`) data point, a deliberately long
+title/citation, and a derived-exhibit `MethodologyDrawer` row. `Sankey`
+isn't dispatched through `ExhibitChart` (real Track pages call it
+directly via `sankeyData.ts`), so it gets its own tiny fixture
+nodes/links object.
+
+**A real bug the fixtures themselves caught**: the first leaderboard-years
+fixture used a "long" shape (one row per year+entity pair, a `Year`
+column) — `toLeaderboardYears()`'s real implementation expects the
+actual report data's "wide" shape instead (one row per entity, a column
+PER YEAR). The fixture silently rendered "No data for this exhibit"
+until this was caught by hand and fixed to match the real shape FIG302's
+own CSV export uses.
+
+**Gated on a real `PUBLIC_ENABLE_DEV_GALLERY` env flag, not
+`import.meta.env.DEV`** — a deliberate deviation from the scope doc's
+own stated preference, made for a concrete, checked reason: this repo's
+entire Playwright test harness (`playwright.config.ts`) drives `astro
+preview`, a production-mode server where `import.meta.env.DEV` is always
+`false`, same as a real deploy. A `DEV`-gated route's real content could
+never be tested by that harness at all. An env flag lets a dedicated
+build set `PUBLIC_ENABLE_DEV_GALLERY=true` and get real, checkable
+content through the exact same `astro build` + `astro preview` pipeline
+every other test already uses. A normal production build
+(`build-and-deploy.yml` never sets this var) renders a plain "not
+available" notice instead — confirmed by hand: `grep`ing the built
+`dist/dev/components/index.html` for real gallery markup after an
+unflagged build returns zero matches. Not in `DashboardNav.astro`'s own
+`STAGES`/`REFERENCE` lists and not in any sitemap (this repo has no
+sitemap generator) either way, so it's unreachable from real navigation
+regardless of the flag.
+
+**A second Playwright config, not a second test framework** —
+`playwright.gallery.config.ts` (`testDir: "./tests/gallery"`) rebuilds
+with the flag on via its own `webServer.command`, since the route only
+has real content in that build state; `playwright.config.ts` gained a
+matching `testIgnore: ["gallery/**"]` so its own recursive `./tests`
+scan doesn't also try to run those specs against the wrong (flag-off)
+server. `tests/gallery-hidden.spec.ts` stays in the main `tests/`
+directory (it deliberately checks the flag-OFF, production-mode
+behavior) and gets its own `npm run test:gallery-hidden` script,
+matching the one-script-per-spec-file convention already established
+for `test:a11y`/`test:interaction`/`test:visual`; `npm run test:gallery`
+runs the flag-on suite (content renders, no third-party fetches, a real
+methodology drawer example is keyboard-operable, plus 3-viewport visual
+regression at 1440×1000/1024×768/390×844 — same real, Linux-baseline-
+bootstrapped pattern as `tests/visual-regression.spec.ts`, and
+`visual-baseline.yml` was extended with a second `--update-snapshots`
+run against `playwright.gallery.config.ts` to regenerate both suites'
+baselines in one manual dispatch going forward).
+
+**CI sequencing — a real ordering hazard, caught before it shipped, not
+after**: the gallery's own flag-on test step rebuilds `dist/` as a side
+effect of its `webServer.command`, which would leave `dist/` built WITH
+`PUBLIC_ENABLE_DEV_GALLERY=true` for every step after it — including the
+final `actions/upload-pages-artifact@v3` that ships to production. A
+"Rebuild for production (gallery flag off)" step runs immediately after
+the gallery test step, restoring the real flag-off `dist/` before
+`scripts/generate-downloads.ts` or the deploy artifact ever run. Without
+this, the internal dev-only gallery's real content would have shipped to
+the live site the first time this workflow ran on a push to `main`.
+
+Not yet exhaustive — this is a real, useful v1 covering the major shared
+components (buttons/chips/pills, `KpiCard`, all 5 `ChartKind`s,
+`MethodologyDrawer`, download buttons, empty/disabled/focus states), not
+a complete tick-through of every control this app owns (no combobox,
+range control, or mobile filter sheet exist in this app at all yet, so
+none are faked into the gallery). Grow it the same way every other
+"Known gaps" item in this file grows: file by file, as a new shared
+component gets built or a real gap is found.
 
 ## Interaction, accessibility, and visual-regression tests (2026-07-30)
 

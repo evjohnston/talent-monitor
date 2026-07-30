@@ -115,6 +115,47 @@ jobs:
           path: test-results/
           retention-days: 14
 
+      # tests/gallery-hidden.spec.ts — confirms the internal component
+      # gallery (src/pages/dev/components.astro, issue #14) shows only its
+      # plain "not available" placeholder in a normal build like this one,
+      # never its real content. Runs against the same flag-off dist/ every
+      # step above already uses.
+      - name: Component gallery is hidden in production (Playwright)
+        run: npm run test:gallery-hidden
+        env:
+          GTM_BASE: /${{ github.event.repository.name }}/
+
+      # tests/gallery/*.spec.ts — the real gallery content, only reachable
+      # with PUBLIC_ENABLE_DEV_GALLERY=true (see playwright.gallery.config.ts,
+      # which builds and serves its OWN dist/ with that flag set). This
+      # step's own webServer command overwrites dist/ with a flag-ON build
+      # as a side effect — the "Rebuild for production" step right after
+      # this one restores the real, flag-off dist/ before anything gets
+      # deployed, so a flag-on build is never what ships.
+      - name: Component gallery content (Playwright, own build)
+        id: gallery_content
+        run: npm run test:gallery
+        continue-on-error: true
+        env:
+          GTM_BASE: /${{ github.event.repository.name }}/
+
+      - uses: actions/upload-artifact@v4
+        if: steps.gallery_content.outcome == 'failure'
+        with:
+          name: gallery-test-failure-output
+          path: test-results/
+          retention-days: 14
+
+      # Real, required — not defensive boilerplate. The step above just
+      # left dist/ built WITH PUBLIC_ENABLE_DEV_GALLERY=true; every step
+      # from here on (downloads generation, the deploy artifact) must ship
+      # the real flag-off production build instead, or the internal
+      # gallery's real content would go live.
+      - name: Rebuild for production (gallery flag off)
+        run: npm run build
+        env:
+          GTM_BASE: /${{ github.event.repository.name }}/
+
       # scripts/generate-downloads.ts — build-time PNG chart images and
       # per-stage ZIP CSV bundles (see CLAUDE.md's "Per-chart downloads"
       # section), only needed on a real deploy, not a PR status check —

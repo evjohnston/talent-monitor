@@ -18,6 +18,8 @@
     "test:a11y": "playwright test tests/accessibility.spec.ts",
     "test:interaction": "playwright test tests/interaction.spec.ts",
     "test:visual": "playwright test tests/visual-regression.spec.ts",
+    "test:gallery-hidden": "playwright test tests/gallery-hidden.spec.ts",
+    "test:gallery": "playwright test --config=playwright.gallery.config.ts",
     "generate-downloads": "tsx scripts/generate-downloads.ts"
   },
   "dependencies": {
