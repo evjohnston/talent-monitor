@@ -1,0 +1,55 @@
+---
+import "../../styles/index.css";
+import DashboardNav from "../../components/DashboardNav.astro";
+import { DataReview } from "../../dashboards/DataReview.tsx";
+import { loadTalentData } from "../../lib/loadTalentData.ts";
+import { loadCrosswalk } from "../../lib/loadCrosswalk.ts";
+import { loadReviewStatus } from "../../lib/loadReviewStatus.ts";
+import { buildReviewRecords } from "../../lib/dataReview.ts";
+
+// Dev-only data review sheet (issue #16) — same real production-
+// visibility pattern as the component gallery (#14, see that route's own
+// comment): gated on a real env flag rather than import.meta.env.DEV, so
+// it's actually testable through this repo's astro-preview-based
+// Playwright harness. A separate flag from the gallery's own
+// PUBLIC_ENABLE_DEV_GALLERY — a reviewer may want one on without the
+// other, and they're two genuinely different internal tools.
+const enabled = import.meta.env.PUBLIC_ENABLE_DATA_REVIEW === "true";
+
+const data = enabled ? loadTalentData() : null;
+const records = data
+  ? buildReviewRecords(
+      data.exhibits,
+      new Map(loadCrosswalk().map((r) => [r.reportId, r])),
+      loadReviewStatus()
+    )
+  : [];
+---
+
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="robots" content="noindex, nofollow" />
+    <title>Data review (internal) — Global Talent Monitor</title>
+  </head>
+  <body>
+    <main class="wrap">
+      <div class="pagehead">
+        <div>
+          <h1>Data review sheet</h1>
+          <div class="sub">Internal, development-only — not part of the public site</div>
+        </div>
+      </div>
+      {enabled ? (
+        <>
+          <DashboardNav active="overview" />
+          <DataReview records={records} client:load />
+        </>
+      ) : (
+        <p>This page is only available in a build with <code>PUBLIC_ENABLE_DATA_REVIEW=true</code> set. It is not part of the deployed production site.</p>
+      )}
+    </main>
+  </body>
+</html>

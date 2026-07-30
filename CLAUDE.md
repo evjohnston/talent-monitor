@@ -824,6 +824,9 @@ npm run test:interaction      # tests/interaction.spec.ts — real keyboard/down
 npm run test:visual           # tests/visual-regression.spec.ts — scoped pixel-diff snapshots; needs `npm run build` first
 npm run test:gallery-hidden   # tests/gallery-hidden.spec.ts — confirms /dev/components/ is hidden in a normal build; needs `npm run build` first
 npm run test:gallery          # tests/gallery/*.spec.ts — real gallery content; builds its own PUBLIC_ENABLE_DEV_GALLERY=true dist/ via playwright.gallery.config.ts
+npm run review:data           # scripts/generate-data-review.ts — one real record per exhibit, CSV+JSON to dist/dev/data-review/; fails on real data problems; needs `npm run build` first
+npm run test:data-review-hidden  # tests/data-review-hidden.spec.ts — confirms /dev/data-review/ is hidden in a normal build; needs `npm run build` first
+npm run test:data-review      # tests/data-review/*.spec.ts — real review-sheet content; builds its own PUBLIC_ENABLE_DATA_REVIEW=true dist/ via playwright.data-review.config.ts
 ```
 
 On a fresh clone, `public/data/talent.json` is already committed — `npm run
@@ -1199,6 +1202,86 @@ Overview sequence itself reuses), and `scroll-behavior` computes to
 Nothing new this session introduces its own scroll-triggered or
 decorative animation to gate — the scrollytelling's core mechanic is
 plain CSS `position: sticky`, which isn't an animation at all.
+
+## Data review sheet (2026-07-30)
+
+Closes #16, the third of six features deliberately deferred when the
+methodology/downloads/overview backlog (#2) closed — see `docs/
+CLAUDE_CODE_SIX_DEFERRED_FEATURES.md` and tracking issue #13.
+`src/lib/dataReview.ts` (pure record-building + validation),
+`scripts/generate-data-review.ts` + `npm run review:data` (CLI,
+CSV/JSON output), `src/pages/dev/data-review.astro` +
+`src/dashboards/DataReview.tsx` (the human-readable review page).
+
+**One real record per exhibit (91 total)**, computed from
+`public/data/talent.json` and `content/report-crosswalk.csv` — never a
+second hand-maintained spreadsheet. `population`/`unit` are left blank
+rather than fabricated (the crosswalk's own dedicated columns for these
+are still "TBD" for every exhibit, same real gap the Methodology drawer
+work already documented). Primary-series stats (first/last/min/max
+value, absolute/relative change) come from the exhibit's own first real
+numeric column — a disclosed simplification for multi-series exhibits,
+not a per-series breakdown.
+
+**A real, structural bug caught building the duplicate-key check, not a
+hypothetical one**: the first version's `primaryKey()` special-cased "a
+Year column exists → use Year alone as the row's identity," which
+silently collapsed every real MULTI-dimension exhibit (FIG510/FIG511,
+keyed by Year+Country+Category; TAB604, keyed by Country+Year+Status;
+TAB501, keyed by conf_norm+conference+year+country) into thousands of
+false "duplicate" rows the instant this tool ran against real data.
+Fixed by dropping the special case entirely — the composite key is
+always every column `numericColumns()` doesn't already exclude, which
+correctly reduces to "Year alone" for an ordinary single-series
+timeseries and the real full dimension set otherwise.
+
+**A real, second bug the fixed check then caught for real, in the actual
+committed data — not a test fixture**: with the key logic corrected, the
+review sheet still failed on FIG512/FIG513 (29 duplicate keys each). The
+real cause: `talent_charts/data/FIG512.csv`/`FIG513.csv` are Flourish
+exports with 28 fully-blank trailing rows plus one literal `Made with
+Flourish` attribution row baked into the CSV itself (`grep -rl
+"Flourish" talent_charts/data/` matches exactly those two files, no
+others) — 29 junk rows out of 35 total, only 6 real company rows. Fixed
+at the importer (`scripts/import-talent-charts.ts`'s new
+`isBlankOrWatermarkRow`), the same "fix at the general level, not per
+chart" rule already applied to Grand Total footer rows — confirmed the
+real page's own `BoxPlotRow` rendering was unaffected (it already
+required real numeric values to render a row, so this was invisible on
+the live site) and all 91 exhibits now pass `npm run review:data` with
+zero errors.
+
+**Same dev-only visibility pattern as the component gallery (#14), a
+separate flag** — `PUBLIC_ENABLE_DATA_REVIEW=true`, not the gallery's
+own `PUBLIC_ENABLE_DEV_GALLERY`, since a reviewer may want one internal
+tool on without the other. A normal production build ships only the
+plain "not available" placeholder. Its own `playwright.data-review.
+config.ts` (mirroring `playwright.gallery.config.ts`) rebuilds with the
+flag on to test the real content; `tests/data-review-hidden.spec.ts`
+checks the flag-off placeholder using the main config's own server.
+
+**A real test-writing bug caught and fixed while building the keyboard
+test, not an app bug**: `getByRole("button", { name: "Show" }).first()`
+re-resolves on every call — the instant the first row's button is
+activated, its own accessible name changes to "Hide," so a SECOND
+`.first()` query for a button "named Show" silently shifts to the NEXT
+row's still-unexpanded button, making the test look like the click did
+nothing when the app was working correctly the whole time (confirmed by
+hand with a real screenshot before chasing a nonexistent app bug). Fixed
+by pinning the locator to a specific `<tr>` first, then querying within
+it, so the reference stays stable across the state change.
+
+CI wiring mirrors the gallery's own real pattern exactly: a hidden-in-
+production check against the shared flag-off build, an own-rebuild
+content check (non-blocking, artifact-uploaded on failure), and a single
+shared "Rebuild for production" step that now runs after BOTH the
+gallery's and the data review sheet's own-flag builds, restoring the
+real flag-off `dist/` before downloads generation or the deploy artifact
+ever run. `npm run review:data` itself runs as a real, BLOCKING CI step
+(unlike the two dev-only HTML pages) — a genuine regression gate: if a
+future `talent_charts/` refresh reintroduces a duplicate-key problem, a
+missing source, or a derived exhibit with no calculation note, CI fails
+before it ships, not after a human happens to notice.
 
 ## Data-driven annotation system (2026-07-30)
 

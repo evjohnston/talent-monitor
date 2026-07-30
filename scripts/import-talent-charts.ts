@@ -65,6 +65,24 @@ function stripEmptyColumns(columns: string[], rows: Record<string, string | numb
 // not left for a chart component to filter out one shape at a time.
 const isTotalRow = (v: string | number | null) => typeof v === "string" && /^(grand\s+)?total$/i.test(v.trim());
 
+// A Flourish-exported CSV's own trailing attribution row (confirmed real
+// — the literal last row of FIG512.csv/FIG513.csv, and no other exhibit's
+// raw CSV: `grep -rl "Flourish" talent_charts/data/` matches exactly
+// those two files) — a real export-tool watermark, not report data.
+// Caught building the data-review sheet (issue #16): its own real
+// duplicate-primary-key check flagged FIG512/FIG513 with dozens of
+// "duplicate" null|null rows, which turned out to be 28 genuinely blank
+// trailing rows plus this one watermark row sharing the same blank
+// Country/Company key — 29 junk rows out of 35 total, only 6 real
+// company rows. Dropped alongside isTotalRow, same "fix at the importer,
+// not per-chart" rule this file already applies to Grand Total footers.
+const FLOURISH_WATERMARK = /^made with flourish$/i;
+const isBlankOrWatermarkRow = (columns: string[], row: Record<string, string | number | null>) =>
+  columns.every((c) => {
+    const v = row[c];
+    return v == null || v === "" || (typeof v === "string" && FLOURISH_WATERMARK.test(v.trim()));
+  });
+
 function readExhibitCsv(id: string): { columns: string[]; rows: Record<string, string | number | null>[] } | null {
   const path = join(DATA_DIR, `${id}.csv`);
   if (!existsSync(path)) return null;
@@ -78,7 +96,7 @@ function readExhibitCsv(id: string): { columns: string[]; rows: Record<string, s
       columns.forEach((col, i) => { obj[col] = coerce(r[i] ?? ""); });
       return obj;
     })
-    .filter((r) => !isTotalRow(r[columns[0]]));
+    .filter((r) => !isTotalRow(r[columns[0]]) && !isBlankOrWatermarkRow(columns, r));
   return stripEmptyColumns(columns, rows);
 }
 

@@ -19,11 +19,12 @@ const base = process.env.GTM_BASE ?? "/";
 // again would just double the wait for no reason.
 export default defineConfig({
   testDir: "./tests",
-  // tests/gallery/** needs its own build (PUBLIC_ENABLE_DEV_GALLERY=true —
-  // see playwright.gallery.config.ts) and would otherwise also get picked
-  // up by this config's own recursive ./tests scan and run twice, against
-  // the wrong (flag-off) server.
-  testIgnore: ["gallery/**"],
+  // tests/gallery/** and tests/data-review/** each need their own build
+  // (PUBLIC_ENABLE_DEV_GALLERY / PUBLIC_ENABLE_DATA_REVIEW — see
+  // playwright.gallery.config.ts / playwright.data-review.config.ts) and
+  // would otherwise also get picked up by this config's own recursive
+  // ./tests scan and run twice, against the wrong (flag-off) server.
+  testIgnore: ["gallery/**", "data-review/**"],
   webServer: {
     command: "npm run preview",
     url: `http://localhost:4321${base}`,
