@@ -23,7 +23,9 @@
     "test:data-review-hidden": "playwright test tests/data-review-hidden.spec.ts",
     "test:data-review": "playwright test --config=playwright.data-review.config.ts",
     "generate-downloads": "tsx scripts/generate-downloads.ts",
-    "review:data": "tsx scripts/generate-data-review.ts"
+    "review:data": "tsx scripts/generate-data-review.ts",
+    "test:lighthouse": "lhci autorun",
+    "report:bundle-size": "tsx scripts/report-bundle-size.ts"
   },
   "dependencies": {
     "@astrojs/react": "^6.0.2",
@@ -40,6 +42,7 @@
   },
   "devDependencies": {
     "@axe-core/playwright": "^4.12.1",
+    "@lhci/cli": "^0.15.1",
     "@playwright/test": "^1.62.0",
     "@types/archiver": "^8.0.0",
     "@types/d3-sankey": "^0.12.5",
