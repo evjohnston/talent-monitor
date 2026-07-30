@@ -820,6 +820,8 @@ npm run build
 npm run typecheck
 npm test                      # src/lib/*.test.ts — vitest (vitest.config.ts only excludes tests/, see "Tests")
 npm run test:a11y             # tests/accessibility.spec.ts — playwright + axe-core; needs `npm run build` first
+npm run test:interaction      # tests/interaction.spec.ts — real keyboard/download checks; needs `npm run build` first
+npm run test:visual           # tests/visual-regression.spec.ts — scoped pixel-diff snapshots; needs `npm run build` first
 ```
 
 On a fresh clone, `public/data/talent.json` is already committed — `npm run
@@ -841,14 +843,19 @@ build-and-deploy.yml` as a real step before `Build` — runs on every push
 to `main` and every PR against it (a PR run stops after test+build, never
 deploys; see that job's own `if:` guard).
 
-This is a real "zero to something," not "zero to comprehensive." One real
-Playwright/E2E suite exists (`tests/accessibility.spec.ts`, `npm run
-test:a11y`, see "Accessibility" below) — but most UI verification this
-project's sessions have run is still by hand, via scratchpad Playwright
-scripts, not committed tests. `ExhibitChart.tsx`'s own dispatch logic
-isn't covered, and neither is `sankeyData.ts`'s derived-cohort math. Real
-follow-up, not silently considered "done" — grow this file by file as
-new logic gets touched, same instinct as everything else in "Known gaps."
+This is a real "zero to something," not "zero to comprehensive." Three
+real Playwright/E2E suites exist — `tests/accessibility.spec.ts` (`npm
+run test:a11y`, see "Accessibility" below), `tests/interaction.spec.ts`
+(`npm run test:interaction`, real keyboard operation and download-output
+checks — see "Interaction, accessibility, and visual-regression tests"),
+and `tests/visual-regression.spec.ts` (`npm run test:visual`, a small
+scoped set of pixel-diff snapshots, same section) — but most UI
+verification this project's sessions have run is still by hand, via
+scratchpad Playwright scripts, not committed tests. `ExhibitChart.tsx`'s
+own dispatch logic isn't covered, and neither is `sankeyData.ts`'s
+derived-cohort math. Real follow-up, not silently considered "done" —
+grow this file by file as new logic gets touched, same instinct as
+everything else in "Known gaps."
 
 **A real bug this test suite caught immediately**: `docs/report-crosswalk-
 notes.md` had claimed `codeFromCountryName()` already resolved "South
@@ -1190,6 +1197,117 @@ Overview sequence itself reuses), and `scroll-behavior` computes to
 Nothing new this session introduces its own scroll-triggered or
 decorative animation to gate — the scrollytelling's core mechanic is
 plain CSS `position: sticky`, which isn't an animation at all.
+
+## Interaction, accessibility, and visual-regression tests (2026-07-30)
+
+Closes #9, the last tracked item in the methodology/downloads/overview
+backlog (#2). `tests/accessibility.spec.ts`'s axe-core sweep already
+covered `/methodology/`, `/downloads/`, and the rebuilt Overview (added
+alongside #5/#6/#7, not new here) — but axe-core only flags markup
+patterns (missing labels, contrast, landmarks). It can't tell you whether
+a control actually operates correctly via keyboard, or whether a download
+button produces a real file. Two new, real test files close that gap.
+
+**`tests/interaction.spec.ts`** — three real checks: the methodology
+drawer opens/closes via a focused `<summary>` and Enter, with no focus
+trap (native `<details>` needs zero bespoke script for this, confirmed
+rather than assumed); the download menu's CSV/JSON/SVG buttons produce
+real files (`page.waitForEvent("download")`, then the actual file content
+is read off disk and checked — a CSV has a header row and commas, a JSON
+parses to a real `rows` array, an SVG file contains `<svg`); and real Tab
+order reaches a control inside the Overview's last scrollytelling step.
+
+**A real, severe bug, caught by the third check, not a hypothetical
+one**: pressing Tab from the very top of any page got a keyboard user
+stuck cycling inside the news ticker forever — `document.activeElement`
+never advanced past `NewsTicker.tsx`'s own auto-scrolling story links,
+confirmed by hand with a raw Tab-press loop logging the focused element
+every step (200+ presses, same 3-element cycle every time, `<body>` in
+between). Root cause: `.ticker-track`'s story links are positioned by a
+continuously running CSS `transform` animation, and Chromium's real
+sequential-focus-navigation silently fails to land on a
+transform-positioned anchor while that animation is actively running,
+dropping focus to `<body>` instead — meaning no keyboard user could ever
+reach the nav, the KPIs, or a single chart panel while the ticker
+auto-played, on any page, the entire time this feature has existed.
+Fixed in `NewsTicker.tsx` by making each story link a real Tab stop
+(`tabIndex={0}`) only once the ticker is actually paused, and
+`tabIndex={-1}` while it's auto-scrolling — Tab now skips straight over
+the ticker to real page content during autoplay, and the links become
+reachable the moment a reader pauses it, when their position is
+genuinely static. The second, always-duplicated copy of the story list
+(existing purely so the CSS animation can loop seamlessly) is now also
+`aria-hidden` and permanently untabbable, since a screen reader reading
+linearly shouldn't hear every real story twice — a related, smaller real
+issue noticed while fixing the first one, not scope creep.
+
+**`tests/visual-regression.spec.ts`** — a small, deliberately scoped set
+of pixel-diff snapshots: one representative panel per real `ChartKind`
+this app renders (a `SeriesChart` timeseries, a `WorldMap`, a
+`LeaderboardYears`, a `BarRow` ranked list, a `Sankey`), plus the
+Overview's hero headline and KPI row — not one screenshot per exhibit
+(91 real exhibits would make this slow and, per this issue's own tracked
+concern, a much larger flakiness surface for no real added coverage).
+`test.use({ contextOptions: { reducedMotion: "reduce" } })` removes
+`useCountUp`'s KPI animation and the Sankey's particle motion (both
+already gated on the same real `usePrefersReducedMotion` hook — no new
+gating needed), and Nivo's own `animate={false}` (already set) removes
+its mount animation — so every snapshot is deterministic on repeat runs
+of the same OS.
+
+**Baselines are real, generated on ubuntu-latest, never captured from a
+contributor's own machine** — Playwright screenshots differ by real
+pixels of anti-aliasing across macOS vs. Linux even with an identical
+Chromium build, and this repo's actual CI (`build-and-deploy.yml`) runs
+on `ubuntu-latest`. Playwright's own default snapshot naming
+(`{name}-{platform}.png`) already keeps a `-darwin.png` local run and a
+`-linux.png` CI run from ever cross-comparing, so this needed no custom
+`snapshotPathTemplate`. The 7 committed `tests/visual-regression.spec.ts-
+snapshots/*-linux.png` files were bootstrapped for real: a manual
+`gh workflow run build-and-deploy.yml --ref <branch>` dispatch ran the
+new visual-regression step on the actual ubuntu-latest runner, its
+"missing baseline, writing actual" output was captured via a new
+`actions/upload-artifact` step (added specifically for this, gated on
+the visual-regression step's own `outcome` rather than the job-level
+`failure()`, since `continue-on-error: true` masks the latter), the 7
+real PNGs were downloaded and checked by hand (real chart content, no
+artifacts, particles correctly suppressed on the Sankey), then committed
+— and a second dispatch confirmed the comparison genuinely passes clean
+against them (`5 passed`), not just that a baseline exists.
+
+A dedicated **`visual-baseline.yml`** workflow (`workflow_dispatch`-only)
+exists for regenerating these going forward without needing the
+bootstrap detour above — but GitHub only lets `workflow_dispatch` target
+a workflow file that already exists on the repo's *default* branch, so
+it can't actually be dispatched yet from a feature branch. It'll work
+once these changes reach `main` through the normal PR chain; until then,
+the bootstrap method above (a manual dispatch of the already-registered
+`build-and-deploy.yml`, downloading its on-`outcome`-failure artifact) is
+the real fallback, not a placeholder.
+
+The visual-regression CI step runs with `continue-on-error: true`
+**permanently, not as a bootstrapping shortcut** — a real diff (or
+baseline drift from ubuntu-latest's own font packages updating between
+separate runs, months apart) is a visible signal worth a human look, not
+a hard gate that should block an unrelated deploy, given the real,
+acknowledged cross-machine flakiness `toHaveScreenshot()` carries even
+within one OS over time.
+
+**A real, unrelated CI bug surfaced and fixed while validating all of
+this**: the first manual dispatch of `build-and-deploy.yml` on
+`ubuntu-latest` failed outright at the `Build` step — "Node.js v20.20.2
+is not supported by Astro! ... upgrade Node.js to a supported version:
+>=22.12.0." Every local build this session had succeeded only because
+the local Node version (25.x) already cleared that bar; nothing had
+actually exercised this exact path in CI since Astro's own `engines`
+field tightened past 20, some while after `build-and-deploy.yml`'s
+`node-version: 20` was originally set. Fixed by bumping both workflows'
+`setup-node` to 22 and adding a real `engines` field to `package.json` so
+the mismatch surfaces at `npm install` time too, not buried inside a
+build failure — a real, previously-latent breakage in the shared CI
+pipeline, not something introduced by this session's own changes, caught
+only because this issue's own verification step actually ran the real
+pipeline instead of trusting the new steps would work by inspection.
 
 ## Overview scrollytelling (2026-07-30)
 
