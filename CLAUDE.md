@@ -1346,6 +1346,69 @@ loads each URL with no query string and would never otherwise exercise
 this real, JS-driven view (chart/table toggle, related-indicators list)
 at all. Zero violations.
 
+## The /explorer/ route — compare mode (2026-07-30)
+
+Closes #18 entirely — third and final of the three planned PRs
+(foundation → indicator detail → compare mode). `src/components/
+ExplorerCompare.tsx` (new), `isCompatibleForCompare`/`canAddToCompare`
+added to `metricRegistry.ts`, `compare`/`view` fields added to
+`explorerUrlState.ts`.
+
+**Side-by-side independent panels, never one shared/merged chart** — the
+source issue's own "do not create an invented composite index" rule
+rules out plotting several real datasets onto one shared axis. Selecting
+up to `MAX_COMPARE` (4) indicators renders each as its own real,
+independent `ExhibitPanel` (own axis, own units, own `MethodologyDrawer`)
+in a grid — comparison here means "look at these side by side," not "we
+computed something new by combining them."
+
+**Compatibility gated on `measureType` alone, deliberately not a deeper
+unit taxonomy** — `isCompatibleForCompare` in `metricRegistry.ts` blocks
+mixing e.g. a `timeseries` count with a `geographic` map. This is a real,
+meaningful signal without inventing a broader compatibility system this
+app's data doesn't need yet, since the actual risk it guards against
+(comparing genuinely incomparable shapes side by side) is smaller once
+each exhibit keeps its own independent chart rather than sharing one
+axis. `canAddToCompare` additionally blocks re-adding an already-selected
+id and anything past the real 4-item cap — a disabled `Compare` chip
+carries a real `title` tooltip explaining why, not a silent no-op.
+
+**State round-trips through the URL the same way indicator detail
+does** — `?compare=A,B,C,D&view=compare`, comma-split and capped at 4 on
+read so a hand-edited or stale link can't force more than the real UI
+ever allows. Selecting/deselecting a compare candidate uses
+`replaceState` (same as ordinary filter changes); opening/closing the
+full compare view uses `pushState` (a real back-button-undoable
+navigation), matching indicator detail's own real/ordinary distinction.
+Compare view wins over indicator detail when both are somehow present in
+the URL at once (`Explorer.tsx` checks `view === "compare"` first) — a
+reader who explicitly asked to compare shouldn't have that state
+silently dropped by a stale `?metric=`.
+
+**A real heading-order bug, caught by the new dedicated a11y check, not
+shipped blind** — `ExplorerCompare.tsx`'s panels initially called
+`ExhibitPanel` with no `headingLevel`, defaulting to `<h3>` directly
+under the page's own `<h1>` — the exact skipped-level pattern already
+described in this file's "Accessibility" section above, just
+reintroduced in a new component that didn't exist when that sweep ran.
+Fixed by passing `headingLevel={2}`, matching `ExplorerDetail.tsx`'s
+already-correct convention. Caught because `tests/accessibility.spec.ts`
+gained a real check against `?compare=FIG101,FIG103&view=compare`
+specifically (the plain per-route sweep never loads this JS-driven query
+state) — it failed on the first run with the real violation, confirming
+the check catches a real regression and isn't just trivially passing.
+
+**A real Playwright locator bug, caught while writing the interaction
+test, not a bug in the app** — `getByRole("button", { name: "Remove
+from comparison" })` never matched the real button, because its
+accessible name is `Remove ${exhibit.title} from comparison` — Playwright's
+string `name` matcher requires a contiguous substring, and a real exhibit
+title sitting in the middle breaks that match. Fixed the test with a
+regex (`/^Remove .+ from comparison$/`), not the app's own aria-label,
+since the label itself (naming which exhibit each button removes) is the
+correct, more accessible choice for a screen-reader user comparing
+several panels at once.
+
 ## Lighthouse performance budgets (2026-07-30)
 
 Closes #17, the fourth of six features deliberately deferred when the

@@ -124,3 +124,27 @@ export function searchRegistry(entries: MetricRegistryEntry[], query: string): M
 }
 
 export const ALL_TOPICS: string[] = [...new Set(TOPIC_RULES.map((r) => r.topic)), "Other"];
+
+// Compare mode's own real compatibility rule (issue #18's own "do not
+// permit comparisons across incompatible units" requirement) — two
+// indicators are compatible only when they share the same real
+// measureType. Deliberately this simple, not a deeper unit-compatibility
+// system: comparison mode renders each selected exhibit as its own real,
+// independent panel (never merges two different real datasets onto one
+// shared axis — see ExplorerCompare.tsx's own note), so the actual risk
+// this rule guards against is smaller than "plotting a % share against a
+// raw headcount," and a measureType match is a real, meaningful signal
+// without inventing a broader taxonomy this app's data doesn't need yet.
+export function isCompatibleForCompare(a: MetricRegistryEntry, b: MetricRegistryEntry): boolean {
+  return a.measureType === b.measureType;
+}
+
+// Real gating for the "add to compare" action — false when already at
+// the real 4-item cap, already selected, or incompatible with whatever's
+// already in the set (empty set accepts anything, since there's nothing
+// to be incompatible with yet).
+export function canAddToCompare(candidate: MetricRegistryEntry, current: MetricRegistryEntry[]): boolean {
+  if (current.some((c) => c.id === candidate.id)) return false;
+  if (current.length >= 4) return false;
+  return current.every((c) => isCompatibleForCompare(c, candidate));
+}
