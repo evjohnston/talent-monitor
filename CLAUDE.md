@@ -1409,6 +1409,135 @@ since the label itself (naming which exhibit each button removes) is the
 correct, more accessible choice for a screen-reader user comparing
 several panels at once.
 
+## Country profiles — framework (2026-07-30)
+
+Issue #19, sixth and last of the six deferred features. Per the
+roadmap's own PR sequence (framework -> US/China/India -> remaining 6 ->
+compare/downloads/polish), this is PR 9 of the planned 12: `src/lib/
+countryProfiles.ts` (the real per-country config engine), `src/
+components/CountryProfile.tsx`, `src/pages/countries/index.astro` +
+`src/pages/countries/[slug].astro`, `countrySlug()`/`codeFromCountrySlug()`
+added to `countries.ts`.
+
+**No hand-authored 91×9 grid — eligibility is computed from the real
+imported data**, same discipline `metricRegistry.ts` already established
+for topic/measureType/geography. `exhibitCountryCodes(exhibit)` scans an
+exhibit's own columns/rows for two real shapes, checked by hand against
+every one of the 91 exhibits before trusting either: a "wide" shape (a
+column HEADER is itself a country — FIG411's per-country columns) and a
+"long" shape (a non-numeric column's own VALUES are country names —
+FIG512's "Country" column, and FIG410's real entity column, which is
+misleadingly named "Year" but genuinely holds country names as rows).
+An exhibit with neither (55 of 91) is treated as implicitly about the
+United States (`isImplicitlyDomestic()`) — this report is about the US's
+own STEM pipeline, so a plain "Year -> doctorates awarded" series with no
+country dimension at all is a real US-domestic statistic, not a gap.
+
+**A real header-matching gap found and fixed before it under-counted
+China/India/US everywhere they actually appear**: a first pass caught
+only a column header that IS a country name outright, missing three real,
+confirmed composite conventions this report's own data actually uses —
+`"US_Count"`/`"CN_Share"` (FIG504), `"pct_papers_with_us"` (FIG503), and
+`"China: EB1"` (TAB605). Extended `resolveHeaderCountryCode()` with three
+narrow, hand-confirmed patterns (text before a real colon; an UPPERCASE
+2-letter prefix before `_`; a lowercase 2-letter suffix after `_`) rather
+than a generic token scanner — a first attempt at a case-insensitive
+suffix match also caught FIG511's real `"USD_PPP_BN"` as "Brunei," which
+is actually a unit label ("$ billions"). The real distinguishing signal,
+confirmed by checking every numeric column header across all 91 exhibits
+before finalizing: this report's own per-country suffixes are always
+lowercase snake_case, its unit/acronym suffixes always uppercase — so the
+suffix pattern is deliberately lowercase-only, which fixed the false
+positive with zero loss of the 3 real cases it exists for.
+
+**A real classification bug in metricRegistry.ts's own topic-priority
+order, caught by hand-inspecting the real US profile output, not
+assumed correct from the mechanism alone**: FIG601/602/608/609/TAB601/602
+(all genuinely about retention) were landing under "Talent production"
+instead of "Retention and immigration." Cause: these titles mention
+"PhD," which also matches the broader `/degree|doctorate|phds?/i`
+pattern for "Degree production" — a pattern that happens to sit earlier
+in `TOPIC_RULES`' own declaration order, so naively taking
+`entry.topics[0]` picked the wrong one. Fixed with an explicit
+`SECTION_PRIORITY` list (most-specific topic checked first — OPT/PERM/
+retention before degree production) rather than trusting array order,
+which is tuned for a different job (showing every relevant topic as an
+explorer pill, where showing extra topics is harmless). A second,
+same-shaped bug: FIG208 (postdoctoral positions) landed under "Patents
+and R&D" because its own citation ("Postdocs at Federally Funded R&D
+Centers") matches `/r&d/i` — fixed by ranking "Graduate and postdoctoral
+training" above "R&D"/"Patents" in that same priority list. Also
+extended metricRegistry.ts's own "Retention and stay rates" pattern to
+catch TAB602's real title ("...Plan to Do After Graduation..."), a
+genuine gap independent of the priority-order bug — fixed at that general
+level since it also corrects that exhibit's topic pills in the explorer,
+not just this page. Both bugs are now regression tests in
+`countryProfiles.test.ts`.
+
+**Sections are either real, missing, or absent — never silently
+skipped**: a section renders with real content when this country has ≥1
+eligible exhibit in it; renders a plain "not available" notice when the
+section is "universal" (some OTHER real exhibit proves the report
+collects this indicator cross-nationally) but this specific country has
+none; and is omitted entirely only when the section is inherently
+domestic-natured (populated solely via the US's implicit-domestic
+bucket, e.g. H-1B employer data) — that's a structural mismatch, not a
+coverage gap, so a non-US profile never shows a false "missing" notice
+for a metric that was never conceptually about it. This is why the
+issue's own "US may have additional domestic-pipeline sections" and "do
+not force identical section counts" rules both hold without contradicting
+each other.
+
+**Real, template-generated summaries only** — `buildSummary()` never
+free-writes; it picks the country's own earliest-chapter eligible
+exhibit (report order, a deterministic tie-break, not "the biggest
+number") and states its real latest value, year, and title, or the
+template's own explicit "the report does not contain a comparable
+indicator series for X" when there's nothing eligible at all.
+`formatIndicatorValue()` (shared between the summary and each section's
+supporting-metric callouts) reuses `ExhibitChart.tsx`'s own real 0-1-
+fraction detection so a share-timeseries exhibit reads "21%," never a
+bare "0.21," in either place — caught by hand reviewing the real
+rendered US profile, not assumed correct from the data-flow alone.
+
+**One primary chart, up to two supporting metrics, per section** — the
+issue's own "not a dashboard card wall" rule: a section's first eligible
+exhibit renders as a full, real `ExhibitPanel` (with that country cross-
+highlighted via the existing `emphasize` prop, no new visual language);
+up to two more render as compact stat callouts (`SupportingMetric`,
+latest value + year, linking to that exhibit's own real stage-page
+`?methods=<id>` drawer) rather than three equally-weighted full charts.
+Anything beyond that links to "the full explorer" — deliberately a
+plain, unfiltered link for now, not a guessed query string: the
+explorer's own search matches exhibit titles/sources/topics, not this
+page's section labels, so a real filtered deep link needs its own
+dedicated wiring, planned for PR 12 ("explorer deep links"), not built
+here as a half-working guess.
+
+**Country selection is a real link list, not a map** — `/countries/`
+lists every currently-enabled country as a plain `<a href>`, satisfying
+the issue's own accessibility requirement directly; a stage page's own
+`WorldMap` is still there for a geographic view of any single indicator,
+but choosing WHICH country's profile to open never requires a map click.
+
+**Staged rollout via a real, disclosed gate, not a fake feature flag** —
+`ENABLED_PROFILE_CODES` (currently `["US"]`) controls which countries
+`getStaticPaths()` actually builds a route for; an unbuilt slug 404s like
+any other unknown route. Every enabled country's profile is fully real
+end to end (same as every other route in this app) — this gates WHICH
+countries ship, not how complete a shipped one is. China, India, and the
+remaining 6 follow in PRs 10 and 11 per the roadmap, each requiring real
+hand verification against that country's own actual data before its
+route is enabled, the same discipline that caught the two classification
+bugs above on the US profile.
+
+Not yet built (explicitly deferred to PR 12, "compare, downloads, and
+polish," per the roadmap): country compare mode, per-profile CSV/JSON/
+metadata downloads, real filtered explorer deep links, canonical page
+metadata/social titles, and a final print/no-JS/performance pass beyond
+what this PR already verified (zero axe-core violations on both new
+routes; real no-JS content confirmed by `curl`ing the built HTML).
+
 ## Lighthouse performance budgets (2026-07-30)
 
 Closes #17, the fourth of six features deliberately deferred when the

@@ -555,6 +555,15 @@ code { font-family: var(--mono); background: var(--panel-2); padding: 1px 4px; f
 .count-rate-split > figure + .trend-note { margin-top: var(--sp-3); }
 .trend-empty { font-size: 11px; color: var(--slate); padding: 6px 0; line-height: 1.4; }
 
+/* A country profile section's own supporting metrics (issue #19) — a
+   compact real stat + link, deliberately smaller than a full ExhibitPanel
+   so a section reads as "one chart plus a couple of related numbers,"
+   not a second row of full chart cards (the issue's own "not a dashboard
+   card wall" rule). */
+.supporting-metric { display: block; padding: var(--sp-2); border: 1px solid var(--line-2); text-decoration: none; color: inherit; }
+.supporting-metric:hover { border-color: var(--slate); }
+.supporting-metric-value { font-size: 18px; font-weight: 700; margin-top: 4px; }
+
 .foot { padding: 16px 0 32px; font-family: var(--mono); font-size: 10px; color: var(--slate); line-height: 1.6; }
 .foot code { background: var(--panel-2); padding: 1px 4px; border-radius: 0; }
 .foot .sig { color: var(--red); font-weight: 600; margin-top: 10px; font-size: 11px; }

@@ -11,7 +11,7 @@
 // not defined in ES module scope` — confirmed by hand, not guessed;
 // `.cjs` forces CommonJS interpretation regardless of that setting.
 const base = process.env.GTM_BASE ?? "/";
-const routes = ["", "foundation/", "degree-production/", "graduate-training/", "workforce-entry/", "retention-immigration/", "research-output/", "methodology/", "downloads/", "explorer/"];
+const routes = ["", "foundation/", "degree-production/", "graduate-training/", "workforce-entry/", "retention-immigration/", "research-output/", "methodology/", "downloads/", "explorer/", "countries/", "countries/united-states/"];
 
 // Real, verified initial budgets (2026-07-30) — run by hand against a
 // real production build (`npx lhci autorun`, 3 runs/route, LHCI's own

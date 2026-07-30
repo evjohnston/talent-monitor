@@ -1,0 +1,23 @@
+---
+import BaseLayout from "../../layouts/BaseLayout.astro";
+import { CountryProfile } from "../../components/CountryProfile.tsx";
+import { loadTalentData } from "../../lib/loadTalentData.ts";
+import { formatGenerated } from "../../lib/buildContext.ts";
+import { enabledProfileCountries } from "../../lib/countryProfiles.ts";
+
+// Only the currently-enabled countries get a real, built route — per the
+// roadmap's own staged rollout (framework -> US/China/India -> remaining
+// 6 -> polish), a country's profile only ships once it's been hand-
+// verified against its own real data (see CLAUDE.md's "Country profiles"
+// section). An unbuilt slug 404s like any other unknown route, rather
+// than serving a half-real page.
+export function getStaticPaths() {
+  return enabledProfileCountries().map((c) => ({ params: { slug: c.slug }, props: { code: c.code } }));
+}
+
+const { code } = Astro.props;
+const data = loadTalentData();
+---
+<BaseLayout active="countries" generated={formatGenerated(data)}>
+  <CountryProfile code={code} exhibits={data.exhibits} client:load />
+</BaseLayout>

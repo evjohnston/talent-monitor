@@ -117,3 +117,31 @@ export function countryColor(code: string | null | undefined): string {
   if (EU_COUNTRIES.has(code)) return "var(--country-eu)";
   return "var(--country-other)";
 }
+
+// A URL-safe slug for a country profile route (/countries/<slug>/, issue
+// #19) — lowercase, hyphenated real display name (e.g. "south-korea"),
+// not a bare ISO code, since the issue's own locked route pattern uses a
+// real readable segment. Derived mechanically from countryName() so it
+// always matches whatever this file already displays for that code,
+// rather than a second hand-typed table that could drift from it.
+export function countrySlug(code: string | null | undefined): string | null {
+  if (!code) return null;
+  const name = countryName(code);
+  if (name === "Unknown") return null;
+  return name
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-+|-+$/g, "");
+}
+
+const SLUG_TO_CODE: Record<string, string> = Object.fromEntries(
+  Object.keys(countries.getAlpha2Codes())
+    .map((code) => [countrySlug(code), code] as const)
+    .filter((pair): pair is [string, string] => pair[0] !== null)
+);
+
+// Reverse of countrySlug() — resolves a URL segment back to the real
+// alpha-2 code, for the [slug].astro route's own getStaticPaths/lookup.
+export function codeFromCountrySlug(slug: string): string | null {
+  return SLUG_TO_CODE[slug.toLowerCase()] ?? null;
+}

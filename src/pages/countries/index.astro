@@ -1,0 +1,32 @@
+---
+import BaseLayout from "../../layouts/BaseLayout.astro";
+import { loadTalentData } from "../../lib/loadTalentData.ts";
+import { formatGenerated } from "../../lib/buildContext.ts";
+import { enabledProfileCountries } from "../../lib/countryProfiles.ts";
+
+const data = loadTalentData();
+const base = import.meta.env.BASE_URL;
+const countries = enabledProfileCountries();
+---
+<BaseLayout active="countries" generated={formatGenerated(data)}>
+  <div class="panel">
+    <h2>Country profiles</h2>
+    <p class="trend-note">
+      Every real indicator this report tracks for a specific country, gathered in one place. A real link list, not a
+      map — see each stage page's own world map for a geographic view of any single indicator.
+    </p>
+    <!-- A plain link list, not a select/combobox — issue #19's own
+         accessibility requirement ("country selection does not rely on a
+         map") is satisfied by this being a real, always-visible <a
+         href> list, keyboard-reachable and crawlable with zero JS. -->
+    <ul class="explorer-results">
+      {countries.map((c) => (
+        <li class="explorer-result">
+          <div class="explorer-result-main">
+            <a class="explorer-result-title" href={`${base}countries/${c.slug}/`}>{c.name}</a>
+          </div>
+        </li>
+      ))}
+    </ul>
+  </div>
+</BaseLayout>
