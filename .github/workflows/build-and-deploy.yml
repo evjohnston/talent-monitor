@@ -91,10 +91,29 @@ jobs:
       # same runner this step itself uses), never captured from a
       # contributor's own machine.
       - name: Visual regression (Playwright, non-blocking)
+        id: visual_regression
         run: npm run test:visual
         continue-on-error: true
         env:
           GTM_BASE: /${{ github.event.repository.name }}/
+
+      # continue-on-error above masks the step's own conclusion to
+      # "success" so it never fails the job — checking .outcome (the
+      # unmasked, real result) rather than the job-level failure() here,
+      # since that would never fire otherwise. A real diff (or, the first
+      # time this ever runs on a given OS, a missing-baseline "writing
+      # actual" case) is otherwise invisible — the step above only reports
+      # pass/fail text, not the images themselves. Uploading test-results/
+      # lets a maintainer download the actual/expected/diff PNGs straight
+      # from the Actions run to decide whether a change is real or needs a
+      # new baseline (via visual-baseline.yml), without re-running
+      # anything locally.
+      - uses: actions/upload-artifact@v4
+        if: steps.visual_regression.outcome == 'failure'
+        with:
+          name: visual-regression-failure-output
+          path: test-results/
+          retention-days: 14
 
       # scripts/generate-downloads.ts — build-time PNG chart images and
       # per-stage ZIP CSV bundles (see CLAUDE.md's "Per-chart downloads"
