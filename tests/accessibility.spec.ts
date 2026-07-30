@@ -19,6 +19,8 @@ const ROUTES = [
   "workforce-entry/",
   "retention-immigration/",
   "research-output/",
+  "methodology/",
+  "downloads/",
 ];
 
 for (const route of ROUTES) {

@@ -22,9 +22,35 @@ import { BoxPlotRow } from "./BoxPlotRow.tsx";
 // `onSelectCountry` is the same idea for a CLICK, not a hover — WorldMap's
 // own onSelect prop, wired all the way through so a click pins the
 // cross-highlight (see TrackShell.tsx's pinnedCountry state).
-export function ExhibitChart({ exhibit, emphasize, onHoverCountry, onSelectCountry }: { exhibit: Exhibit; emphasize?: string[]; onHoverCountry?: (code: string | null) => void; onSelectCountry?: (code: string) => void }) {
+//
+// `onVisibleDataChange` reports the real, currently-displayed row subset
+// up to MethodologyDrawer's download menu — only timeseries/share-
+// timeseries (via SeriesChart's own >6-series picker) and leaderboard-
+// years (always one year, top-N ranked) ever report anything narrower
+// than the exhibit's full rows; every other chart kind shows everything
+// it has, so "displayed" and "complete" are the same set and this is
+// simply never called. Not wired for the count/rate-split path (two
+// independent SeriesChart pickers) — a real, smaller gap, not silently
+// papered over: see CLAUDE.md's "Per-chart downloads" note.
+export function ExhibitChart({ exhibit, emphasize, onHoverCountry, onSelectCountry, onVisibleDataChange }: { exhibit: Exhibit; emphasize?: string[]; onHoverCountry?: (code: string | null) => void; onSelectCountry?: (code: string) => void; onVisibleDataChange?: (rows: Record<string, unknown>[] | null) => void }) {
   if (exhibit.kind === "timeseries" || exhibit.kind === "share-timeseries") {
     const { x, series } = toSeriesChart(exhibit);
+    const xKey = exhibit.columns[0];
+    const reportVisibleSeries = (keys: string[]) => {
+      if (!onVisibleDataChange) return;
+      // Reports null (no real subset) whenever every series is visible —
+      // the common case (≤6 series, no picker at all) — rather than a
+      // "narrower" row-set that happens to have the same real content,
+      // so MethodologyDrawer only shows a second download button when
+      // there's a genuine difference to download.
+      if (keys.length >= series.length) { onVisibleDataChange(null); return; }
+      const keySet = new Set(keys);
+      onVisibleDataChange(exhibit.rows.map((r) => {
+        const row: Record<string, unknown> = { [xKey]: r[xKey] };
+        for (const k of keySet) row[k] = r[k];
+        return row;
+      }));
+    };
     // share-timeseries exhibits store either a raw 0-1 fraction (needs
     // x100 to read as a percent) or an already-computed percentage point
     // (FIG207's columns are literally named "Percent of ... post-docs") —
@@ -68,6 +94,7 @@ export function ExhibitChart({ exhibit, emphasize, onHoverCountry, onSelectCount
         formatValue={(v) => (exhibit.kind === "share-timeseries" ? v.toFixed(1) : v.toLocaleString())}
         emphasize={emphasize}
         ariaLabel={exhibit.title}
+        onVisibleSeriesChange={reportVisibleSeries}
       />
     );
   }
@@ -88,7 +115,14 @@ export function ExhibitChart({ exhibit, emphasize, onHoverCountry, onSelectCount
   if (exhibit.kind === "leaderboard-years") {
     const { years, rows } = toLeaderboardYears(exhibit);
     if (years.length === 0) return <div className="trend-empty">No data for this exhibit.</div>;
-    return <LeaderboardYears years={years} rows={rows} nameLabel={exhibit.columns[0]} />;
+    return (
+      <LeaderboardYears
+        years={years}
+        rows={rows}
+        nameLabel={exhibit.columns[0]}
+        onVisibleRowsChange={(visible) => onVisibleDataChange?.(visible.map((r) => ({ ...r })))}
+      />
+    );
   }
 
   // TAB501 — a real, justified one-off (see aiConferenceCatchUp.ts), same

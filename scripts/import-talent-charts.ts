@@ -13,49 +13,15 @@ import { readFileSync, writeFileSync, existsSync } from "node:fs";
 import { join } from "node:path";
 import type { ChartKind, DataFile, Exhibit, Stage } from "../src/lib/types.ts";
 import { NOTES } from "../data/talent/notes.ts";
+import { canonicalizeCompany } from "../src/lib/entityResolution.ts";
+import { parseCsv } from "../src/lib/parseCsv.ts";
+import { PARTS } from "../src/lib/exhibitParts.ts";
 
 const ROOT = join(import.meta.dirname, "..");
 const CHARTS_DIR = join(ROOT, "talent_charts");
 const DATA_DIR = join(CHARTS_DIR, "data");
 const TITLES_CSV = join(CHARTS_DIR, "titles_and_sources.csv");
 const OUT_FILE = join(ROOT, "public", "data", "talent.json");
-
-// ---- minimal RFC4180 CSV parser (handles quoted fields, doubled quotes,
-// and commas/newlines inside quotes) — no dependency needed for this. ----
-function parseCsv(text: string): string[][] {
-  const rows: string[][] = [];
-  let row: string[] = [];
-  let field = "";
-  let inQuotes = false;
-  for (let i = 0; i < text.length; i++) {
-    const c = text[i];
-    if (inQuotes) {
-      if (c === '"') {
-        if (text[i + 1] === '"') { field += '"'; i++; } else { inQuotes = false; }
-      } else {
-        field += c;
-      }
-    } else if (c === '"') {
-      inQuotes = true;
-    } else if (c === ",") {
-      row.push(field);
-      field = "";
-    } else if (c === "\n" || c === "\r") {
-      if (c === "\r" && text[i + 1] === "\n") i++;
-      row.push(field);
-      rows.push(row);
-      row = [];
-      field = "";
-    } else {
-      field += c;
-    }
-  }
-  if (field.length > 0 || row.length > 0) {
-    row.push(field);
-    rows.push(row);
-  }
-  return rows.filter((r) => r.length > 1 || (r.length === 1 && r[0] !== ""));
-}
 
 function coerce(raw: string): string | number | null {
   const v = raw.trim();
@@ -168,45 +134,9 @@ function orderOf(id: string): number {
   return prefixRank + Number(m[2]);
 }
 
-// ---- multi-part exhibits: some exhibits' underlying CSV was exported in
-// named slices (talent_charts/figures.Rmd / tables.Rmd's own `sources =`
-// lists give the real per-part label) rather than one file per fig_no. Two
-// shapes: "split" (each part becomes its own exhibit, same shape but a
-// different population — e.g. one table per STEM field) and "merge"
-// (parts share the same Year axis, columns get prefixed with the part
-// label and folded into one exhibit).
-type PartsMode = "split" | "merge";
-interface PartsSpec { mode: PartsMode; parts: { suffix: string; label: string }[] }
-
-const PARTS: Record<string, PartsSpec> = {
-  FIG301: { mode: "merge", parts: [{ suffix: "a", label: "U.S.-born" }, { suffix: "b", label: "Foreign-born" }] },
-  FIG604: { mode: "merge", parts: [{ suffix: "a", label: "All industries" }, { suffix: "b", label: "Tech sector" }] },
-  FIG605: { mode: "merge", parts: [{ suffix: "a", label: "All industries" }, { suffix: "b", label: "Tech sector" }] },
-  TAB202: {
-    mode: "split",
-    parts: [
-      { suffix: "a", label: "Engineering" },
-      { suffix: "b", label: "Math and Computer Science" },
-      { suffix: "c", label: "Physical and Life Sciences" },
-    ],
-  },
-  TAB203: {
-    mode: "split",
-    parts: [{ suffix: "a", label: "Science" }, { suffix: "b", label: "Engineering" }, { suffix: "c", label: "Health" }],
-  },
-  TAB204: {
-    mode: "merge",
-    parts: [{ suffix: "a", label: "U.S. citizens & permanent residents" }, { suffix: "b", label: "Temporary visa holders" }],
-  },
-  TAB505: {
-    mode: "split",
-    parts: [
-      { suffix: "a", label: "Biotechnology" },
-      { suffix: "b", label: "Semiconductors" },
-      { suffix: "c", label: "Computer technology" },
-    ],
-  },
-};
+// PARTS moved to src/lib/exhibitParts.ts (2026-07-30) — pure data, reused
+// by src/lib/rawSourceFiles.ts for the /downloads/ route's own raw-
+// source-file resolution, not duplicated here a second time.
 
 // Exhibits computed inline in the report's own R pipeline from another
 // exhibit's data (or, for TAB605, from real source CSVs that exist but
@@ -223,11 +153,47 @@ const PARTS: Record<string, PartsSpec> = {
 // separate call than replicating a formula.
 const SKIP_COMPUTED = ["TAB603"];
 
-function buildFig303(fig302: { columns: string[]; rows: Record<string, string | number | null>[] } | null) {
-  if (!fig302) return null;
+type Table = { columns: string[]; rows: Record<string, string | number | null>[] };
+
+// FIG302's own exported rows stay exactly as USCIS reported them — the
+// "raw file actually used" (see the downloads work) never gets rewritten.
+// This builds a SEPARATE, re-aggregated view for FIG303/TAB303's own
+// already-derived, already-disclosed-as-computed calculations, grouping
+// only real, confirmed, CONTEMPORANEOUS same-parent subsidiary names
+// (src/lib/entityResolution.ts's own ALIASES — e.g. "HP Enterprise Svcs
+// LLC" + "Hewlett Packard Enterprise Company" are the same real company at
+// the same time, not a historical merger). A real historical
+// merger/acquisition (Satyam -> Tech Mahindra, L&T Infotech + Mindtree ->
+// LTIMindtree) deliberately does NOT get grouped here — each keeps its own
+// pre-merger years attributed to the entity that actually filed them (see
+// entityResolution.ts's CORPORATE_LINEAGE for the disclosed relationship
+// instead). Confirmed by hand against the real 252-row FIG302 employer
+// list (2026-07-30): only one real group exists (Hewlett Packard
+// Enterprise), so this changes FIG303/TAB303's numbers only where that one
+// real company was previously undercounted as two separate smaller ones.
+function canonicalizeFig302(fig302: Table): Table {
   const years = fig302.columns.filter((c) => /^\d{4}$/.test(c));
+  const byId = new Map<string, { name: string; values: Record<string, number> }>();
+  for (const row of fig302.rows) {
+    const raw = String(row.Company ?? "");
+    const { id, name } = canonicalizeCompany(raw);
+    if (!byId.has(id)) byId.set(id, { name, values: Object.fromEntries(years.map((y) => [y, 0])) });
+    const entry = byId.get(id)!;
+    for (const y of years) {
+      const v = row[y];
+      if (typeof v === "number") entry.values[y] += v;
+    }
+  }
+  const rows = [...byId.values()].map((e) => ({ Company: e.name, ...e.values }));
+  return { columns: fig302.columns, rows };
+}
+
+function buildFig303(fig302: Table | null) {
+  if (!fig302) return null;
+  const grouped = canonicalizeFig302(fig302);
+  const years = grouped.columns.filter((c) => /^\d{4}$/.test(c));
   const rows = years.map((year) => {
-    const values = fig302.rows
+    const values = grouped.rows
       .map((r) => (typeof r[year] === "number" ? (r[year] as number) : 0))
       .sort((a, b) => b - a);
     const total = values.reduce((s, v) => s + v, 0);
@@ -236,8 +202,6 @@ function buildFig303(fig302: { columns: string[]; rows: Record<string, string | 
   });
   return { columns: ["Year", "Top 10 employers' share of approvals"], rows };
 }
-
-type Table = { columns: string[]; rows: Record<string, string | number | null>[] };
 
 // TAB303 ("Top Employers Receiving H-1B Approvals") — real per-company
 // comparison of 2017 vs. 2025 share of approvals, from FIG302's own
@@ -249,12 +213,13 @@ type Table = { columns: string[]; rows: Record<string, string | number | null>[]
 // bookend year, ranked by the point change between them.
 function buildTab303(fig302: Table | null) {
   if (!fig302) return null;
+  const grouped = canonicalizeFig302(fig302);
   const FIRST_YEAR = "2017", LAST_YEAR = "2025";
-  if (!fig302.columns.includes(FIRST_YEAR) || !fig302.columns.includes(LAST_YEAR)) return null;
+  if (!grouped.columns.includes(FIRST_YEAR) || !grouped.columns.includes(LAST_YEAR)) return null;
   const shareByCompany = (year: string) => {
-    const total = fig302.rows.reduce((s, r) => s + (typeof r[year] === "number" ? (r[year] as number) : 0), 0);
+    const total = grouped.rows.reduce((s, r) => s + (typeof r[year] === "number" ? (r[year] as number) : 0), 0);
     return new Map(
-      fig302.rows.map((r) => {
+      grouped.rows.map((r) => {
         const count = typeof r[year] === "number" ? (r[year] as number) : 0;
         return [String(r.Company), { count, share: total > 0 ? (count / total) * 100 : 0 }];
       })
@@ -512,6 +477,54 @@ function main() {
     ]),
     "timeseries"
   );
+
+  // Real methodology metadata (2026-07-30) — see Exhibit's own comment in
+  // types.ts for why this is a short, hand-confirmed list rather than a
+  // field populated from content/report-crosswalk.csv's unit/
+  // population_definition columns (checked by hand: every one of those
+  // still reads "TBD" for every exhibit actually rendered today). Applied
+  // as one pass over the final `exhibits` array rather than threading a
+  // new parameter through every push site above — same real data, simpler
+  // to keep this list in one place and get maintained.
+  const DERIVED_META: Record<string, { derivedFrom: string[]; calculationNote: string }> = {
+    FIG303: {
+      derivedFrom: ["FIG302"],
+      calculationNote: "Computed by this site, not the report: each year's ten largest H-1B employers' approvals, summed and divided by that year's total across all employers. Employer names are grouped for real, contemporaneous same-parent subsidiaries (e.g. Hewlett Packard Enterprise's own services subsidiary) before ranking — see src/lib/entityResolution.ts. A real historical merger or acquisition does not get grouped; each company keeps its own pre-merger years.",
+    },
+    TAB303: {
+      derivedFrom: ["FIG302"],
+      calculationNote: "Computed by this site, not the report: each employer's own share of that year's total H-1B approvals, for 2017 and 2025, restricted to companies that were top-10 by count in either year. Same employer-name grouping as FIG303.",
+    },
+    FIG405: {
+      derivedFrom: ["FIG404"],
+      calculationNote: "Computed by this site, not the report: tertiary per-student spending divided by K-12 per-student spending, for each country in FIG404 with both real values (three aggregate/outlier rows the report's own chart drops — EU25 average, G20 average, China — are excluded here too).",
+    },
+    TAB503: {
+      derivedFrom: ["FIG510"],
+      calculationNote: "Computed by this site, not the report: FIG510's own basic-vs-applied-vs-development R&D spending reshaped into a bookend (earliest vs. latest year) comparison table.",
+    },
+    TAB504: {
+      derivedFrom: ["FIG511"],
+      calculationNote: "Computed by this site, not the report: FIG511's own R&D-by-sector spending reshaped into a bookend (earliest vs. latest year) comparison table.",
+    },
+    TAB605: {
+      derivedFrom: ["TAB605a", "TAB605b", "TAB605c"],
+      calculationNote: "Computed by this site from three real source files (talent_charts/data/TAB605a/b/c.csv — Rest of World, China, and India green-card wait times) that exist in the report's own data but were never given their own titles_and_sources.csv entry, since they're the report's own R pipeline's inputs, not independently citable exhibits.",
+    },
+  };
+
+  const DATA_NOTES: Record<string, string> = {
+    FIG101: "Doctorate counts for 1900-1901, 1916, and 1923 are historical estimates (Thurgood, Golladay, and Hill 2006); every other year (1902-1915, 1917-1922, 1924 onward) is an NCES/NCSES-confirmed count, per the source CSV's own per-year estimate/confirmed flag.",
+    FIG601: "Measures international PhD recipients' own stated INTENT to stay, from a near-graduation survey — a different population and a different measure than FIG602's tracked-cohort stay rates. The two should not be read as the same population's before/after.",
+    FIG602: "Measures a tracked cohort's actual observed location 5 and 10 years after the PhD — a different population and a different measure than FIG601's near-graduation intent survey. The two should not be read as the same population's before/after.",
+  };
+
+  for (const e of exhibits) {
+    const derived = DERIVED_META[e.id];
+    if (derived) { e.derivedFrom = derived.derivedFrom; e.calculationNote = derived.calculationNote; }
+    const note = DATA_NOTES[e.id];
+    if (note) e.dataNote = note;
+  }
 
   exhibits.sort((a, b) => a.order - b.order);
 

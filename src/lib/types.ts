@@ -41,6 +41,21 @@ export interface Exhibit {
   sourceUrls: string[]; // parsed out of source_long
   columns: string[]; // raw CSV header row
   rows: Record<string, string | number | null>[]; // raw CSV rows, numeric coercion applied per cell
+
+  // Real methodology metadata (2026-07-30, MethodologyDrawer.tsx) — all
+  // optional and populated ONLY where genuinely known. content/report-
+  // crosswalk.csv has dedicated `unit`/`population_definition` columns,
+  // but checked by hand: every one of them still reads "TBD" for every
+  // currently-rendered exhibit (0 of 82 matched rows have real content) —
+  // there is no real source for those two fields yet, so they're not
+  // modeled here at all rather than added as fields that would always
+  // read "not yet documented." These three ARE populated for every real
+  // case this codebase already has precise, confirmed knowledge of —
+  // fabricating one for an exhibit not listed below would be worse than
+  // the gap.
+  derivedFrom?: string[]; // real source exhibit ids this one is computed FROM (e.g. FIG303 <- FIG302) — never set for a directly-sourced exhibit
+  calculationNote?: string; // how a derived exhibit is computed, in plain language — always paired with derivedFrom
+  dataNote?: string; // any other real, hand-confirmed data-quality/comparability note (e.g. FIG101's estimate/confirmed year mix, FIG601 vs. FIG602's different populations)
 }
 
 // A dated analyst note attached to a pipeline stage — the "so what" layer.

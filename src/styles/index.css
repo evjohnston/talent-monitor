@@ -180,7 +180,12 @@ a { color: inherit; }
 .pagehead .sub { color: var(--slate); font-size: 11px; margin-top: 2px; }
 
 /* ── controls: shared button/pill/chip language, no radius ───────── */
-.pill, .chip, .ghost-btn { font-family: var(--sans); font-size: 11px; border-radius: var(--r); border: 1px solid var(--line-2); background: var(--paper); color: var(--ink-2); padding: 4px 10px; cursor: pointer; }
+/* padding: 5px (not 4px) top/bottom is a real, checked fix, not an
+   arbitrary bump — measured by hand at 23px real rendered height with
+   4px, 1px short of WCAG 2.5.8's 24px minimum target size. This is this
+   app's single most-reused interactive class (every chip/pill/ghost
+   button sitewide), so the fix is here once, not per caller. */
+.pill, .chip, .ghost-btn { font-family: var(--sans); font-size: 11px; border-radius: var(--r); border: 1px solid var(--line-2); background: var(--paper); color: var(--ink-2); padding: 5px 10px; cursor: pointer; }
 .pill { cursor: default; }
 /* Only the Overview "Open <stage> →" pill is a real link (the rest are
    static badges) — anchors default to underline/blue, so undo that here
@@ -201,10 +206,12 @@ a.pill { cursor: pointer; text-decoration: none; display: inline-block; }
    rather than a second button style. */
 .tab-bar { display: flex; gap: 4px; flex-wrap: wrap; margin-bottom: 10px; }
 
-.kpirow { display: grid; grid-template-columns: repeat(5, 1fr); gap: var(--sp-1); margin-bottom: var(--sp-1); }
-/* Paired with .kpirow on the same element for a row with 6 cards
-   (Overview's one-per-stage KPI row) instead of the default 5. */
-.kpirow-6 { grid-template-columns: repeat(6, 1fr); }
+/* 4 columns — the Overview's own real headline-KPI count, per the
+   redesign brief's "no more than four headline statistics above the
+   first scroll." Confirmed by hand this is the only real caller left
+   (grepped every Track*.tsx) before changing this default away from its
+   old 5/6-column shape; no other page reaches for this class. */
+.kpirow { display: grid; grid-template-columns: repeat(4, 1fr); gap: var(--sp-1); margin-bottom: var(--sp-1); }
 .kpi { padding: var(--sp-2); min-width: 0; }
 .kpi.hi { background: var(--red); border-color: var(--red); color: #fff; }
 .kpi .label { font-size: var(--fs-card-label); font-weight: 600; letter-spacing: 0.04em; text-transform: uppercase; color: var(--ink-2); overflow-wrap: break-word; }
@@ -256,6 +263,14 @@ a.pill { cursor: pointer; text-decoration: none; display: inline-block; }
 .barrow.clickable:hover .name { color: var(--red); }
 .barrow.active .name { color: var(--red); font-weight: 600; }
 .barrow .name { font-size: 11px; color: var(--ink-2); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+/* PipelineFunnel's own real labels ("Finished with a STEM bachelor's")
+   are full descriptive phrases, not short country/company names — the
+   default 108px name column truncated them into unreadable "Finished
+   with a ST…" fragments, confirmed by hand in a real screenshot before
+   this existed. A wider column here, not a global change, since every
+   other real .barrow caller's labels are genuinely short. */
+.barrow-wide { grid-template-columns: 220px 1fr 50px; }
+.barrow-wide .name { white-space: normal; overflow: visible; text-overflow: clip; line-height: 1.3; }
 .barrow .track { height: 12px; background: var(--panel); border-radius: 0; overflow: hidden; }
 .barrow .fill { height: 100%; }
 .barrow .v { text-align: right; font-size: 10.5px; color: var(--ink-2); }
@@ -329,6 +344,11 @@ a.pill { cursor: pointer; text-decoration: none; display: inline-block; }
   text-transform: uppercase; color: var(--slate); margin: 10px 0 4px;
 }
 .dashboard-nav { display: flex; gap: 4px; flex-wrap: wrap; margin: 0 0 12px; border-bottom: 1px solid var(--line); padding-bottom: 10px; }
+/* The Track row's own border-bottom already separates the nav block from
+   page content below — a second full border here would just double up,
+   so this row only needs breathing room above it, not its own rule. */
+.dashboard-nav-reference { border-bottom: none; padding-bottom: 0; margin-top: -6px; }
+.dashboard-nav-reference .dashboard-nav-btn { font-size: 12px; padding: 5px 12px 4px; }
 .dashboard-nav-btn {
   font-family: var(--sans); font-size: 13px; font-weight: 700; border: 1px solid var(--line-2); border-bottom: 3px solid var(--line-2);
   background: var(--paper); color: var(--ink-2); padding: 7px 14px 5px; border-radius: var(--r); cursor: pointer;
@@ -391,7 +411,104 @@ a.pill { cursor: pointer; text-decoration: none; display: inline-block; }
 .expandable-methods-caret::before { content: "▼ Open methodology"; }
 .expandable-methods[open] .expandable-methods-caret::before { content: "▲ Close"; }
 .expandable-methods-body { margin-top: var(--sp-2); font-size: var(--fs-methods); line-height: 1.6; color: var(--ink-2); }
-.download-csv-btn { margin-top: var(--sp-2); font-size: var(--fs-methods); }
+
+/* ── MethodologyDrawer's own structured fields, above the citation ── */
+.methodology-fields { margin: 0 0 var(--sp-2); font-size: var(--fs-methods); line-height: 1.6; }
+.methodology-fields dt { color: var(--slate); font-weight: 600; margin-top: var(--sp-2); }
+.methodology-fields dt:first-child { margin-top: 0; }
+.methodology-fields dd { margin: 0; color: var(--ink-2); }
+.methodology-actions { display: flex; gap: var(--sp-2); flex-wrap: wrap; margin-top: var(--sp-2); }
+.methodology-actions .ghost-btn { font-size: var(--fs-methods); margin-top: 0; }
+
+/* A closed <details>'s content is hidden by the UA stylesheet's own
+   `details:not([open]) > *:not(summary) { display: none }` rule — not by
+   this app's CSS, so overriding a class on the body div does nothing on
+   its own. Overriding the SAME selector shape (higher specificity via
+   :not([open]), not just !important) is what actually defeats it, forcing
+   every methodology drawer's real citation/methodology text to print even
+   when closed on screen, per the redesign brief's "must remain printable"
+   requirement. */
+@media print {
+  .methodology-drawer:not([open]) > *:not(summary) { display: block !important; }
+  .methodology-drawer .expandable-methods-caret { display: none; }
+}
+
+/* ── /methodology/ route ───────────────────────────────────────────── */
+code { font-family: var(--mono); background: var(--panel-2); padding: 1px 4px; font-size: 0.92em; }
+.search-field { display: flex; }
+.search-input {
+  width: 100%; max-width: 480px; font: inherit; font-size: 14px; padding: 8px 12px;
+  border: 1px solid var(--line-2); border-radius: var(--r); background: var(--paper); color: var(--ink);
+}
+.search-input:focus-visible { outline: 2px solid var(--focus-ring); outline-offset: 1px; }
+.definitions-list { display: grid; gap: var(--sp-3); }
+.definitions-list dt { font-weight: 700; margin-bottom: 2px; }
+.definitions-list dd { margin: 0; color: var(--ink-2); line-height: 1.6; }
+.methodology-calc-row { margin-top: var(--sp-3); line-height: 1.6; }
+.methodology-calc-row:first-of-type { margin-top: var(--sp-2); }
+.methodology-calc-row > div { color: var(--ink-2); margin-top: 2px; }
+.methodology-list { margin: var(--sp-2) 0 0; padding-left: 1.2em; line-height: 1.6; color: var(--ink-2); }
+.methodology-list li { margin-bottom: var(--sp-2); }
+/* `.lb thead th`'s own `padding: 0 0 5px` (zero right-padding) beats a
+   plain `.crosswalk-table th` on specificity (2 compound parts vs. 1) —
+   real bug caught by hand (header text ran together edge to edge before
+   this). `thead th` matches that same specificity instead of just
+   hoping a bare class selector wins. */
+.crosswalk-table td { padding-right: var(--sp-2); }
+.crosswalk-table thead th { padding-right: var(--sp-2); }
+.crosswalk-table tbody tr:target { background: var(--panel-2); }
+
+/* ── /downloads/ route ─────────────────────────────────────────────── */
+.downloads-toolbar { display: flex; flex-direction: column; gap: var(--sp-2); margin-top: 12px; }
+.download-links { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; font-size: 12.5px; }
+.download-links .sep { color: var(--line-2); }
+.download-links a, .link-btn {
+  color: var(--red); text-decoration: underline; background: none; border: none; padding: 0; font: inherit; cursor: pointer;
+}
+.download-links a:hover, .link-btn:hover { color: var(--ink); }
+/* Same real specificity bug as .crosswalk-table above — .lb thead th's
+   own padding-right:0 otherwise wins over a bare .downloads-table th. */
+.downloads-table td { vertical-align: top; padding-right: var(--sp-3); }
+.downloads-table thead th { padding-right: var(--sp-3); }
+.downloads-table td:last-child, .downloads-table thead th:last-child { padding-right: 0; }
+
+/* ── Overview scrollytelling ────────────────────────────────────────
+   The core "visual sticks while its own text scrolls past" mechanic is
+   plain CSS position:sticky, scoped to each section — no JavaScript
+   computes this, so it works identically whether script runs or not.
+   `.scrolly-text`'s own real min-height is what gives each section real
+   scroll room for its sticky visual to hold its position through; a
+   short text block just releases sooner, which is fine and honest, not
+   padded out artificially to force a fixed dwell time. */
+.scrolly-section { display: grid; grid-template-columns: 1fr 1fr; gap: var(--sp-5); align-items: start; padding: var(--sp-6) 0; border-top: 1px solid var(--line); }
+.scrolly-section:first-child { border-top: none; padding-top: var(--sp-3); }
+.scrolly-text { min-height: 40vh; display: flex; flex-direction: column; justify-content: center; }
+.scrolly-eyebrow { font-family: var(--mono); font-size: 10px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--slate); margin-bottom: var(--sp-1); }
+.scrolly-text h2 { font-size: var(--fs-section-title); font-weight: 700; margin-bottom: var(--sp-2); }
+.scrolly-body { font-size: var(--fs-body); color: var(--ink-2); line-height: 1.6; }
+.scrolly-body p { margin-bottom: var(--sp-2); }
+.scrolly-body p:last-child { margin-bottom: 0; }
+.scrolly-caveat { font-size: 12.5px; font-style: italic; color: var(--slate); }
+
+/* ── immigration-gates sequence (Overview scrollytelling, step 4) ──── */
+.gates-list { list-style: none; display: flex; flex-direction: column; gap: var(--sp-3); }
+.gates-item { display: flex; gap: var(--sp-2); align-items: baseline; }
+.gates-num {
+  font-family: var(--mono); font-size: 11px; font-weight: 700; color: var(--paper); background: var(--red);
+  width: 20px; height: 20px; border-radius: 50%; display: flex; align-items: center; justify-content: center; flex: none;
+}
+.gates-label { font-weight: 700; font-size: 13px; }
+.gates-fact { color: var(--ink-2); font-size: 12.5px; line-height: 1.5; }
+.scrolly-visual { position: sticky; top: 24px; align-self: start; }
+
+@media (max-width: 900px) {
+  /* Sticky positioning is a desktop-only enhancement — below this width,
+     every section's own visual renders inline right after its own text,
+     the same plain linear order a no-JS reader on any screen size sees. */
+  .scrolly-section { grid-template-columns: 1fr; gap: var(--sp-3); padding: var(--sp-4) 0; }
+  .scrolly-text { min-height: 0; }
+  .scrolly-visual { position: static; }
+}
 
 /* ── tooltip ────────────────────────────────────────────────────── */
 /* Fixed dark-on-white regardless of page theme — a floating overlay reads
@@ -442,7 +559,7 @@ a.pill { cursor: pointer; text-decoration: none; display: inline-block; }
 .foot code { background: var(--panel-2); padding: 1px 4px; border-radius: 0; }
 .foot .sig { color: var(--red); font-weight: 600; margin-top: 10px; font-size: 11px; }
 
-@media (max-width: 1100px) { .kpirow, .kpirow-6 { grid-template-columns: repeat(2,1fr); } .row3 { grid-template-columns: 1fr; } }
+@media (max-width: 1100px) { .kpirow { grid-template-columns: repeat(2,1fr); } .row3 { grid-template-columns: 1fr; } }
 @media (max-width: 620px) { .wrap { padding: 0 14px 32px; } }
 @media (prefers-reduced-motion: reduce) { * { scroll-behavior: auto !important; } }
 
@@ -459,11 +576,11 @@ a.pill { cursor: pointer; text-decoration: none; display: inline-block; }
   .mapbox { height: 440px; }
 }
 @media (max-width: 768px) {
-  .kpirow, .kpirow-6 { grid-template-columns: repeat(2, 1fr); }
+  .kpirow { grid-template-columns: repeat(2, 1fr); }
   .mapbox { height: 340px; }
 }
 @media (max-width: 480px) {
-  .kpirow, .kpirow-6 { grid-template-columns: 1fr; }
+  .kpirow { grid-template-columns: 1fr; }
 }
 
 /* ── keyboard focus — every custom interactive element gets a visible,

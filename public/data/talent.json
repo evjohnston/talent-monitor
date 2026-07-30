@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-07-30T06:35:20.268Z",
+  "generatedAt": "2026-07-30T06:36:56.123Z",
   "exhibits": [
     {
       "id": "FIG101",
@@ -645,7 +645,8 @@
           "Doctorate recipients (number)": 58131,
           "% change from previous year": "confirmed"
         }
-      ]
+      ],
+      "dataNote": "Doctorate counts for 1900-1901, 1916, and 1923 are historical estimates (Thurgood, Golladay, and Hill 2006); every other year (1902-1915, 1917-1922, 1924 onward) is an NCES/NCSES-confirmed count, per the source CSV's own per-year estimate/confirmed flag."
     },
     {
       "id": "FIG102",
@@ -12219,7 +12220,11 @@
           "Year": 2026,
           "Top 10 employers' share of approvals": 53.8
         }
-      ]
+      ],
+      "derivedFrom": [
+        "FIG302"
+      ],
+      "calculationNote": "Computed by this site, not the report: each year's ten largest H-1B employers' approvals, summed and divided by that year's total across all employers. Employer names are grouped for real, contemporaneous same-parent subsidiaries (e.g. Hewlett Packard Enterprise's own services subsidiary) before ranking — see src/lib/entityResolution.ts. A real historical merger or acquisition does not get grouped; each company keeps its own pre-merger years."
     },
     {
       "id": "FIG304",
@@ -17271,7 +17276,11 @@
           "Country": "Luxembourg",
           "Tertiary-to-K-12 spending ratio": 2.09
         }
-      ]
+      ],
+      "derivedFrom": [
+        "FIG404"
+      ],
+      "calculationNote": "Computed by this site, not the report: tertiary per-student spending divided by K-12 per-student spending, for each country in FIG404 with both real values (three aggregate/outlier rows the report's own chart drops — EU25 average, G20 average, China — are excluded here too)."
     },
     {
       "id": "FIG406",
@@ -30460,7 +30469,8 @@
           "Year": 2024,
           "Percent of International PhD Recipients who reported they 'intended to stay' in the United States": 0.758
         }
-      ]
+      ],
+      "dataNote": "Measures international PhD recipients' own stated INTENT to stay, from a near-graduation survey — a different population and a different measure than FIG602's tracked-cohort stay rates. The two should not be read as the same population's before/after."
     },
     {
       "id": "FIG602",
@@ -30536,7 +30546,8 @@
           "5-year stay rate": 0.734,
           "10-year stay rate": 0.678
         }
-      ]
+      ],
+      "dataNote": "Measures a tracked cohort's actual observed location 5 and 10 years after the PhD — a different population and a different measure than FIG601's near-graduation intent survey. The two should not be read as the same population's before/after."
     },
     {
       "id": "FIG603",
@@ -34870,84 +34881,88 @@
       ],
       "rows": [
         {
-          "Company": "GOOGLE INC",
+          "Company": "GOOGLE",
           "2017 share": 2.2,
           "2025 share": 8.3,
           "Change (points)": 6.2
         },
         {
-          "Company": "LTIMINDTREE LIMITED",
+          "Company": "LTIMINDTREE",
           "2017 share": 0,
           "2025 share": 3.3,
           "Change (points)": 3.3
         },
         {
-          "Company": "Deloitte and Subsidiaries",
+          "Company": "Deloitte",
           "2017 share": 3,
           "2025 share": 6,
           "Change (points)": 3
         },
         {
-          "Company": "ERNST & YOUNG LLP",
+          "Company": "ERNST & YOUNG",
           "2017 share": 2.4,
           "2025 share": 4.2,
           "Change (points)": 1.7
         },
         {
-          "Company": "CAPGEMINI AMERICA INC",
+          "Company": "CAPGEMINI AMERICA",
           "2017 share": 2.6,
           "2025 share": 3.3,
           "Change (points)": 0.7
         },
         {
-          "Company": "IBM and subsidiaries",
+          "Company": "IBM",
           "2017 share": 3,
           "2025 share": 3.1,
           "Change (points)": 0
         },
         {
-          "Company": "HCL Technologies Limited and Subsidiaries",
+          "Company": "HCL Technologies Limited",
           "2017 share": 3.8,
           "2025 share": 3.7,
           "Change (points)": -0.1
         },
         {
-          "Company": "TATA CONSULTANCY SERVICES LIMITED",
+          "Company": "TATA CONSULTANCY SERVICES",
           "2017 share": 11.2,
           "2025 share": 9.3,
           "Change (points)": -1.9
         },
         {
-          "Company": "LARSEN & TOUBRO INFOTECH LIMITED",
+          "Company": "LARSEN & TOUBRO INFOTECH",
           "2017 share": 2.7,
           "2025 share": 0.7,
           "Change (points)": -2
         },
         {
-          "Company": "TECH MAHINDRA AMERICAS INC",
+          "Company": "TECH MAHINDRA AMERICAS",
           "2017 share": 3.8,
           "2025 share": 1.7,
           "Change (points)": -2.2
         },
         {
-          "Company": "WIPRO LIMITED",
+          "Company": "WIPRO",
           "2017 share": 5.3,
           "2025 share": 2.8,
           "Change (points)": -2.5
         },
         {
-          "Company": "INFOSYS LIMITED",
+          "Company": "INFOSYS",
           "2017 share": 10.7,
           "2025 share": 4.4,
           "Change (points)": -6.4
         },
         {
-          "Company": "COGNIZANT TECHNOLOGY SOLUTIONS US CORP",
+          "Company": "COGNIZANT TECHNOLOGY SOLUTIONS US",
           "2017 share": 22.1,
           "2025 share": 6,
           "Change (points)": -16.1
         }
-      ]
+      ],
+      "derivedFrom": [
+        "FIG302"
+      ],
+      "calculationNote": "Computed by this site, not the report: each employer's own share of that year's total H-1B approvals, for 2017 and 2025, restricted to companies that were top-10 by count in either year. Same employer-name grouping as FIG303."
     },
     {
       "id": "TAB401",
@@ -39383,7 +39398,11 @@
           "Type": "Experimental Development",
           "Change (%)": 5595.7
         }
-      ]
+      ],
+      "derivedFrom": [
+        "FIG510"
+      ],
+      "calculationNote": "Computed by this site, not the report: FIG510's own basic-vs-applied-vs-development R&D spending reshaped into a bookend (earliest vs. latest year) comparison table."
     },
     {
       "id": "TAB504",
@@ -39477,7 +39496,11 @@
           "Type": "Private non-profit sector",
           "Change (%)": null
         }
-      ]
+      ],
+      "derivedFrom": [
+        "FIG511"
+      ],
+      "calculationNote": "Computed by this site, not the report: FIG511's own R&D-by-sector spending reshaped into a bookend (earliest vs. latest year) comparison table."
     },
     {
       "id": "TAB505-a",
@@ -43120,7 +43143,13 @@
           "India: EB2": 149,
           "India: EB3": 146
         }
-      ]
+      ],
+      "derivedFrom": [
+        "TAB605a",
+        "TAB605b",
+        "TAB605c"
+      ],
+      "calculationNote": "Computed by this site from three real source files (talent_charts/data/TAB605a/b/c.csv — Rest of World, China, and India green-card wait times) that exist in the report's own data but were never given their own titles_and_sources.csv entry, since they're the report's own R pipeline's inputs, not independently citable exhibits."
     }
   ],
   "notes": [

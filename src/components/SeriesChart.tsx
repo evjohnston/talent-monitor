@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { ResponsiveLine } from "@nivo/line";
 import type { SliceTooltipProps, LineCustomSvgLayer, LineSeries } from "@nivo/line";
 import { codeFromCountryName, countryColor, countryName } from "../lib/countries.ts";
@@ -75,6 +75,7 @@ export function SeriesChart({
   unitSuffix = "",
   emphasize,
   ariaLabel,
+  onVisibleSeriesChange,
 }: {
   x: (string | number)[];
   series: Series[];
@@ -86,6 +87,13 @@ export function SeriesChart({
   // every page) — ResponsiveLine forwards this straight to its
   // SvgWrapper's aria-label, same as `role`/`isFocusable` below.
   ariaLabel?: string;
+  // Reports which series keys are currently shown, so ExhibitChart.tsx
+  // (which knows the real x-column name and full row shape, unlike this
+  // component) can build a real "currently displayed" CSV subset for
+  // MethodologyDrawer's download menu. Only meaningfully differs from
+  // "every series" when the >6-series picker is actually active — most
+  // exhibits never call this with anything but the full key set.
+  onVisibleSeriesChange?: (keys: string[]) => void;
 }) {
   const n = x.length;
   const DEFAULT_W = 380, DEFAULT_H = 260;
@@ -118,6 +126,11 @@ export function SeriesChart({
   const [visibleKeys, setVisibleKeys] = useState(defaultVisibleKeys);
   const needsPicker = series.length > MAX_SERIES_WITHOUT_PICKER;
   const showingAll = visibleKeys.size === series.length;
+
+  useEffect(() => {
+    onVisibleSeriesChange?.([...visibleKeys]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [visibleKeys]);
 
   function toggleKey(key: string) {
     setVisibleKeys((prev) => {

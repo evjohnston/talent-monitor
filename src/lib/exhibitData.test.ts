@@ -8,6 +8,7 @@ import {
   toRankedBars,
   toDistributionStats,
   isRateShapedSeries,
+  realDateRange,
 } from "./exhibitData.ts";
 import type { Exhibit } from "./types.ts";
 
@@ -236,5 +237,34 @@ describe("toDistributionStats", () => {
       { Country: "A", Company: "Incomplete", mean: 1, std: 1, min: null, "25th_percentile": 0, median_50th: 1, "75th_percentile": 2, max: 3, skewness: 1, kurtosis: 1 },
     ]);
     expect(toDistributionStats(e)).toBeNull();
+  });
+});
+
+describe("realDateRange", () => {
+  it("computes a real min–max range from a Year column", () => {
+    const e = fixture(["Year", "Value"], [
+      { Year: 2009, Value: 1 },
+      { Year: 2026, Value: 2 },
+      { Year: 2017, Value: 3 },
+    ]);
+    expect(realDateRange(e)).toBe("2009–2026");
+  });
+
+  it("shows a single year, not a degenerate range, when only one year exists", () => {
+    const e = fixture(["Year", "Value"], [{ Year: 2024, Value: 1 }]);
+    expect(realDateRange(e)).toBe("2024");
+  });
+
+  it("returns null for an exhibit with no Year column (e.g. a country-map snapshot)", () => {
+    const e = fixture(["Country", "Value"], [{ Country: "US", Value: 1 }]);
+    expect(realDateRange(e)).toBeNull();
+  });
+
+  it("ignores a non-numeric Year value (e.g. FIG101's own estimate/confirmed flag on a DIFFERENT column) rather than crashing", () => {
+    const e = fixture(["Year", "% change from previous year"], [
+      { Year: 1900, "% change from previous year": "estimate" },
+      { Year: 1902, "% change from previous year": "confirmed" },
+    ]);
+    expect(realDateRange(e)).toBe("1900–1902");
   });
 });

@@ -820,6 +820,8 @@ npm run build
 npm run typecheck
 npm test                      # src/lib/*.test.ts — vitest (vitest.config.ts only excludes tests/, see "Tests")
 npm run test:a11y             # tests/accessibility.spec.ts — playwright + axe-core; needs `npm run build` first
+npm run test:interaction      # tests/interaction.spec.ts — real keyboard/download checks; needs `npm run build` first
+npm run test:visual           # tests/visual-regression.spec.ts — scoped pixel-diff snapshots; needs `npm run build` first
 ```
 
 On a fresh clone, `public/data/talent.json` is already committed — `npm run
@@ -841,14 +843,19 @@ build-and-deploy.yml` as a real step before `Build` — runs on every push
 to `main` and every PR against it (a PR run stops after test+build, never
 deploys; see that job's own `if:` guard).
 
-This is a real "zero to something," not "zero to comprehensive." One real
-Playwright/E2E suite exists (`tests/accessibility.spec.ts`, `npm run
-test:a11y`, see "Accessibility" below) — but most UI verification this
-project's sessions have run is still by hand, via scratchpad Playwright
-scripts, not committed tests. `ExhibitChart.tsx`'s own dispatch logic
-isn't covered, and neither is `sankeyData.ts`'s derived-cohort math. Real
-follow-up, not silently considered "done" — grow this file by file as
-new logic gets touched, same instinct as everything else in "Known gaps."
+This is a real "zero to something," not "zero to comprehensive." Three
+real Playwright/E2E suites exist — `tests/accessibility.spec.ts` (`npm
+run test:a11y`, see "Accessibility" below), `tests/interaction.spec.ts`
+(`npm run test:interaction`, real keyboard operation and download-output
+checks — see "Interaction, accessibility, and visual-regression tests"),
+and `tests/visual-regression.spec.ts` (`npm run test:visual`, a small
+scoped set of pixel-diff snapshots, same section) — but most UI
+verification this project's sessions have run is still by hand, via
+scratchpad Playwright scripts, not committed tests. `ExhibitChart.tsx`'s
+own dispatch logic isn't covered, and neither is `sankeyData.ts`'s
+derived-cohort math. Real follow-up, not silently considered "done" —
+grow this file by file as new logic gets touched, same instinct as
+everything else in "Known gaps."
 
 **A real bug this test suite caught immediately**: `docs/report-crosswalk-
 notes.md` had claimed `codeFromCountryName()` already resolved "South
@@ -969,6 +976,649 @@ typecheck` was silently skipping both — added them to
 `tsconfig.node.json`'s `include`, confirmed with a forced (`--force`,
 cache-busting) `tsc -b` rebuild that they're now genuinely checked, not
 just passing by omission.
+
+## Per-chart downloads (2026-07-30)
+
+`MethodologyDrawer.tsx`'s download menu (issue #4) now offers CSV, JSON,
+and SVG, plus copy-citation and copy-methodology-link, alongside the
+existing structured metadata fields.
+
+- **CSV/JSON** — `src/lib/csvExport.ts`'s `downloadCsv()` (already real)
+  gained a sibling `downloadJson()`; both share a new `triggerDownload()`
+  helper instead of repeating the Blob/createObjectURL/synthetic-`<a>`
+  sequence per format.
+- **SVG** — `src/lib/chartExport.ts`'s `downloadChartSvg()` is ONE
+  generic implementation for every chart kind, not per-component code:
+  `WorldMap`/`BoxPlotRow`/`BarRow`/`LeaderboardYears`/`Sankey` are all
+  hand-rolled real `<svg>` elements, and Nivo's `ResponsiveLine`
+  (`SeriesChart`) also renders a real `<svg role="img">` (confirmed
+  directly against `@nivo/core`'s source during the accessibility pass,
+  see that section above) — serializing whichever real `<svg>` is
+  actually in the DOM works identically regardless of which component put
+  it there. `ExhibitPanel.tsx` wraps `<ExhibitChart>` in a plain ref'd
+  `<div>` (confirmed no CSS targets `.panel`'s children via a direct-child
+  selector before adding it) so `MethodologyDrawer` can find that
+  exhibit's own chart without needing to know its `ChartKind`. Verified
+  against two real, structurally different chart kinds by hand with
+  Playwright — a Nivo `SeriesChart` and a hand-rolled `WorldMap` — both
+  produce a real, valid, standalone SVG file (own `xmlns`, real `<path>`
+  content).
+- **Filenames** — no hand-authored slug field exists per exhibit yet (91
+  exhibits, real content-authoring work, not invented here), so
+  `src/lib/exportFilename.ts` mechanically slugifies the exhibit's own
+  real title instead of falling back to its opaque id: e.g.
+  `degree-production_how-many-research-doctorates-are-awarded-by-u-s-
+  universities_1900-2024.csv`. Reuses `realDateRange()` (already built
+  for the methodology drawer) for the trailing date range, converting its
+  en dash to a plain hyphen — filenames shouldn't carry a unicode
+  character the way display text can.
+
+**"CSV of the currently displayed data," done (2026-07-30)** — no longer
+a gap. `SeriesChart`'s own >6-series picker and `LeaderboardYears`' own
+year-chip (both already real, existing filters) now report their
+currently-visible subset up through a new `onVisibleDataChange` prop on
+`ExhibitChart`, the same lifted-state pattern `onHoverCountry`/
+`onSelectCountry` already used. `MethodologyDrawer` only renders a second
+"Download CSV (currently shown)" button when there's a REAL difference
+to download — `ExhibitChart.tsx` itself decides this (reporting `null`
+whenever every series is visible, e.g. every exhibit with ≤6 series never
+needing a picker at all), not a downstream heuristic guessing from row/
+column counts. Verified by hand across two real different exhibit shapes:
+a >6-series timeseries exhibit (same row count, fewer columns — the
+picker's default 6 of N series) and FIG302's leaderboard-years shape
+(fewer rows AND fewer columns — one year, top-12 ranked, vs. every
+year/every of 252 employers). Confirmed the split is correctly absent
+everywhere else by sweeping every panel on two real stage pages.
+
+Not yet done (tracked in #4): the count/rate-split path (`FIG603`-style
+exhibits mixing a real 0-1 rate column with count columns, rendered as
+two independent `SeriesChart`s) doesn't report a visible-data subset —
+each half has its own independent picker state, and merging two
+partially-independent subsets into one coherent CSV wasn't tackled in
+this pass, a real, smaller, disclosed gap, not silently papered over.
+
+**Build-time PNG/ZIP pipeline, done (2026-07-30)** — closes #4.
+`scripts/generate-downloads.ts` (`npm run generate-downloads`) runs
+AFTER `astro build`, spins up a real `astro preview` server on its own
+port (4322, deliberately not 4321 — avoids colliding with a real dev/
+test server already on the default port), and:
+- **ZIPs** — one per stage, bundling that stage's real exhibit CSVs
+  (`archiver`'s `ZipArchive` — a newer, class-based API than the classic
+  `archiver('zip', opts)` factory-function call; confirmed by reading the
+  installed package's own real source, not assumed from memory of older
+  versions). No browser needed for this half.
+- **PNGs** — a Playwright-driven screenshot of each exhibit panel's own
+  real `<svg>`, one pass per stage page. Only 62 of 91 exhibits get a
+  real PNG — confirmed this is CORRECT, not a bug: `BarRow` (the ranked-
+  bar fallback, ~29 exhibits) is plain HTML/CSS with no `<svg>` at all,
+  so there's genuinely nothing to screenshot for those.
+
+**A real, separate bug this surfaced, fixed in the same pass**: the
+client-side "Download SVG" button in `MethodologyDrawer.tsx` was ALWAYS
+rendered regardless of chart kind — for every one of those same ~29
+`BarRow` exhibits, clicking it silently did nothing (no real `<svg>` for
+`downloadChartSvg` to find). Fixed with a post-mount check
+(`chartRef.current?.querySelector("svg")`) that hides the button
+entirely when there's truly nothing to export — verified by hand across
+every panel on a real stage page that "has a real `<svg>`" and "shows
+the SVG button" match exactly, not just spot-checked.
+
+**A second real bug caught by hand reviewing the first generated PNGs,
+not assumed**: `WorldMap.tsx`'s own corner "expand" button sits visually
+on top of the map, not inside its own separate box — the very first test
+PNGs had that button's own square baked into the exported image. Fixed
+by injecting a temporary `display: none` style rule for `.map-expand`
+right before each stage's screenshots (`page.addStyleTag`, scoped to the
+screenshot pass only, never touching the real served page).
+
+**Node-context/browser-context import split, a real architectural fix,
+not a workaround**: `scripts/generate-downloads.ts` needs `rowsToCsv`
+and `buildExportFilename`/`realDateRange`, but importing them from
+`csvExport.ts`/`exhibitData.ts` directly failed `tsc`'s Node-context
+project (`tsconfig.node.json`, no DOM lib, no `--jsx`) — those files also
+contain `document`/`Blob`-using functions and type-only imports from real
+`.tsx` component files respectively, and tsc checks a whole file's
+syntax against its project's settings regardless of which specific
+export a caller actually uses. Fixed at the root, not papered over with
+a duplicate copy: `realDateRange` moved to a new `src/lib/dateRange.ts`,
+`rowsToCsv` to a new `src/lib/csv.ts` — both genuinely dependency-free,
+re-exported from their original files for every existing browser-context
+import site to keep working unchanged (confirmed: `npm test` still
+passes all 65 tests with zero import changes needed elsewhere).
+
+CI wiring: a real step in `.github/workflows/build-and-deploy.yml` after
+the accessibility check, guarded `if: github.event_name == 'push'` (same
+as the deploy-artifact upload) — a PR's own status-check run doesn't pay
+the cost of generating downloads that will never actually deploy.
+
+## Methodology drawer (2026-07-30)
+
+`src/components/MethodologyDrawer.tsx` replaces `ExhibitPanel.tsx`'s old
+bare `<ExpandableMethods><p>{sourceLong}</p></ExpandableMethods>` block
+with a richer real-methodology surface, per the publication redesign's
+per-chart methodology requirement (tracked in issue #3 on GitHub).
+
+**Real content only, never a placeholder** — checked `content/report-
+crosswalk.csv`'s own dedicated `unit`/`population_definition` columns by
+hand before building anything: every one of them still reads "TBD" for
+every one of the 91 exhibits this app actually renders today (0 real
+values). Rather than model fields that would always show "not yet
+documented," `Exhibit` (`src/lib/types.ts`) only gained three new
+optional fields — `derivedFrom`, `calculationNote`, `dataNote` — each
+populated ONLY for the specific, real, already-confirmed cases this
+codebase has precise knowledge of:
+- **`derivedFrom`/`calculationNote`**: the 6 exhibits computed by this
+  site rather than read from a standalone report CSV (FIG303, TAB303,
+  FIG405, TAB503, TAB504, TAB605) — each note states plainly that it's
+  "computed by this site, not the report," and what the real computation
+  is, so a reader never mistakes a derived number for an independently-
+  sourced one.
+- **`dataNote`**: three real, hand-confirmed data-quality/comparability
+  facts — FIG101's real per-year estimate/confirmed flag (previously
+  dropped by the importer as non-numeric; now surfaced as a real
+  methodology note: "1900-1901, 1916, and 1923 are historical estimates
+  ... every other year ... is confirmed") and FIG601-vs-FIG602's
+  different populations (intent survey vs. tracked-cohort outcomes —
+  already flagged in `docs/report-crosswalk-notes.md`, now surfaced on
+  the exhibit itself, not just the Retention & Immigration hero's own
+  caption).
+- **Date range** is computed at render time from the exhibit's own real
+  `rows` (min/max `Year` column value), not stored — never goes stale on
+  a data refresh, and simply doesn't render for an exhibit shape with no
+  `Year` column (a country-map or ranked-bar snapshot) rather than
+  showing a fabricated range.
+
+**A real stale-documentation bug fixed along the way, not a new one
+introduced**: `content/report-crosswalk.csv`'s own `caveat`/`notes` text
+for TAB605/TAB503/TAB504 still said "not yet backfilled"/"BLOCKED" days
+after all three were actually ported (2026-07-29, see the Ingestion
+section) — caught while reading this file for real content to reuse,
+fixed to say what actually happened instead of re-porting the stale
+claim into a public methodology page.
+
+**Accessibility**: reuses the native `<details>/<summary>` disclosure
+pattern (`ExpandableMethods` already established this is real, keyboard-
+operable, and has no focus trap by construction — a modal/overlay would
+have to build that from scratch). Gets a real, stable deep link
+(`?methods=<exhibit-id>`, e.g. `?methods=FIG101`) via a `useState`
+initialized closed on both server and first client render (the same
+SSR-safe pattern as pinned countries) and a mount effect that opens +
+scrolls to the right drawer when the URL matches — confirmed working by
+hand with Playwright, not assumed. A real `@media print` rule overrides
+the same UA-stylesheet selector shape (`details:not([open]) > *`) that
+normally hides a closed drawer's content, so a printed page shows every
+real citation/methodology text regardless of its on-screen open/closed
+state. Confirmed the no-JS fallback separately: `curl`ing the built HTML
+shows a real, closed `<details id="methods-FIG303">` with the actual
+methodology content already present, not injected by JS.
+
+Not yet built (tracked in issue #5, the full `/methodology/` route):
+"copy shareable URL preserving chart state" is intentionally the
+simpler `?methods=<id>` link for now, not yet threading through other
+real page state (pinned countries, series-picker selections) — that's
+this drawer's own smaller piece of a larger, still-open download/share
+mechanism.
+
+## Responsive and reduced-motion sweep (2026-07-30)
+
+Closes #8. Most of this stage's own requirements were already satisfied
+by construction in #7 (the scrollytelling's mobile layout is the same
+plain stacked order the no-JS fallback uses, no separate "mobile mode"
+to verify) — this pass is the real, systematic check across every route
+this session touched, not an assumption that "should be fine" was
+actually true.
+
+**Checked, not assumed**: a real Playwright sweep of all 9 routes at
+mobile (390×844) and tablet (768×1024) found zero horizontal overflow —
+including with every methodology drawer opened at once on
+`/graduate-training/` (the >6-series picker's own widest real button
+row) and after scrolling through every real step of the Overview
+sequence on mobile. The wide real tables (`/methodology/`'s 163-row
+crosswalk, `/downloads/`'s 91-row exhibit table) also introduce no
+horizontal page overflow.
+
+**A real touch-target gap found and fixed, not left at "probably
+fine"**: `.chip`/`.pill`/`.ghost-btn` — this app's single most-reused
+interactive class, used everywhere from year-chips to nav tabs to the
+new scrollytelling field/metric selectors — measured at a real 23px
+tall, 1px under WCAG 2.5.8's 24px minimum target size. Fixed by bumping
+vertical padding from 4px to 5px (23px -> 25px, confirmed by hand after
+rebuilding), a small, shared fix rather than a per-component patch.
+Verified no visual regression from the 2px height change across the
+main nav and a real series-picker legend after the fix.
+
+`prefers-reduced-motion` confirmed working for real, not just assumed
+from earlier sessions' own claims: emulated `reducedMotion: "reduce"` in
+a real browser context and confirmed the page actually sees the media
+query as true, zero Sankey particle-dot elements render (the existing
+`usePrefersReducedMotion` gate, reused unchanged by the two Sankeys the
+Overview sequence itself reuses), and `scroll-behavior` computes to
+`auto`, not `smooth` (the existing global reduced-motion override).
+Nothing new this session introduces its own scroll-triggered or
+decorative animation to gate — the scrollytelling's core mechanic is
+plain CSS `position: sticky`, which isn't an animation at all.
+
+## Interaction, accessibility, and visual-regression tests (2026-07-30)
+
+Closes #9, the last tracked item in the methodology/downloads/overview
+backlog (#2). `tests/accessibility.spec.ts`'s axe-core sweep already
+covered `/methodology/`, `/downloads/`, and the rebuilt Overview (added
+alongside #5/#6/#7, not new here) — but axe-core only flags markup
+patterns (missing labels, contrast, landmarks). It can't tell you whether
+a control actually operates correctly via keyboard, or whether a download
+button produces a real file. Two new, real test files close that gap.
+
+**`tests/interaction.spec.ts`** — three real checks: the methodology
+drawer opens/closes via a focused `<summary>` and Enter, with no focus
+trap (native `<details>` needs zero bespoke script for this, confirmed
+rather than assumed); the download menu's CSV/JSON/SVG buttons produce
+real files (`page.waitForEvent("download")`, then the actual file content
+is read off disk and checked — a CSV has a header row and commas, a JSON
+parses to a real `rows` array, an SVG file contains `<svg`); and real Tab
+order reaches a control inside the Overview's last scrollytelling step.
+
+**A real, severe bug, caught by the third check, not a hypothetical
+one**: pressing Tab from the very top of any page got a keyboard user
+stuck cycling inside the news ticker forever — `document.activeElement`
+never advanced past `NewsTicker.tsx`'s own auto-scrolling story links,
+confirmed by hand with a raw Tab-press loop logging the focused element
+every step (200+ presses, same 3-element cycle every time, `<body>` in
+between). Root cause: `.ticker-track`'s story links are positioned by a
+continuously running CSS `transform` animation, and Chromium's real
+sequential-focus-navigation silently fails to land on a
+transform-positioned anchor while that animation is actively running,
+dropping focus to `<body>` instead — meaning no keyboard user could ever
+reach the nav, the KPIs, or a single chart panel while the ticker
+auto-played, on any page, the entire time this feature has existed.
+Fixed in `NewsTicker.tsx` by making each story link a real Tab stop
+(`tabIndex={0}`) only once the ticker is actually paused, and
+`tabIndex={-1}` while it's auto-scrolling — Tab now skips straight over
+the ticker to real page content during autoplay, and the links become
+reachable the moment a reader pauses it, when their position is
+genuinely static. The second, always-duplicated copy of the story list
+(existing purely so the CSS animation can loop seamlessly) is now also
+`aria-hidden` and permanently untabbable, since a screen reader reading
+linearly shouldn't hear every real story twice — a related, smaller real
+issue noticed while fixing the first one, not scope creep.
+
+**`tests/visual-regression.spec.ts`** — a small, deliberately scoped set
+of pixel-diff snapshots: one representative panel per real `ChartKind`
+this app renders (a `SeriesChart` timeseries, a `WorldMap`, a
+`LeaderboardYears`, a `BarRow` ranked list, a `Sankey`), plus the
+Overview's hero headline and KPI row — not one screenshot per exhibit
+(91 real exhibits would make this slow and, per this issue's own tracked
+concern, a much larger flakiness surface for no real added coverage).
+`test.use({ contextOptions: { reducedMotion: "reduce" } })` removes
+`useCountUp`'s KPI animation and the Sankey's particle motion (both
+already gated on the same real `usePrefersReducedMotion` hook — no new
+gating needed), and Nivo's own `animate={false}` (already set) removes
+its mount animation — so every snapshot is deterministic on repeat runs
+of the same OS.
+
+**Baselines are real, generated on ubuntu-latest, never captured from a
+contributor's own machine** — Playwright screenshots differ by real
+pixels of anti-aliasing across macOS vs. Linux even with an identical
+Chromium build, and this repo's actual CI (`build-and-deploy.yml`) runs
+on `ubuntu-latest`. Playwright's own default snapshot naming
+(`{name}-{platform}.png`) already keeps a `-darwin.png` local run and a
+`-linux.png` CI run from ever cross-comparing, so this needed no custom
+`snapshotPathTemplate`. The 7 committed `tests/visual-regression.spec.ts-
+snapshots/*-linux.png` files were bootstrapped for real: a manual
+`gh workflow run build-and-deploy.yml --ref <branch>` dispatch ran the
+new visual-regression step on the actual ubuntu-latest runner, its
+"missing baseline, writing actual" output was captured via a new
+`actions/upload-artifact` step (added specifically for this, gated on
+the visual-regression step's own `outcome` rather than the job-level
+`failure()`, since `continue-on-error: true` masks the latter), the 7
+real PNGs were downloaded and checked by hand (real chart content, no
+artifacts, particles correctly suppressed on the Sankey), then committed
+— and a second dispatch confirmed the comparison genuinely passes clean
+against them (`5 passed`), not just that a baseline exists.
+
+A dedicated **`visual-baseline.yml`** workflow (`workflow_dispatch`-only)
+exists for regenerating these going forward without needing the
+bootstrap detour above — but GitHub only lets `workflow_dispatch` target
+a workflow file that already exists on the repo's *default* branch, so
+it can't actually be dispatched yet from a feature branch. It'll work
+once these changes reach `main` through the normal PR chain; until then,
+the bootstrap method above (a manual dispatch of the already-registered
+`build-and-deploy.yml`, downloading its on-`outcome`-failure artifact) is
+the real fallback, not a placeholder.
+
+The visual-regression CI step runs with `continue-on-error: true`
+**permanently, not as a bootstrapping shortcut** — a real diff (or
+baseline drift from ubuntu-latest's own font packages updating between
+separate runs, months apart) is a visible signal worth a human look, not
+a hard gate that should block an unrelated deploy, given the real,
+acknowledged cross-machine flakiness `toHaveScreenshot()` carries even
+within one OS over time.
+
+**A real, unrelated CI bug surfaced and fixed while validating all of
+this**: the first manual dispatch of `build-and-deploy.yml` on
+`ubuntu-latest` failed outright at the `Build` step — "Node.js v20.20.2
+is not supported by Astro! ... upgrade Node.js to a supported version:
+>=22.12.0." Every local build this session had succeeded only because
+the local Node version (25.x) already cleared that bar; nothing had
+actually exercised this exact path in CI since Astro's own `engines`
+field tightened past 20, some while after `build-and-deploy.yml`'s
+`node-version: 20` was originally set. Fixed by bumping both workflows'
+`setup-node` to 22 and adding a real `engines` field to `package.json` so
+the mismatch surfaces at `npm install` time too, not buried inside a
+build failure — a real, previously-latent breakage in the shared CI
+pipeline, not something introduced by this session's own changes, caught
+only because this issue's own verification step actually ran the real
+pipeline instead of trusting the new steps would work by inspection.
+
+## Overview scrollytelling (2026-07-30)
+
+Closes #7. `Overview.tsx` no longer opens with 6 equal KPI cards and a
+flat "Two Streams" panel — it now leads with 4 real headline numbers
+(down from 6, per the redesign brief's own "no more than four headline
+statistics above the first scroll"), then a real 6-step guided sequence
+(`src/components/Scrollytelling.tsx`), then the existing "What's
+happening at each stage" stage-entry-point section, now also linking to
+`/downloads/` for the user's own "view all the RAW data, not our
+processed files" direction.
+
+**The core visual mechanic is plain CSS, not JavaScript** — each
+section's own visual gets `position: sticky` (scoped per-section, not a
+global scroll listener), so it stays pinned while that section's own
+text scrolls past, then releases to the next section's own sticky visual
+once its text runs out. This is a deliberate choice, not a shortcut:
+native CSS sticky needs zero script to work, so there's no separate
+"what does this look like with JS off" version to maintain for the core
+effect — a no-JS reader gets the exact same sticky-then-release behavior
+a JS reader does. Below 900px, sticky positioning is disabled entirely
+and each step's visual renders inline right after its own text — the
+same plain linear reading order the no-JS fallback uses on any screen
+size, not a separately-maintained "mobile mode."
+
+Each step gets a real `<h2>` — already-native keyboard/screen-reader
+heading navigation, not a bespoke widget invented for a need HTML
+already meets. The one real JavaScript enhancement layered on top: a
+lightweight `IntersectionObserver` that updates `?step=<id>` via
+`replaceState` as each step's heading crosses the viewport center — the
+same replaceState-only, no-history-spam pattern already used for pinned
+countries and theme. Verified by hand: scrolling to the last step
+updates the URL to `?step=research-leadership` with no extra history
+entries.
+
+**Six real steps, six real data sources — nothing fabricated**:
+1. Two streams — reuses the existing `twoStreamsSankey`/`Sankey`
+   directly, no new code.
+2. Degree production by level — a new `DegreeLevelExplorer.tsx` combines
+   FIG108's real time series (the same data step 1's Sankey already
+   uses) with TAB101's real field-level bookend comparison (first real
+   year vs. most recent real year — TAB101 has no full per-field time
+   series, so the field view is honestly a real snapshot pair, not a
+   fabricated trend line between them).
+3. The domestic pipeline — a new `PipelineFunnel.tsx` reads TAB401's own
+   real STEM-entrant cohort outcomes, distinguishing "left STEM but
+   stayed in college" from "left college entirely" using that exhibit's
+   own real columns, not an inferred split.
+4. Immigration gates — a new `ImmigrationGates.tsx` shows one real,
+   hand-confirmed fact per gate from 4 different real exhibits (FIG603's
+   STEM OPT approval rate, FIG303's H-1B concentration, FIG606's real
+   41% PERM-certification-expiration rate, TAB605's real ~149-year
+   India EB-2 wait) — deliberately NOT a Sankey implying one real cohort
+   tracked through all five gates in sequence, since no such dataset
+   exists; five real, separately-sourced facts about five different
+   real populations and years, stated as such.
+5. The retention gap — reuses the existing `retentionFunnelSankey`/
+   `Sankey` directly, no new code, including its own existing
+   population-mismatch caveat.
+6. Research leadership — a new `ResearchMetricSwitcher.tsx`, one real
+   US-vs-China measure at a time (conferences/FIG501, publications/
+   FIG502, patents/TAB506, R&D intensity/FIG509) — never combined into
+   an invented composite score, since a share and a raw patent count
+   don't share a unit. TAB506 (a company-level exhibit) is aggregated to
+   real country totals for this one comparison, the same real 2025
+   figures already shown on the Research Output stage page.
+
+New `src/lib/scrollyData.ts` holds all the real data-prep for steps 2-4
+and 6 (steps 1 and 5 reuse `sankeyData.ts` unchanged) — every function
+tested against both synthetic fixtures and, by hand, the real imported
+data before any UI was built on top of it.
+
+**A real layout bug caught by screenshot, not shipped blind**:
+`PipelineFunnel`'s own real labels ("Finished with a STEM bachelor's")
+are full descriptive phrases, not the short country/company names every
+other real `.barrow` caller uses — the shared component's default 108px
+name column truncated them into unreadable "Finished with a ST…"
+fragments, confirmed in an actual screenshot before this was caught.
+Fixed with a new `.barrow-wide` modifier (a wider name column, real text
+wrapping) used only by `PipelineFunnel`, not a global change to every
+other real `.barrow` caller's already-correct short-label layout.
+
+Verified: zero axe-core violations (added to the committed suite would
+be redundant — `/` was already covered), all 87 unit tests passing,
+real interaction confirmed by hand with Playwright (the field selector
+swaps to real per-field bars, the metric switcher swaps to real
+per-metric bars, the URL updates on scroll), and the no-JS fallback
+confirmed separately — with JavaScript disabled, all 6 real `<h2>`
+headings, 3 real chart `<svg>`s (the 2 Sankeys plus step 2's Nivo line
+chart), and all 4 real immigration-gate facts are present in the raw
+HTML, not injected by script.
+
+## The /downloads/ route (2026-07-30)
+
+Closes #6. `src/pages/downloads.astro` + `src/dashboards/Downloads.tsx` —
+search, a stage-chip filter, combined bundles, and every real exhibit in
+one table, each with its own real raw/CSV/JSON/PNG links.
+
+**The real distinction the user asked for explicitly**: "raw" and
+"processed" are two different real things here, never conflated. A new
+`src/lib/rawSourceFiles.ts` (`resolveRawSourceFiles()`) resolves each
+exhibit back to the literal, unmodified CSV(s) it was imported from in
+`talent_charts/data/` — mirroring the importer's own real logic exactly
+(a derived exhibit's `derivedFrom` names its real source; a split-mode
+multi-part exhibit's hyphenated id, e.g. `TAB202-a`, maps to its real
+unhyphenated raw filename, `TAB202a.csv`; a merge-mode exhibit resolves
+to every real part file folded into it), not guessed at separately.
+Verified against real data, not assumed: every one of the 91 real
+exhibits' resolved raw file(s) actually exist on disk (0 missing), and a
+byte-for-byte diff confirms the copied `dist/downloads/raw/*.csv` files
+are identical to their real source. The "Processed CSV/JSON" buttons sit
+right next to the raw link on the same row, generated the exact same
+client-side way `MethodologyDrawer.tsx`'s own buttons already do (reused
+directly, not reimplemented) — so the difference between the two is
+visible on the same line, not buried in separate places.
+
+**`scripts/generate-downloads.ts` grew three more real, build-time
+outputs**, alongside the PNG/ZIP pipeline from #4:
+- Raw source files, copied (not regenerated) into `dist/downloads/raw/`,
+  deduplicated by real filename — several derived exhibits share one
+  real source (everything derived from FIG302 resolves to the same
+  `FIG302.csv`), copied once, not once per exhibit.
+- One combined `all.zip` spanning every real exhibit (91 small CSVs,
+  ~110KB total — genuinely small, not a build-size concern, confirmed by
+  hand rather than assumed).
+- `metadata.csv`, a real data dictionary (exhibit id, title, stage,
+  source, resolved raw files, derivation) generated from the same real
+  fields everything else in this pipeline already uses.
+
+**A real, second-order bug this predicate work caught, not shipped
+blind**: predicting which exhibits get a PNG at Astro build time (before
+the LATER screenshot pass that actually knows) needs its own logic,
+`src/lib/chartAvailability.ts`. A first version wrongly counted
+`BoxPlotRow` (FIG512/FIG513) as SVG-producing — checked directly against
+that component's real source and found it's plain absolutely-positioned
+HTML/CSS divs, the same real pattern `BarRow.tsx` uses, not an `<svg>`
+at all. Caught by diffing the predicate's own output against
+`generate-downloads.ts`'s REAL generated PNG file list (66 predicted vs.
+62 actually generated, not assumed to match), which also surfaced a
+second, different real case: FIG601/FIG602 never render as their own
+standalone panel anywhere (`TrackRetentionImmigration.tsx`'s own
+`excludeIds` — their data feeds that stage's hero Sankey directly), so
+the real screenshot pass never encounters them regardless of chart kind.
+Both are now explicit, tested cases in the predicate, not silently
+wrong — re-verified afterward: 62 predicted, 0 mismatches against the
+real file list.
+
+**A real CSS specificity bug caught by hand, not left in**: `.lb thead
+th`'s own `padding: 0 0 5px` (zero right-padding) beat a same-specificity
+`.crosswalk-table th`/`.downloads-table th` override, so both new
+tables' header text ran together edge to edge ("DATE RANGEDOWNLOAD") —
+confirmed visually, not assumed fixed just because the CSS rule existed.
+Fixed by matching `.lb thead th`'s own specificity (`.crosswalk-table
+thead th`, not a bare `.crosswalk-table th`), verified by re-screenshotting
+both tables' real headers after the fix.
+
+Extracted `PARTS` (the multi-part-exhibit merge/split spec) out of
+`scripts/import-talent-charts.ts` into a shared `src/lib/exhibitParts.ts`
+— pure data, no fs/DOM dependency, reused by `rawSourceFiles.ts` the same
+way `parseCsv`/`csv`/`dateRange` were already extracted for the
+methodology and download work. Confirmed the importer's own output is
+byte-identical before and after (besides the real `generatedAt`
+timestamp) — a pure refactor, not a behavior change.
+
+Verified: zero axe-core violations on the new route (added to the
+committed suite), all 77 unit tests passing, every real download link
+(raw file, CSV button, combined ZIP, metadata dictionary) fetched and
+confirmed working by hand with Playwright, not just rendered.
+
+## The /methodology/ route (2026-07-30)
+
+Closes #5. `src/pages/methodology.astro` + `src/dashboards/Methodology.tsx`
+— a real, full methodology reference, added as the 8th nav entry
+(`DashboardNav.astro`'s new `REFERENCE` row, separate from the 6-stage
+`Track` row so that one still reads as exactly the pipeline it always
+was) alongside a new `/downloads/` entry (route not yet built — see #6).
+
+Twelve real sections, every one backed by actual data or actual code,
+never invented copy:
+
+- **Definitions** — foreign-born, noncitizen, temporary visa holder,
+  international student, and 6 more. Framed explicitly as general
+  definitions from the federal data sources this site draws on (NCES,
+  NCSES, USCIS, DOL, State, IIE), NOT a claimed quotation of the report's
+  own manuscript — `writing/*.docx` is deliberately gitignored,
+  unpublished draft content this app has no access to, so claiming to
+  quote its exact wording would be an unverifiable claim.
+- **Data-source catalog** — `src/lib/dataSourceCatalog.ts`, a real,
+  tested function grouping every exhibit's own `sourceShort` by citing
+  organization (19 real organizations across 91 exhibits) — generated
+  from the same data every chart already cites, not a hand-authored
+  second copy that could drift out of sync. Caught and fixed a real,
+  confirmed source-data inconsistency in the process: USCIS's own H-1B
+  Employer Data Hub citation appears both with and without a trailing
+  period across two different exhibits — normalized at read time (talent_
+  charts/titles_and_sources.csv itself stays untouched as real committed
+  source data). Also handles a real edge case a naive comma-split would
+  break on: one citation ("IPO Association (2005, 2015), Harrity...")
+  has a comma inside parentheses before its real delimiter — the
+  extractor tracks paren depth and only splits at a real top-level comma.
+- **Calculation methods** — every exhibit with a real `derivedFrom` (the
+  6 exhibits from the methodology-drawer work above), rendered directly
+  from data already on each `Exhibit`, not re-authored.
+- **Employer-name normalization / corporate-parent aggregation** — the
+  real content from `entityResolution.ts`'s own section above, now
+  actually documented on a public page instead of just in code comments.
+- **Missing-data conventions** — the real, already-established importer
+  practices (Grand Total row dropping, blank-column dropping, thousands-
+  comma coercion), plus every exhibit's own real `dataNote` (FIG101's
+  estimate/confirmed year mix, FIG601 vs. FIG602's different populations).
+- **Projection methods** — a real, newly-confirmed finding: FIG109/FIG110
+  (international doctorate-production comparisons) each store the
+  report's own author-generated projections in a separate "(Country)
+  (projected)" column per country, kept apart from observed values. Every
+  other exhibit is an observed historical statistic, not a forecast —
+  stated plainly rather than left ambiguous.
+- **Geographic and country definitions**, **known source/methodology
+  breaks** — real, already-established facts from `countries.ts` and
+  `docs/report-crosswalk-notes.md`, consolidated onto one public page
+  instead of scattered across code comments and internal docs.
+- **Report-to-web crosswalk** — rendered directly from `content/report-
+  crosswalk.csv` via a new `src/lib/loadCrosswalk.ts` (same
+  `process.cwd()`-based build-time read pattern as `loadTalentData.ts`),
+  not a hand-authored second copy — all 163 real report items, including
+  the 77 archived-and-excluded ones, each with a real, stable
+  `#crosswalk-<report_id>` anchor.
+- **Revision history** — the real `generatedAt` import timestamp; full
+  dated history stays in `CLAUDE.md` itself rather than a second,
+  competing changelog.
+- **Search** — one real client-side text filter (this app's first — no
+  prior search UI existed anywhere to reuse) across both the definitions
+  list and the crosswalk table, since those are the two genuinely
+  list-shaped sections; the other ten sections are each a handful of
+  prose blocks that don't need filtering.
+
+**Real per-exhibit deep link, closing the "methodology link should open
+the relevant section" requirement**: `MethodologyDrawer.tsx` now has a
+real "Full methodology for `<id>` →" link to `/methodology/#crosswalk-
+<exhibit.id>`, landing directly on that exhibit's own crosswalk row
+(`.crosswalk-table tbody tr:target` highlights it), not just the top of
+the page. Verified by hand with Playwright: clicking the link from a real
+exhibit's drawer navigates to the exact right anchor and the target row
+genuinely exists.
+
+Extracted `parseCsv` out of `scripts/import-talent-charts.ts` into a
+shared `src/lib/parseCsv.ts` (pure string parsing, no fs/DOM dependency)
+so `loadCrosswalk.ts` uses the exact same real RFC4180 parser instead of
+a second, potentially-inconsistent implementation — the importer's own
+behavior is unchanged, just reading from one shared place now.
+
+Verified: zero axe-core violations on the new route (same suite as every
+other page), all 69 unit tests passing, real search filtering confirmed
+against the live page, no console errors beyond the same pre-existing
+unrelated news-ticker CORS noise every other page already has.
+
+## Real employer-name normalization (2026-07-30)
+
+`src/lib/entityResolution.ts` — `canonicalizeCompany()` — canonicalizes
+FIG302's own real "Company" column so a DERIVED metric like FIG303's
+top-10 concentration groups the same real employer together instead of
+splitting it across legal-entity-name variants. Adapted from the old
+pre-rebuild app's own `entityResolution.ts` (deleted in the talent
+rebuild, recoverable via `git show 5329bf1^:src/lib/entityResolution.ts`)
+— same two-layer pattern (mechanical legal-suffix stripping, then a
+small hand-verified alias table), rebuilt against FIG302's real data
+rather than reusing the old quantum/AI-specific alias table, which
+doesn't apply here.
+
+**Real research, not speculation** — pulled and reviewed FIG302's full
+252-row real employer list by hand (2026-07-30) before writing a single
+alias. Exactly one real, confirmed, CONTEMPORANEOUS same-parent case
+exists: "HP Enterprise Svcs LLC" and "Hewlett Packard Enterprise
+Company" are the same real company at the same time (a subsidiary and
+its parent), not a change of ownership — these canonicalize to one
+"Hewlett Packard Enterprise." Several REAL historical mergers also
+appear in the data (Satyam Computer Services, acquired by Tech Mahindra
+in 2013; Larsen & Toubro Infotech + Mindtree, merged into LTIMindtree in
+2022) — confirmed with the user (2026-07-30) that these deliberately do
+NOT get grouped: pre-merger years stay attributed to the entity that
+actually filed them, with the real relationship disclosed instead
+(`CORPORATE_LINEAGE` in `entityResolution.ts`) rather than silently
+merged into the successor's totals. Merging a historical acquisition
+into one grouping would misattribute economic activity across a change
+of ownership — a real methodological distinction, not a technicality.
+
+**FIG302's own exported rows are never touched** — canonicalization only
+feeds a NEW `canonicalizeFig302()` helper in `scripts/import-
+talent-charts.ts`, used by `buildFig303` and `buildTab303` (both already
+disclosed as computed-by-this-site derivations, not verbatim exhibits).
+FIG302 itself stays exactly as USCIS reported it — the real "raw file
+actually used," for the downloads work's own "link to raw source files"
+requirement.
+
+**Verified the real before/after, not assumed**: regenerated
+`talent.json` and diffed every exhibit. FIG303's top-10 concentration
+percentage is IDENTICAL in every year 2009-2026 — Hewlett Packard
+Enterprise's combined volume never crossed a top-10 threshold in any
+single year, so the one real grouping found didn't move any displayed
+number. TAB303's company SET is unchanged (no company added or removed
+from the union-of-top-10-firms), only its display names got the same
+mechanical suffix-stripping cleanup ("GOOGLE INC" -> "GOOGLE", "TATA
+CONSULTANCY SERVICES LIMITED" -> "TATA CONSULTANCY SERVICES"). A
+real, low-risk fix that's still worth having: correct grouping now,
+before a future data refresh's threshold shifts enough for it to matter.
+
+Real bug avoided, not hit: the recovered old file's own `ALIASES` lookup
+used a bare `ALIASES[key]` object index, which the old code's own
+comment says once collided with `Object.prototype.constructor` for a
+real company literally named "Constructor." `Object.hasOwn` is used here
+from the start — confirmed by a real test case
+(`entityResolution.test.ts`), not discovered by hitting the bug again.
 
 ## Editorial style pass (2026-07-29)
 

@@ -187,3 +187,11 @@ export function toRankedBars(exhibit: Exhibit, topN = 12): { rows: { label: stri
   const max = Math.max(1, ...rows.map((r) => r.value));
   return { rows, column: col, max, truncated: Math.max(0, all.length - rows.length) };
 }
+
+// Re-exported from dateRange.ts, not defined here — see that file's own
+// note on why: this function has no real dependency on the type-only
+// SeriesChart.tsx/LeaderboardYears.tsx imports above, and keeping it out
+// of this file is what lets scripts/generate-downloads.ts (a Node build
+// script, checked under tsconfig.node.json's own DOM/JSX-free project)
+// import it without pulling in code that needs --jsx to even resolve.
+export { realDateRange } from "./dateRange.ts";

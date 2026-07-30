@@ -11,6 +11,13 @@ const DASHBOARDS: { key: Dashboard; label: string; href: string }[] = [
   { key: "overview", label: "Overview", href: base },
   ...STAGES.map((s) => ({ key: s.id as Dashboard, label: s.label, href: `${base}${s.id}/` })),
 ];
+// Not pipeline stages — real cross-cutting reference pages, kept in their
+// own row so "Track" (the STAGES-driven nav above) still reads as exactly
+// the 6-stage pipeline plus Overview it always has.
+const REFERENCE: { key: Dashboard; label: string; href: string }[] = [
+  { key: "methodology", label: "Methodology", href: `${base}methodology/` },
+  { key: "downloads", label: "Downloads", href: `${base}downloads/` },
+];
 ---
 <!-- Real <a href> per stage, not a JS tab switch — each stage is its own
      Astro route now (see src/pages/), so this nav works with JS disabled
@@ -18,6 +25,13 @@ const DASHBOARDS: { key: Dashboard; label: string; href: string }[] = [
 <div class="dashboard-nav-heading">Track</div>
 <nav class="dashboard-nav" aria-label="Dashboards">
   {DASHBOARDS.map((d) => (
+    <a class="dashboard-nav-btn" href={d.href} aria-current={active === d.key ? "page" : undefined}>
+      {d.label}
+    </a>
+  ))}
+</nav>
+<nav class="dashboard-nav dashboard-nav-reference" aria-label="Reference">
+  {REFERENCE.map((d) => (
     <a class="dashboard-nav-btn" href={d.href} aria-current={active === d.key ? "page" : undefined}>
       {d.label}
     </a>
