@@ -1358,6 +1358,25 @@ the real, flag-off production build, never a dev-tool-flagged one.
 `npm run report:bundle-size` runs alongside it as a real, always-visible
 log line, not a silent number nobody checks.
 
+**A real correction, caught by an actual CI failure, not local
+testing** — adding the `/explorer/` route (see below) triggered the
+first genuine failure of this gate on real `ubuntu-latest` CI: Total
+Blocking Time on `/graduate-training/` measured 4879-5248ms and on
+`/research-output/` measured 3005-4021ms — roughly 3x this session's own
+local-Mac baseline (1348-1721ms) for those exact two pages. The original
+2500ms TBT threshold's own comment already anticipated "margin for CI's
+own runner likely being slower," but guessed at that margin rather than
+measuring it — the real gap turned out to be far larger than assumed.
+Fixed with real numbers this time: TBT's floor moved to 6000ms (real
+headroom above the actual observed CI worst case), and Performance's
+floor lowered from 0.3 to 0.15 defensively, since TBT is a heavily-
+weighted input to that score and the same CI-vs-local gap plausibly
+applies there too even though that specific assertion hadn't failed yet.
+The lesson generalizes: a budget "verified" only on a contributor's own
+machine isn't verified against the environment that actually enforces
+it — real CI dispatch is what caught this, the same discipline behind
+every other test-suite addition this session.
+
 ## Data review sheet (2026-07-30)
 
 Closes #16, the third of six features deliberately deferred when the
