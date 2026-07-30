@@ -513,6 +513,39 @@ without JS for free, with no separate prerendering pipeline to maintain.
   legitimate future performance pass, not something this migration tried
   to also fix in the same change.
 
+## Build chunking (2026-07-29)
+
+`astro.config.mjs` adds a `manualChunks` split after Vite's default
+chunking put every Track page's real chart dependencies (`@nivo/line` +
+`@react-spring/web`, `react-simple-maps` + `d3-geo` + `topojson-client` +
+world-atlas's country geometry) into one 500kB+ chunk alongside
+`TrackShell.tsx`'s own small component code — confirmed by hand
+(`du -h dist/_astro/*.js`) before picking a fix, not guessed from Vite's
+generic warning text alone. Split into `vendor-nivo`/`vendor-map`/
+`vendor-sankey`, leaving `TrackShell`'s own chunk at 24kB. Doesn't reduce
+total bytes a chart-heavy page downloads — these are real, needed
+libraries — but lets the browser fetch them in parallel instead of one
+serial blob, and lets them stay cached across deploys that only touch
+this app's own component code.
+
+A real regression caught on the first attempt, not shipped: matching a
+bare `"world-atlas"` substring also swallowed `countries-50m.json` —
+WorldMap.tsx's genuinely lazy `import()`, loaded only when a reader
+clicks "expand map" — into the eager `vendor-map` chunk, defeating that
+lazy-load entirely (confirmed: `countries-50m.*.js` stopped existing as
+its own chunk). Fixed by matching the specific eagerly-imported
+`world-atlas/countries-110m` path instead of the whole package. Verified
+the fix, not just the shrink: a Playwright check confirmed
+`countries-50m` is fetched zero times before clicking "expand map" and
+exactly once after.
+
+`chunkSizeWarningLimit: 800` covers the one legitimately-still-large
+chunk left after the split: `countries-50m.json` itself (740kB, that same
+lazy hi-res geometry). It's a real, deliberate exception, not a threshold
+raised to hide a genuine problem — this chunk is never part of any page's
+initial JS, so it isn't the kind of chunk the default warning exists to
+catch (one that blocks first render).
+
 ## What didn't survive the rebuild
 
 Deleted outright, not adapted, because none of it maps onto exhibit-shaped
