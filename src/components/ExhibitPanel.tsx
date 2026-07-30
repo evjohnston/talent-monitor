@@ -1,7 +1,7 @@
 import type { Exhibit } from "../lib/types.ts";
-import { SectionHeader, ExpandableMethods } from "./ChartFrame.tsx";
+import { SectionHeader } from "./ChartFrame.tsx";
 import { ExhibitChart } from "./ExhibitChart.tsx";
-import { downloadCsv } from "../lib/csvExport.ts";
+import { MethodologyDrawer } from "./MethodologyDrawer.tsx";
 
 // One exhibit, one panel: real title, real chart, real citation. Every
 // Track page is built by picking which exhibits go in which panel and
@@ -31,15 +31,7 @@ export function ExhibitPanel({
     <div className="panel">
       <SectionHeader title={exhibit.title} takeaway={takeaway} level={headingLevel} />
       <ExhibitChart exhibit={exhibit} emphasize={emphasize} onHoverCountry={onHoverCountry} onSelectCountry={onSelectCountry} />
-      <ExpandableMethods summary={exhibit.sourceShort}>
-        <p>{exhibit.sourceLong}</p>
-        {exhibit.sourceUrls.map((u) => (
-          <div key={u}><a href={u} target="_blank" rel="noreferrer">{u}</a></div>
-        ))}
-        <button type="button" className="ghost-btn download-csv-btn" onClick={() => downloadCsv(`${exhibit.id}.csv`, exhibit.rows)}>
-          Download this exhibit's data (CSV)
-        </button>
-      </ExpandableMethods>
+      <MethodologyDrawer exhibit={exhibit} />
     </div>
   );
 }

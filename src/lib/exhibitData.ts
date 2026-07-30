@@ -187,3 +187,19 @@ export function toRankedBars(exhibit: Exhibit, topN = 12): { rows: { label: stri
   const max = Math.max(1, ...rows.map((r) => r.value));
   return { rows, column: col, max, truncated: Math.max(0, all.length - rows.length) };
 }
+
+// A real date range for MethodologyDrawer.tsx, computed from the
+// exhibit's own rows rather than hand-authored — never goes stale on a
+// data refresh. Looks for a column literally named "Year" (every
+// timeseries/share-timeseries/leaderboard-years exhibit has one); a
+// country-map or ranked-bar snapshot exhibit usually doesn't, and simply
+// gets no date-range row in the drawer rather than a fabricated one.
+export function realDateRange(exhibit: Exhibit): string | null {
+  const yearCol = exhibit.columns.find((c) => /^year$/i.test(c));
+  if (!yearCol) return null;
+  const years = exhibit.rows.map((r) => r[yearCol]).filter(isNum);
+  if (years.length === 0) return null;
+  const min = Math.min(...years);
+  const max = Math.max(...years);
+  return min === max ? String(min) : `${min}–${max}`;
+}

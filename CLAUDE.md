@@ -970,6 +970,74 @@ typecheck` was silently skipping both — added them to
 cache-busting) `tsc -b` rebuild that they're now genuinely checked, not
 just passing by omission.
 
+## Methodology drawer (2026-07-30)
+
+`src/components/MethodologyDrawer.tsx` replaces `ExhibitPanel.tsx`'s old
+bare `<ExpandableMethods><p>{sourceLong}</p></ExpandableMethods>` block
+with a richer real-methodology surface, per the publication redesign's
+per-chart methodology requirement (tracked in issue #3 on GitHub).
+
+**Real content only, never a placeholder** — checked `content/report-
+crosswalk.csv`'s own dedicated `unit`/`population_definition` columns by
+hand before building anything: every one of them still reads "TBD" for
+every one of the 91 exhibits this app actually renders today (0 real
+values). Rather than model fields that would always show "not yet
+documented," `Exhibit` (`src/lib/types.ts`) only gained three new
+optional fields — `derivedFrom`, `calculationNote`, `dataNote` — each
+populated ONLY for the specific, real, already-confirmed cases this
+codebase has precise knowledge of:
+- **`derivedFrom`/`calculationNote`**: the 6 exhibits computed by this
+  site rather than read from a standalone report CSV (FIG303, TAB303,
+  FIG405, TAB503, TAB504, TAB605) — each note states plainly that it's
+  "computed by this site, not the report," and what the real computation
+  is, so a reader never mistakes a derived number for an independently-
+  sourced one.
+- **`dataNote`**: three real, hand-confirmed data-quality/comparability
+  facts — FIG101's real per-year estimate/confirmed flag (previously
+  dropped by the importer as non-numeric; now surfaced as a real
+  methodology note: "1900-1901, 1916, and 1923 are historical estimates
+  ... every other year ... is confirmed") and FIG601-vs-FIG602's
+  different populations (intent survey vs. tracked-cohort outcomes —
+  already flagged in `docs/report-crosswalk-notes.md`, now surfaced on
+  the exhibit itself, not just the Retention & Immigration hero's own
+  caption).
+- **Date range** is computed at render time from the exhibit's own real
+  `rows` (min/max `Year` column value), not stored — never goes stale on
+  a data refresh, and simply doesn't render for an exhibit shape with no
+  `Year` column (a country-map or ranked-bar snapshot) rather than
+  showing a fabricated range.
+
+**A real stale-documentation bug fixed along the way, not a new one
+introduced**: `content/report-crosswalk.csv`'s own `caveat`/`notes` text
+for TAB605/TAB503/TAB504 still said "not yet backfilled"/"BLOCKED" days
+after all three were actually ported (2026-07-29, see the Ingestion
+section) — caught while reading this file for real content to reuse,
+fixed to say what actually happened instead of re-porting the stale
+claim into a public methodology page.
+
+**Accessibility**: reuses the native `<details>/<summary>` disclosure
+pattern (`ExpandableMethods` already established this is real, keyboard-
+operable, and has no focus trap by construction — a modal/overlay would
+have to build that from scratch). Gets a real, stable deep link
+(`?methods=<exhibit-id>`, e.g. `?methods=FIG101`) via a `useState`
+initialized closed on both server and first client render (the same
+SSR-safe pattern as pinned countries) and a mount effect that opens +
+scrolls to the right drawer when the URL matches — confirmed working by
+hand with Playwright, not assumed. A real `@media print` rule overrides
+the same UA-stylesheet selector shape (`details:not([open]) > *`) that
+normally hides a closed drawer's content, so a printed page shows every
+real citation/methodology text regardless of its on-screen open/closed
+state. Confirmed the no-JS fallback separately: `curl`ing the built HTML
+shows a real, closed `<details id="methods-FIG303">` with the actual
+methodology content already present, not injected by JS.
+
+Not yet built (tracked in issue #5, the full `/methodology/` route):
+"copy shareable URL preserving chart state" is intentionally the
+simpler `?methods=<id>` link for now, not yet threading through other
+real page state (pinned countries, series-picker selections) — that's
+this drawer's own smaller piece of a larger, still-open download/share
+mechanism.
+
 ## Real employer-name normalization (2026-07-30)
 
 `src/lib/entityResolution.ts` — `canonicalizeCompany()` — canonicalizes

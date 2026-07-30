@@ -393,6 +393,27 @@ a.pill { cursor: pointer; text-decoration: none; display: inline-block; }
 .expandable-methods-body { margin-top: var(--sp-2); font-size: var(--fs-methods); line-height: 1.6; color: var(--ink-2); }
 .download-csv-btn { margin-top: var(--sp-2); font-size: var(--fs-methods); }
 
+/* ── MethodologyDrawer's own structured fields, above the citation ── */
+.methodology-fields { margin: 0 0 var(--sp-2); font-size: var(--fs-methods); line-height: 1.6; }
+.methodology-fields dt { color: var(--slate); font-weight: 600; margin-top: var(--sp-2); }
+.methodology-fields dt:first-child { margin-top: 0; }
+.methodology-fields dd { margin: 0; color: var(--ink-2); }
+.methodology-actions { display: flex; gap: var(--sp-2); flex-wrap: wrap; margin-top: var(--sp-2); }
+.methodology-actions .ghost-btn { font-size: var(--fs-methods); margin-top: 0; }
+
+/* A closed <details>'s content is hidden by the UA stylesheet's own
+   `details:not([open]) > *:not(summary) { display: none }` rule — not by
+   this app's CSS, so overriding a class on the body div does nothing on
+   its own. Overriding the SAME selector shape (higher specificity via
+   :not([open]), not just !important) is what actually defeats it, forcing
+   every methodology drawer's real citation/methodology text to print even
+   when closed on screen, per the redesign brief's "must remain printable"
+   requirement. */
+@media print {
+  .methodology-drawer:not([open]) > *:not(summary) { display: block !important; }
+  .methodology-drawer .expandable-methods-caret { display: none; }
+}
+
 /* ── tooltip ────────────────────────────────────────────────────── */
 /* Fixed dark-on-white regardless of page theme — a floating overlay reads
    the same way in both themes, unlike --ink (which flips to near-white in

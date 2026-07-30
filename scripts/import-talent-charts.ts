@@ -549,6 +549,54 @@ function main() {
     "timeseries"
   );
 
+  // Real methodology metadata (2026-07-30) — see Exhibit's own comment in
+  // types.ts for why this is a short, hand-confirmed list rather than a
+  // field populated from content/report-crosswalk.csv's unit/
+  // population_definition columns (checked by hand: every one of those
+  // still reads "TBD" for every exhibit actually rendered today). Applied
+  // as one pass over the final `exhibits` array rather than threading a
+  // new parameter through every push site above — same real data, simpler
+  // to keep this list in one place and get maintained.
+  const DERIVED_META: Record<string, { derivedFrom: string[]; calculationNote: string }> = {
+    FIG303: {
+      derivedFrom: ["FIG302"],
+      calculationNote: "Computed by this site, not the report: each year's ten largest H-1B employers' approvals, summed and divided by that year's total across all employers. Employer names are grouped for real, contemporaneous same-parent subsidiaries (e.g. Hewlett Packard Enterprise's own services subsidiary) before ranking — see src/lib/entityResolution.ts. A real historical merger or acquisition does not get grouped; each company keeps its own pre-merger years.",
+    },
+    TAB303: {
+      derivedFrom: ["FIG302"],
+      calculationNote: "Computed by this site, not the report: each employer's own share of that year's total H-1B approvals, for 2017 and 2025, restricted to companies that were top-10 by count in either year. Same employer-name grouping as FIG303.",
+    },
+    FIG405: {
+      derivedFrom: ["FIG404"],
+      calculationNote: "Computed by this site, not the report: tertiary per-student spending divided by K-12 per-student spending, for each country in FIG404 with both real values (three aggregate/outlier rows the report's own chart drops — EU25 average, G20 average, China — are excluded here too).",
+    },
+    TAB503: {
+      derivedFrom: ["FIG510"],
+      calculationNote: "Computed by this site, not the report: FIG510's own basic-vs-applied-vs-development R&D spending reshaped into a bookend (earliest vs. latest year) comparison table.",
+    },
+    TAB504: {
+      derivedFrom: ["FIG511"],
+      calculationNote: "Computed by this site, not the report: FIG511's own R&D-by-sector spending reshaped into a bookend (earliest vs. latest year) comparison table.",
+    },
+    TAB605: {
+      derivedFrom: ["TAB605a", "TAB605b", "TAB605c"],
+      calculationNote: "Computed by this site from three real source files (talent_charts/data/TAB605a/b/c.csv — Rest of World, China, and India green-card wait times) that exist in the report's own data but were never given their own titles_and_sources.csv entry, since they're the report's own R pipeline's inputs, not independently citable exhibits.",
+    },
+  };
+
+  const DATA_NOTES: Record<string, string> = {
+    FIG101: "Doctorate counts for 1900-1901, 1916, and 1923 are historical estimates (Thurgood, Golladay, and Hill 2006); every other year (1902-1915, 1917-1922, 1924 onward) is an NCES/NCSES-confirmed count, per the source CSV's own per-year estimate/confirmed flag.",
+    FIG601: "Measures international PhD recipients' own stated INTENT to stay, from a near-graduation survey — a different population and a different measure than FIG602's tracked-cohort stay rates. The two should not be read as the same population's before/after.",
+    FIG602: "Measures a tracked cohort's actual observed location 5 and 10 years after the PhD — a different population and a different measure than FIG601's near-graduation intent survey. The two should not be read as the same population's before/after.",
+  };
+
+  for (const e of exhibits) {
+    const derived = DERIVED_META[e.id];
+    if (derived) { e.derivedFrom = derived.derivedFrom; e.calculationNote = derived.calculationNote; }
+    const note = DATA_NOTES[e.id];
+    if (note) e.dataNote = note;
+  }
+
   exhibits.sort((a, b) => a.order - b.order);
 
   const dataFile: DataFile = {
