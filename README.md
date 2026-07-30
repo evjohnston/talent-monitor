@@ -1,6 +1,6 @@
 # Global Talent Monitor
 
-A pipeline view of U.S. STEM talent, from K-12 foundation through degree
+A pipeline view of US STEM talent, from K-12 foundation through degree
 production, graduate/postdoctoral training, workforce entry, retention and
 immigration, and research output. Six real stages (`src/lib/types.ts`'s
 `STAGES`), each backed by real, cited exhibits imported from `talent_charts/`

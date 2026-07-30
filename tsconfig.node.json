@@ -13,5 +13,5 @@
     "noEmit": true,
     "strict": true
   },
-  "include": ["scripts", "data"]
+  "include": ["scripts", "data", "tests", "playwright.config.ts"]
 }

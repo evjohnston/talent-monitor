@@ -818,7 +818,8 @@ npm run gen-continent-map     # regenerate src/lib/continentMap.ts (only if the 
 npm run dev
 npm run build
 npm run typecheck
-npm test                      # src/lib/*.test.ts — vitest, no config file needed for this
+npm test                      # src/lib/*.test.ts — vitest (vitest.config.ts only excludes tests/, see "Tests")
+npm run test:a11y             # tests/accessibility.spec.ts — playwright + axe-core; needs `npm run build` first
 ```
 
 On a fresh clone, `public/data/talent.json` is already committed — `npm run
@@ -840,13 +841,14 @@ build-and-deploy.yml` as a real step before `Build` — runs on every push
 to `main` and every PR against it (a PR run stops after test+build, never
 deploys; see that job's own `if:` guard).
 
-This is a real "zero to something," not "zero to comprehensive" — no
-Playwright/E2E tests exist yet (every UI verification this session ran by
-hand, via a scratchpad Playwright script, not as a committed test),
-`ExhibitChart.tsx`'s own dispatch logic isn't covered, and neither is
-`sankeyData.ts`'s derived-cohort math. Real follow-up, not silently
-considered "done" — grow this file by file as new logic gets touched,
-same instinct as everything else in "Known gaps."
+This is a real "zero to something," not "zero to comprehensive." One real
+Playwright/E2E suite exists (`tests/accessibility.spec.ts`, `npm run
+test:a11y`, see "Accessibility" below) — but most UI verification this
+project's sessions have run is still by hand, via scratchpad Playwright
+scripts, not committed tests. `ExhibitChart.tsx`'s own dispatch logic
+isn't covered, and neither is `sankeyData.ts`'s derived-cohort math. Real
+follow-up, not silently considered "done" — grow this file by file as
+new logic gets touched, same instinct as everything else in "Known gaps."
 
 **A real bug this test suite caught immediately**: `docs/report-crosswalk-
 notes.md` had claimed `codeFromCountryName()` already resolved "South
@@ -932,10 +934,41 @@ after the fixes below returns **zero violations on all 7 pages.**
   hand-rolled SVGs already had real `aria-label`s — only the Nivo one was
   missing this.
 
-Not yet done: no automated a11y check runs in CI (the sweep above was a
-manual scratchpad script, `@axe-core/playwright` isn't a committed
-dependency) — a real follow-up, same "zero to something, not zero to
-comprehensive" caveat as the Vitest suite above.
+**No longer a gap — committed and wired into CI (2026-07-29).** The
+scratchpad sweep above is now `tests/accessibility.spec.ts`, a real
+`@playwright/test` suite (`playwright.config.ts`, `npm run test:a11y`)
+that runs axe-core against all 7 built routes and asserts zero
+violations — the same check, just real and repeatable instead of a
+one-off scratchpad run. Verified the suite itself catches real
+regressions, not just trivially passing: temporarily reverted the
+`nested-interactive` fix on `WorldMap.tsx`, confirmed the test failed
+with the exact real violation, then restored the fix and confirmed it
+passed again. `.github/workflows/build-and-deploy.yml` runs it as a real
+step after Build, before the deploy-artifact upload — `GTM_BASE` is set
+identically to the Build step's own value, since `astro preview` serves
+`dist/` under that same base path, not root; confirmed by hand that a
+mismatch here 404s every route (`curl` against the wrong path returned a
+real 404) rather than silently testing something else.
+
+Two real, separate bugs surfaced building this, both fixed at the
+general level: Vitest's own default test glob also matched the new
+`tests/accessibility.spec.ts` (a `.spec.ts` file), so `npm test` tried
+to run it as a Vitest test and errored — needed a real `vitest.config.ts`
+(this project's first) to exclude `tests/**`. The naive fix
+(`exclude: ["tests/**"]`, a bare array) is wrong on its own: it REPLACES
+Vitest's own default excludes rather than adding to them, and Vitest's
+default only excludes root-level `node_modules`, not a nested one — this
+repo has a real `worker/node_modules/` (a separate nested Node project,
+see the Astro migration notes on the news-ticker Worker), and Vitest
+started trying to execute `wrangler`'s own bundled test files before
+this was caught. Fixed by spreading `configDefaults.exclude` from
+`vitest/config` instead of replacing it. Separately, neither
+`tsconfig.app.json` nor `tsconfig.node.json` covered the new
+`playwright.config.ts` (repo root) or `tests/` at all, so `npm run
+typecheck` was silently skipping both — added them to
+`tsconfig.node.json`'s `include`, confirmed with a forced (`--force`,
+cache-busting) `tsc -b` rebuild that they're now genuinely checked, not
+just passing by omission.
 
 ## Editorial style pass (2026-07-29)
 

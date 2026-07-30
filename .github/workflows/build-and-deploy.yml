@@ -54,6 +54,18 @@ jobs:
         env:
           GTM_BASE: /${{ github.event.repository.name }}/
 
+      # tests/accessibility.spec.ts — a committed axe-core/Playwright
+      # sweep of all 7 routes (see CLAUDE.md's "Accessibility" section for
+      # the 6 real violation categories this caught and fixed by hand
+      # 2026-07-29). GTM_BASE must match the Build step above — astro
+      # preview serves dist/ under that same base path, not root, and a
+      # mismatch here 404s every route rather than testing the wrong
+      # thing quietly.
+      - name: Accessibility (axe-core)
+        run: npx playwright install --with-deps chromium && npm run test:a11y
+        env:
+          GTM_BASE: /${{ github.event.repository.name }}/
+
       - uses: actions/upload-pages-artifact@v3
         if: github.event_name == 'push'
         with:

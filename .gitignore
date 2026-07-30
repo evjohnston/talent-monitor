@@ -13,6 +13,13 @@ dist
 # since it just adds a noisy diff on every build with no real benefit).
 *.tsbuildinfo
 
+# Playwright's own run artifacts (tests/accessibility.spec.ts) — reports,
+# screenshots, traces from a local/CI run, not source.
+/test-results/
+/playwright-report/
+/blob-report/
+/playwright/.cache/
+
 # public/data/talent.json IS committed to main (2026-07-28 talent-monitor
 # rebuild) — unlike the old quantum/AI verticals' nightly-fetched data,
 # there's no live source behind it to protect a human's `git pull` from;

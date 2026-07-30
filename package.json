@@ -3,7 +3,7 @@
   "private": true,
   "version": "0.1.0",
   "type": "module",
-  "description": "Global Talent Monitor — a pipeline view of U.S. STEM talent, from foundation through degree production, graduate training, workforce entry, retention/immigration, and research output.",
+  "description": "Global Talent Monitor — a pipeline view of US STEM talent, from foundation through degree production, graduate training, workforce entry, retention/immigration, and research output.",
   "scripts": {
     "dev": "astro dev",
     "build": "tsc -b --noEmit && astro build",
@@ -11,7 +11,8 @@
     "import-talent-charts": "tsx scripts/import-talent-charts.ts",
     "gen-continent-map": "tsx scripts/gen-continent-map.ts",
     "typecheck": "tsc -b --noEmit",
-    "test": "vitest run"
+    "test": "vitest run",
+    "test:a11y": "playwright test"
   },
   "dependencies": {
     "@astrojs/react": "^6.0.2",
@@ -27,6 +28,8 @@
     "world-atlas": "^2.0.2"
   },
   "devDependencies": {
+    "@axe-core/playwright": "^4.12.1",
+    "@playwright/test": "^1.62.0",
     "@types/d3-sankey": "^0.12.5",
     "@types/node": "^26.1.1",
     "@types/react": "^18.3.12",
