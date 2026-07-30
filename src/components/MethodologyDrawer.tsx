@@ -26,7 +26,15 @@ import { buildExportFilename } from "../lib/exportFilename.ts";
 // actually rendered without this component needing to know which chart
 // kind it is — see chartExport.ts's own note on why one implementation
 // covers every chart type here.
-export function MethodologyDrawer({ exhibit, chartRef }: { exhibit: Exhibit; chartRef: RefObject<HTMLDivElement | null> }) {
+//
+// `visibleRows`, when non-null, is a REAL, currently-narrower subset of
+// exhibit.rows (a leaderboard's one selected year, or a >6-series
+// picker's currently-toggled-on series) — see ExhibitChart.tsx's own
+// onVisibleDataChange for exactly when this is populated vs. left null.
+// Only renders a second "currently shown" download button when it's
+// actually narrower than the complete dataset, never as a redundant
+// second control for the common case where they're the same.
+export function MethodologyDrawer({ exhibit, chartRef, visibleRows }: { exhibit: Exhibit; chartRef: RefObject<HTMLDivElement | null>; visibleRows?: Record<string, unknown>[] | null }) {
   const [open, setOpen] = useState(false);
   const ref = useRef<HTMLDetailsElement>(null);
   const [copied, setCopied] = useState<"citation" | "link" | null>(null);
@@ -86,9 +94,22 @@ export function MethodologyDrawer({ exhibit, chartRef }: { exhibit: Exhibit; cha
           <div key={u}><a href={u} target="_blank" rel="noreferrer">{u}</a></div>
         ))}
         <div className="methodology-actions">
-          <button type="button" className="ghost-btn" onClick={() => downloadCsv(buildExportFilename(exhibit, "csv"), exhibit.rows)}>
-            Download CSV
+          <button
+            type="button"
+            className="ghost-btn"
+            onClick={() => downloadCsv(buildExportFilename(exhibit, "csv"), exhibit.rows)}
+          >
+            {visibleRows ? "Download CSV (complete dataset)" : "Download CSV"}
           </button>
+          {visibleRows && (
+            <button
+              type="button"
+              className="ghost-btn"
+              onClick={() => downloadCsv(buildExportFilename(exhibit, "csv").replace(/\.csv$/, "_displayed.csv"), visibleRows)}
+            >
+              Download CSV (currently shown)
+            </button>
+          )}
           <button
             type="button"
             className="ghost-btn"

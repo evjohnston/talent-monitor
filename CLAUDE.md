@@ -1006,16 +1006,32 @@ existing structured metadata fields.
   en dash to a plain hyphen — filenames shouldn't carry a unicode
   character the way display text can.
 
-Not yet done (tracked in #4): "CSV of the currently DISPLAYED data" as a
-real, distinct option from "the complete underlying dataset" — today
-both download the exhibit's full `rows` regardless of what a picker
-(`SeriesChart`'s >6-series toggle, `LeaderboardYears`' year-chip) has
-currently selected. Needs a lifted-state callback threaded up from those
-two components, the same pattern `onHoverCountry`/`onSelectCountry`
-already use, before it can be built for real. PNG export (build-time-
-prerendered, per the user's own direction) and combined per-stage ZIP
-downloads (also build-time-generated) are real, separate, larger pieces
-not yet started.
+**"CSV of the currently displayed data," done (2026-07-30)** — no longer
+a gap. `SeriesChart`'s own >6-series picker and `LeaderboardYears`' own
+year-chip (both already real, existing filters) now report their
+currently-visible subset up through a new `onVisibleDataChange` prop on
+`ExhibitChart`, the same lifted-state pattern `onHoverCountry`/
+`onSelectCountry` already used. `MethodologyDrawer` only renders a second
+"Download CSV (currently shown)" button when there's a REAL difference
+to download — `ExhibitChart.tsx` itself decides this (reporting `null`
+whenever every series is visible, e.g. every exhibit with ≤6 series never
+needing a picker at all), not a downstream heuristic guessing from row/
+column counts. Verified by hand across two real different exhibit shapes:
+a >6-series timeseries exhibit (same row count, fewer columns — the
+picker's default 6 of N series) and FIG302's leaderboard-years shape
+(fewer rows AND fewer columns — one year, top-12 ranked, vs. every
+year/every of 252 employers). Confirmed the split is correctly absent
+everywhere else by sweeping every panel on two real stage pages.
+
+Not yet done (tracked in #4): the count/rate-split path (`FIG603`-style
+exhibits mixing a real 0-1 rate column with count columns, rendered as
+two independent `SeriesChart`s) doesn't report a visible-data subset —
+each half has its own independent picker state, and merging two
+partially-independent subsets into one coherent CSV wasn't tackled in
+this pass, a real, smaller, disclosed gap, not silently papered over.
+PNG export (build-time-prerendered, per the user's own direction) and
+combined per-stage ZIP downloads (also build-time-generated) are real,
+separate, larger pieces not yet started.
 
 ## Methodology drawer (2026-07-30)
 
