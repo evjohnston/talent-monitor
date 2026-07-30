@@ -5,7 +5,7 @@ import type { Stage } from "./types.ts";
 // switch, so this is just the shared "which page is active" type — no
 // read/write-query-string helpers needed anymore (real navigation is a
 // plain <a href>, see DashboardNav.astro).
-export type Dashboard = "overview" | Stage | "methodology" | "downloads";
+export type Dashboard = "overview" | Stage | "methodology" | "downloads" | "explorer";
 
 const COUNTRIES_PARAM = "countries";
 // The original single-country param, from before country-compare mode

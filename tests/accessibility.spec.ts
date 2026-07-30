@@ -21,6 +21,7 @@ const ROUTES = [
   "research-output/",
   "methodology/",
   "downloads/",
+  "explorer/",
 ];
 
 for (const route of ROUTES) {
