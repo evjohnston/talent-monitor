@@ -4,6 +4,9 @@
   "version": "0.1.0",
   "type": "module",
   "description": "Global Talent Monitor — a pipeline view of US STEM talent, from foundation through degree production, graduate training, workforce entry, retention/immigration, and research output.",
+  "engines": {
+    "node": ">=22.12.0"
+  },
   "scripts": {
     "dev": "astro dev",
     "build": "tsc -b --noEmit && astro build",
