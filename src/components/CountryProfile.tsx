@@ -1,5 +1,5 @@
 import type { Exhibit } from "../lib/types.ts";
-import { buildCountryProfile, formatIndicatorValue } from "../lib/countryProfiles.ts";
+import { buildCountryProfile, formatIndicatorValue, countryLatestValue, isSafeAsCountryChart } from "../lib/countryProfiles.ts";
 import { continentOf } from "../lib/countries.ts";
 import { toLatestValue } from "../lib/exhibitData.ts";
 import { SectionHeader } from "./ChartFrame.tsx";
@@ -21,8 +21,13 @@ const CONTINENT_LABEL: Record<string, string> = {
 // exhibit's own real stage-page methodology drawer (the same
 // ?methods=<id> deep link the explorer catalog already uses), so the
 // full chart is always one click away without duplicating it here.
-function SupportingMetric({ exhibit, base }: { exhibit: Exhibit; base: string }) {
-  const latest = toLatestValue(exhibit);
+function SupportingMetric({ exhibit, base, code }: { exhibit: Exhibit; base: string; code: string }) {
+  // countryLatestValue() picks the column/rows that actually belong to
+  // THIS country — plain toLatestValue(exhibit) has no country context
+  // and silently grabs whichever column is numerically first, which is
+  // wrong the moment this exhibit covers more than one country (a real,
+  // confirmed bug this fix caught — see countryProfiles.ts's own note).
+  const latest = countryLatestValue(exhibit, code) ?? toLatestValue(exhibit);
   return (
     <a className="supporting-metric" href={`${base}${exhibit.stage}/?methods=${exhibit.id}`}>
       <div className="trend-note">{exhibit.title}</div>
@@ -78,23 +83,34 @@ export function CountryProfile({ code, exhibits }: { code: string; exhibits: Exh
       </div>
 
       {profile.sections.map((section) => {
-        const [primary, ...rest] = section.exhibits;
-        const supporting = rest.slice(0, 2);
+        // The section's own real chapter/id ordering is untouched, EXCEPT
+        // a full chart never comes from an exhibit ExhibitChart can't
+        // actually highlight for this specific country — see
+        // isSafeAsCountryChart's own note (FIG508-style wide-format
+        // ranked-bar exhibits silently rank by whichever country's
+        // column happens to be last, which is wrong for every OTHER
+        // country's profile). buildCountryProfile() already sorts
+        // chart-safe exhibits first, so [0] is always the right pick
+        // when one exists.
+        const hasSafePrimary = section.exhibits.length > 0 && isSafeAsCountryChart(section.exhibits[0]);
+        const primary = hasSafePrimary ? section.exhibits[0] : undefined;
+        const rest = hasSafePrimary ? section.exhibits.slice(1) : section.exhibits;
+        const supporting = rest.slice(0, hasSafePrimary ? 2 : 3);
         const remaining = rest.length - supporting.length;
         return (
           <div key={section.id} className="panel" id={`profile-section-${section.id}`}>
             <SectionHeader title={section.label} level={2} />
-            {section.isMissing || !primary ? (
+            {section.isMissing || section.exhibits.length === 0 ? (
               <div className="trend-empty">
                 The report does not contain a comparable indicator for {profile.country.name} in this section.
               </div>
             ) : (
               <>
-                <ExhibitPanel exhibit={primary} emphasize={[profile.country.code]} headingLevel={3} />
+                {primary && <ExhibitPanel exhibit={primary} emphasize={[profile.country.code]} headingLevel={3} />}
                 {supporting.length > 0 && (
                   <div className="row3" style={{ marginTop: 8 }}>
                     {supporting.map((exhibit) => (
-                      <SupportingMetric key={exhibit.id} exhibit={exhibit} base={base} />
+                      <SupportingMetric key={exhibit.id} exhibit={exhibit} base={base} code={profile.country.code} />
                     ))}
                   </div>
                 )}

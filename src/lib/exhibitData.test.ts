@@ -165,6 +165,31 @@ describe("toRankedBars", () => {
     expect(result?.rows.length).toBe(12);
     expect(result?.truncated).toBe(3);
   });
+
+  it("includes a non-numeric column that comes AFTER a coerced-numeric 'Year' column in the label, not just the columns before it", () => {
+    // Regression, confirmed live on TAB604's own real stage-page panel:
+    // Country, Year, Status, Count — "Year" coerces to a real number, so
+    // the old code treated it as the first NUMERIC column and stopped
+    // collecting labelKeys right there, silently dropping "Status" (which
+    // comes after it) from every row's label. Every real India row
+    // rendered as the bare label "India," indistinguishable from every
+    // other India row.
+    const e = fixture(
+      ["Country", "Year", "Status", "Count"],
+      [
+        { Country: "India", Year: 2018, Status: "Certified", Count: 38081 },
+        { Country: "India", Year: 2016, Status: "Certified-Expired", Count: 31485 },
+      ],
+    );
+    const result = toRankedBars(e);
+    expect(result?.column).toBe("Count");
+    expect(result?.rows.map((r) => r.label)).toEqual(["India · 2018 · Certified", "India · 2016 · Certified-Expired"]);
+  });
+
+  it("never picks a column literally named 'Year' as the ranked value itself", () => {
+    const e = fixture(["Company", "Year"], [{ Company: "A", Year: 2024 }]);
+    expect(toRankedBars(e)).toBeNull();
+  });
 });
 
 describe("isRateShapedSeries", () => {
