@@ -42,3 +42,18 @@ jobs:
         with:
           name: visual-baseline-snapshots
           path: tests/visual-regression.spec.ts-snapshots/
+
+      # Same real problem, same fix, for the component gallery's own
+      # visual-regression suite (tests/gallery/component-gallery.spec.ts,
+      # issue #14) — a separate config/webServer (playwright.gallery.
+      # config.ts) since that route only has real content in a build with
+      # PUBLIC_ENABLE_DEV_GALLERY=true.
+      - name: Generate component-gallery visual-regression baselines
+        run: npx playwright test --config=playwright.gallery.config.ts --update-snapshots
+        env:
+          GTM_BASE: /${{ github.event.repository.name }}/
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: gallery-visual-baseline-snapshots
+          path: tests/gallery/component-gallery.spec.ts-snapshots/
