@@ -1029,9 +1029,60 @@ two independent `SeriesChart`s) doesn't report a visible-data subset —
 each half has its own independent picker state, and merging two
 partially-independent subsets into one coherent CSV wasn't tackled in
 this pass, a real, smaller, disclosed gap, not silently papered over.
-PNG export (build-time-prerendered, per the user's own direction) and
-combined per-stage ZIP downloads (also build-time-generated) are real,
-separate, larger pieces not yet started.
+
+**Build-time PNG/ZIP pipeline, done (2026-07-30)** — closes #4.
+`scripts/generate-downloads.ts` (`npm run generate-downloads`) runs
+AFTER `astro build`, spins up a real `astro preview` server on its own
+port (4322, deliberately not 4321 — avoids colliding with a real dev/
+test server already on the default port), and:
+- **ZIPs** — one per stage, bundling that stage's real exhibit CSVs
+  (`archiver`'s `ZipArchive` — a newer, class-based API than the classic
+  `archiver('zip', opts)` factory-function call; confirmed by reading the
+  installed package's own real source, not assumed from memory of older
+  versions). No browser needed for this half.
+- **PNGs** — a Playwright-driven screenshot of each exhibit panel's own
+  real `<svg>`, one pass per stage page. Only 62 of 91 exhibits get a
+  real PNG — confirmed this is CORRECT, not a bug: `BarRow` (the ranked-
+  bar fallback, ~29 exhibits) is plain HTML/CSS with no `<svg>` at all,
+  so there's genuinely nothing to screenshot for those.
+
+**A real, separate bug this surfaced, fixed in the same pass**: the
+client-side "Download SVG" button in `MethodologyDrawer.tsx` was ALWAYS
+rendered regardless of chart kind — for every one of those same ~29
+`BarRow` exhibits, clicking it silently did nothing (no real `<svg>` for
+`downloadChartSvg` to find). Fixed with a post-mount check
+(`chartRef.current?.querySelector("svg")`) that hides the button
+entirely when there's truly nothing to export — verified by hand across
+every panel on a real stage page that "has a real `<svg>`" and "shows
+the SVG button" match exactly, not just spot-checked.
+
+**A second real bug caught by hand reviewing the first generated PNGs,
+not assumed**: `WorldMap.tsx`'s own corner "expand" button sits visually
+on top of the map, not inside its own separate box — the very first test
+PNGs had that button's own square baked into the exported image. Fixed
+by injecting a temporary `display: none` style rule for `.map-expand`
+right before each stage's screenshots (`page.addStyleTag`, scoped to the
+screenshot pass only, never touching the real served page).
+
+**Node-context/browser-context import split, a real architectural fix,
+not a workaround**: `scripts/generate-downloads.ts` needs `rowsToCsv`
+and `buildExportFilename`/`realDateRange`, but importing them from
+`csvExport.ts`/`exhibitData.ts` directly failed `tsc`'s Node-context
+project (`tsconfig.node.json`, no DOM lib, no `--jsx`) — those files also
+contain `document`/`Blob`-using functions and type-only imports from real
+`.tsx` component files respectively, and tsc checks a whole file's
+syntax against its project's settings regardless of which specific
+export a caller actually uses. Fixed at the root, not papered over with
+a duplicate copy: `realDateRange` moved to a new `src/lib/dateRange.ts`,
+`rowsToCsv` to a new `src/lib/csv.ts` — both genuinely dependency-free,
+re-exported from their original files for every existing browser-context
+import site to keep working unchanged (confirmed: `npm test` still
+passes all 65 tests with zero import changes needed elsewhere).
+
+CI wiring: a real step in `.github/workflows/build-and-deploy.yml` after
+the accessibility check, guarded `if: github.event_name == 'push'` (same
+as the deploy-artifact upload) — a PR's own status-check run doesn't pay
+the cost of generating downloads that will never actually deploy.
 
 ## Methodology drawer (2026-07-30)
 

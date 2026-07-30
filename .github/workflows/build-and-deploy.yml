@@ -66,6 +66,19 @@ jobs:
         env:
           GTM_BASE: /${{ github.event.repository.name }}/
 
+      # scripts/generate-downloads.ts — build-time PNG chart images and
+      # per-stage ZIP CSV bundles (see CLAUDE.md's "Per-chart downloads"
+      # section), only needed on a real deploy, not a PR status check —
+      # Playwright's already installed from the a11y step above, so this
+      # doesn't pay that cost twice. Writes into dist/downloads/, which
+      # the artifact upload right after this picks up along with
+      # everything else astro build produced.
+      - name: Generate downloadable PNGs and ZIPs
+        if: github.event_name == 'push'
+        run: npm run generate-downloads
+        env:
+          GTM_BASE: /${{ github.event.repository.name }}/
+
       - uses: actions/upload-pages-artifact@v3
         if: github.event_name == 'push'
         with:

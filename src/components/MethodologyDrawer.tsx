@@ -53,6 +53,21 @@ export function MethodologyDrawer({ exhibit, chartRef, visibleRows }: { exhibit:
     return () => clearTimeout(t);
   }, [copied]);
 
+  // Real bug caught building the build-time PNG pipeline (2026-07-30):
+  // BarRow (the ranked-bar fallback, ~29 of 91 exhibits) is plain HTML/CSS
+  // with no <svg> at all — "Download SVG" was always rendered regardless,
+  // silently doing nothing for every one of those exhibits. Checked once
+  // after mount (the chart itself renders as ExhibitPanel's own sibling,
+  // regardless of this drawer's open state, so it's already in the DOM by
+  // the time this runs) rather than assumed from `exhibit.kind` — several
+  // kinds fall back to BarRow depending on the real data shape, not just
+  // "ranked-bar" (see ExhibitChart.tsx's own dispatch order).
+  const [hasSvg, setHasSvg] = useState(true);
+  useEffect(() => {
+    setHasSvg(!!chartRef.current?.querySelector("svg"));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
   const dateRange = realDateRange(exhibit);
 
   return (
@@ -117,9 +132,11 @@ export function MethodologyDrawer({ exhibit, chartRef, visibleRows }: { exhibit:
           >
             Download JSON
           </button>
-          <button type="button" className="ghost-btn" onClick={() => downloadChartSvg(buildExportFilename(exhibit, "svg"), chartRef.current)}>
-            Download SVG
-          </button>
+          {hasSvg && (
+            <button type="button" className="ghost-btn" onClick={() => downloadChartSvg(buildExportFilename(exhibit, "svg"), chartRef.current)}>
+              Download SVG
+            </button>
+          )}
           <button
             type="button"
             className="ghost-btn"

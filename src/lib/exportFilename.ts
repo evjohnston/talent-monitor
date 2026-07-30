@@ -1,5 +1,5 @@
 import type { Exhibit } from "./types.ts";
-import { realDateRange } from "./exhibitData.ts";
+import { realDateRange } from "./dateRange.ts";
 
 // A stable, human-readable download filename — no hand-authored slug
 // field exists per exhibit yet (91 exhibits, real content-authoring work,
