@@ -1200,6 +1200,81 @@ Nothing new this session introduces its own scroll-triggered or
 decorative animation to gate — the scrollytelling's core mechanic is
 plain CSS `position: sticky`, which isn't an animation at all.
 
+## Data-driven annotation system (2026-07-30)
+
+Closes #15, the second of six features deliberately deferred when the
+methodology/downloads/overview backlog (#2) closed — see `docs/
+CLAUDE_CODE_SIX_DEFERRED_FEATURES.md` and tracking issue #13.
+`src/lib/annotations.ts` (schema + registry), `SeriesChart.tsx` (Nivo
+marker + real accessible list), `ExhibitChart.tsx`/`ExhibitPanel.tsx`/
+`TrackShell.tsx` (threading), `DashboardContext.annotations` (built once
+per page in `buildContext.ts`, same pattern every other context field
+already uses).
+
+**Exactly 5 real annotations, not padded to a rounder number** — every
+one traced to this app's own already-imported exhibit data or the
+report's own R chart-generation source, never inferred from a line's
+shape:
+- **FIG409** (`event`, 2021, "COVID-19") — the report's OWN R code
+  (`talent_charts/figures.Rmd`, Figure 4.09) places this exact
+  `annotate("text", x = 2021, label = "COVID-19", ...)` on this chart.
+  Found by grepping `figures.Rmd`/`tables.Rmd` for real `annotate()`/
+  `geom_vline()` calls — the only genuine event-style annotation among
+  several dozen `annotate()` calls found (the rest are direct series
+  labels like "All industries"/"Tech occupations," not events).
+- **FIG109/FIG110** (`projection_start`, 2021) — computed, not
+  hand-typed: the real last year either exhibit's plain observed column
+  is non-null (2020) and the first year its own "(projected)" column is
+  non-null (2021). Same real projection convention already documented in
+  the Methodology route's "Projection methods" section.
+- **TAB501** (`crossing`, CVPR, 2019) — reuses `computeAiConferenceCatchUp()`
+  directly rather than recomputing by hand, so it can never drift from
+  what that chart itself already reports. TAB501 isn't a `SeriesChart`
+  (it's the bespoke `BarRow`-per-conference branch in `ExhibitChart.tsx`)
+  — its annotation renders as a plain `trend-note` in that same branch
+  rather than forcing the generic marker+list UI onto a chart kind it
+  wasn't built for; the underlying fact is already visible per-conference
+  via each `BarRow`'s own hover detail, so this mainly demonstrates the
+  registry wiring itself.
+- **FIG606** (`custom`, 2025, "41% expired unused") — the same real
+  `Certified-expired`/`Certified (Current + Expired)` computation already
+  surfaced on the Overview's immigration-gates scrollytelling step
+  (`scrollyData.ts`), now also expressed as a chart annotation directly
+  on FIG606's own panel. Priority 2 (hidden by default, per the "default
+  views show only high-priority annotations" rule) since it's a secondary
+  fact, not the panel's own headline finding.
+
+**A 6th candidate considered and deliberately deferred, not rushed in**:
+FIG101's real per-year estimate/confirmed flags (1900-1901, 1916, 1923 —
+already a `dataNote`, see the Methodology drawer section) would need 3
+separate non-contiguous annotation entries to represent correctly rather
+than one clean point/range, and FIG601-vs-FIG602's population mismatch is
+a mismatch BETWEEN two separate exhibits, not a break within one
+continuous series — neither fits the schema as cleanly as the 5 shipped
+here. Flagged for a future pass rather than forced in for a rounder
+number.
+
+**Accessibility, by construction, not an afterthought**: the Nivo
+`markers` prop (`ResponsiveLine`) renders a real but purely decorative
+SVG line+label — it has no DOM focus target at all. The REAL interface is
+a plain, always-rendered `<ul>` of real `<button>`s below the chart
+(`.chart-annotation-list`), reachable by Tab regardless of the marker's
+on-chart position, expanding the annotation's full `detail` text on
+Enter/click — verified with a real Playwright keyboard test
+(`tests/interaction.spec.ts`), not assumed from the markup alone.
+Priority filtering (`showByDefault`) keeps the default view uncluttered,
+with an "Annotations (N)" toggle to reveal the rest — same UI pattern
+`SeriesChart`'s own >6-series picker already established. No new
+animation exists to gate under `prefers-reduced-motion` — showing/hiding
+the detail text is instant, not a transition.
+
+**Real validation, not a formality** — `validateAnnotations()` checks
+every registry entry's exhibit id and start/end year against the actual
+imported `talent.json`, the same discipline the importer itself already
+applies to real data (unknown ids, out-of-range values). Confirmed by
+hand: `buildAnnotations()` run against the real production data produces
+exactly the 5 expected entries with zero validation errors.
+
 ## Internal component gallery (2026-07-30)
 
 Closes #14, the first of six features deliberately deferred when the

@@ -1,5 +1,6 @@
 import { useRef, useState } from "react";
 import type { Exhibit } from "../lib/types.ts";
+import type { ChartAnnotation } from "../lib/annotations.ts";
 import { SectionHeader } from "./ChartFrame.tsx";
 import { ExhibitChart } from "./ExhibitChart.tsx";
 import { MethodologyDrawer } from "./MethodologyDrawer.tsx";
@@ -16,6 +17,7 @@ export function ExhibitPanel({
   onHoverCountry,
   onSelectCountry,
   headingLevel,
+  annotations,
 }: {
   exhibit: Exhibit;
   takeaway?: string;
@@ -27,6 +29,7 @@ export function ExhibitPanel({
   // ChartFrame.tsx's SectionHeader) — TrackShell passes 2 for that one
   // case; every regular panel leaves this unset and gets the default h3.
   headingLevel?: 2 | 3;
+  annotations?: ChartAnnotation[];
 }) {
   const chartRef = useRef<HTMLDivElement>(null);
   // Starts null (never fewer rows than the real complete dataset) on both
@@ -38,7 +41,7 @@ export function ExhibitPanel({
     <div className="panel" data-exhibit-id={exhibit.id}>
       <SectionHeader title={exhibit.title} takeaway={takeaway} level={headingLevel} />
       <div ref={chartRef}>
-        <ExhibitChart exhibit={exhibit} emphasize={emphasize} onHoverCountry={onHoverCountry} onSelectCountry={onSelectCountry} onVisibleDataChange={setVisibleRows} />
+        <ExhibitChart exhibit={exhibit} emphasize={emphasize} onHoverCountry={onHoverCountry} onSelectCountry={onSelectCountry} onVisibleDataChange={setVisibleRows} annotations={annotations} />
       </div>
       <MethodologyDrawer exhibit={exhibit} chartRef={chartRef} visibleRows={visibleRows} />
     </div>

@@ -1,6 +1,7 @@
 import type { Exhibit } from "../lib/types.ts";
 import { toSeriesChart, toCountryMapValues, toLeaderboardYears, toRankedBars, toDistributionStats, isRateShapedSeries } from "../lib/exhibitData.ts";
 import { computeAiConferenceCatchUp } from "../lib/aiConferenceCatchUp.ts";
+import { annotationsForExhibit, type ChartAnnotation } from "../lib/annotations.ts";
 import { SeriesChart } from "./SeriesChart.tsx";
 import { WorldMap } from "./WorldMap.tsx";
 import { LeaderboardYears } from "./LeaderboardYears.tsx";
@@ -32,7 +33,8 @@ import { BoxPlotRow } from "./BoxPlotRow.tsx";
 // simply never called. Not wired for the count/rate-split path (two
 // independent SeriesChart pickers) — a real, smaller gap, not silently
 // papered over: see CLAUDE.md's "Per-chart downloads" note.
-export function ExhibitChart({ exhibit, emphasize, onHoverCountry, onSelectCountry, onVisibleDataChange }: { exhibit: Exhibit; emphasize?: string[]; onHoverCountry?: (code: string | null) => void; onSelectCountry?: (code: string) => void; onVisibleDataChange?: (rows: Record<string, unknown>[] | null) => void }) {
+export function ExhibitChart({ exhibit, emphasize, onHoverCountry, onSelectCountry, onVisibleDataChange, annotations = [] }: { exhibit: Exhibit; emphasize?: string[]; onHoverCountry?: (code: string | null) => void; onSelectCountry?: (code: string) => void; onVisibleDataChange?: (rows: Record<string, unknown>[] | null) => void; annotations?: ChartAnnotation[] }) {
+  const exhibitAnnotations = annotationsForExhibit(annotations, exhibit.id);
   if (exhibit.kind === "timeseries" || exhibit.kind === "share-timeseries") {
     const { x, series } = toSeriesChart(exhibit);
     const xKey = exhibit.columns[0];
@@ -71,7 +73,7 @@ export function ExhibitChart({ exhibit, emphasize, onHoverCountry, onSelectCount
       if (rateSeries.length > 0 && countSeries.length > 0) {
         return (
           <div className="count-rate-split">
-            <SeriesChart x={x} series={countSeries} formatValue={(v) => v.toLocaleString()} emphasize={emphasize} ariaLabel={`${exhibit.title} — counts`} />
+            <SeriesChart x={x} series={countSeries} formatValue={(v) => v.toLocaleString()} emphasize={emphasize} ariaLabel={`${exhibit.title} — counts`} annotations={exhibitAnnotations} />
             <div className="trend-note">Rate, same years, separate axis (a 0-1 rate can't share a scale with counts in the thousands):</div>
             <SeriesChart
               x={x}
@@ -95,6 +97,7 @@ export function ExhibitChart({ exhibit, emphasize, onHoverCountry, onSelectCount
         emphasize={emphasize}
         ariaLabel={exhibit.title}
         onVisibleSeriesChange={reportVisibleSeries}
+        annotations={exhibitAnnotations}
       />
     );
   }
@@ -157,6 +160,16 @@ export function ExhibitChart({ exhibit, emphasize, onHoverCountry, onSelectCount
             />
           );
         })}
+        {/* TAB501 isn't a SeriesChart (see this branch's own note above),
+            so its real registered annotation (annotations.ts's own
+            tab501Crossing) can't use SeriesChart's marker+list UI — the
+            same real fact is already visible per-conference via each
+            BarRow's own hover detail; this just surfaces the registry
+            entry explicitly too, rather than leaving it silently unused
+            for this one non-generic chart kind. */}
+        {exhibitAnnotations.map((a) => (
+          <div className="trend-note" key={a.id} style={{ marginTop: 6 }}>{a.label}</div>
+        ))}
       </div>
     );
   }

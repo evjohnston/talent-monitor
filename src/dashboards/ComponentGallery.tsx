@@ -16,6 +16,8 @@ import {
   galleryLongTitleAndCitation,
   galleryDerivedExhibit,
   gallerySankeyFixture,
+  galleryAnnotations,
+  galleryTimeseriesForAnnotations,
 } from "../dev/fixtures/galleryExhibits.ts";
 
 // Internal, real-component gallery — every example below renders the
@@ -229,6 +231,18 @@ export function ComponentGallery() {
       <h3>Series picker (more than 6 series)</h3>
       <div className="panel">
         <ExhibitPanel exhibit={galleryTimeseriesManySeries} />
+      </div>
+
+      <h3>Legends and annotations</h3>
+      <p className="trend-note">
+        Real annotations (issue #15) — a priority-1 event marker (shown by default) and a priority-2 custom marker
+        (hidden until "Annotations" is clicked). Same real mechanism as FIG409's COVID marker and FIG606's PERM
+        annotation on the live site: a decorative dashed line + label on the chart itself, plus a real, always-present
+        list of buttons below it (the actual accessible interface — reachable by keyboard and screen reader
+        regardless of hover).
+      </p>
+      <div className="panel">
+        <ExhibitPanel exhibit={galleryTimeseriesForAnnotations} annotations={galleryAnnotations} />
       </div>
 
       <h3>Leaderboard-years, ranked-bar, and country-map (count vs. range)</h3>

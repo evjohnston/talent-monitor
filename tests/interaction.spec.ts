@@ -40,6 +40,25 @@ test.describe("methodology drawer", () => {
   });
 });
 
+test.describe("chart annotations", () => {
+  test("a real annotation is keyboard-reachable and reveals its full detail on activation", async ({ page }) => {
+    // FIG409 carries a real, always-visible (priority 1) annotation —
+    // see src/lib/annotations.ts's fig409Covid(). The list of buttons
+    // below the chart is the actual accessible interface (the Nivo
+    // marker on the chart itself has no DOM focus target at all).
+    await page.goto("foundation/", { waitUntil: "networkidle" });
+    const panel = page.locator('[data-exhibit-id="FIG409"]');
+    await panel.scrollIntoViewIfNeeded();
+    const button = panel.locator(".chart-annotation-btn").first();
+    await expect(button).toHaveCount(1);
+    await button.focus();
+    await expect(panel.locator(".chart-annotation-detail")).toHaveCount(0);
+    await page.keyboard.press("Enter");
+    await expect(panel.locator(".chart-annotation-detail")).toBeVisible();
+    await expect(button).toBeFocused();
+  });
+});
+
 test.describe("scrollytelling keyboard navigation", () => {
   test("real Tab order reaches a late step's controls and updates the URL step state", async ({ page }) => {
     await page.goto("", { waitUntil: "networkidle" });
