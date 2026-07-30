@@ -33,3 +33,14 @@ for (const route of ROUTES) {
     expect(summary, summary.join("\n")).toEqual([]);
   });
 }
+
+// The explorer's own focused indicator detail view (chart/table toggle,
+// related-indicators list) is real, JS-driven state the plain ?url= sweep
+// above never reaches — loading with a real ?metric= param exercises it
+// directly, same real state a shared detail-view link would land on.
+test("/explorer/?metric=FIG101 (indicator detail) has no automatically detectable accessibility violations", async ({ page }) => {
+  await page.goto("explorer/?metric=FIG101", { waitUntil: "networkidle" });
+  const results = await new AxeBuilder({ page }).analyze();
+  const summary = results.violations.map((v) => `${v.id} (${v.impact}, ${v.nodes.length} nodes): ${v.description}`);
+  expect(summary, summary.join("\n")).toEqual([]);
+});

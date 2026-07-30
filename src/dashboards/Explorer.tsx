@@ -1,9 +1,10 @@
 import { useEffect, useMemo, useState } from "react";
 import type { Exhibit } from "../lib/types.ts";
 import { STAGES } from "../lib/types.ts";
-import { buildMetricRegistry, searchRegistry, ALL_TOPICS } from "../lib/metricRegistry.ts";
+import { buildMetricRegistry, searchRegistry, ALL_TOPICS, type MetricRegistryEntry } from "../lib/metricRegistry.ts";
 import { readExplorerFiltersFromUrl, writeExplorerFiltersToUrl, DEFAULT_EXPLORER_FILTERS, type ExplorerFilters } from "../lib/explorerUrlState.ts";
 import { Sparkline } from "../components/Sparkline.tsx";
+import { ExplorerDetail } from "../components/ExplorerDetail.tsx";
 
 const STAGE_LABEL = Object.fromEntries(STAGES.map((s) => [s.id, s.label]));
 
@@ -22,14 +23,33 @@ function previewValues(exhibit: Exhibit): (number | null)[] | null {
   return exhibit.rows.map((r) => (typeof r[valueCol] === "number" ? (r[valueCol] as number) : null));
 }
 
+// Real related indicators — ranked by number of shared real topics (a
+// same-stage, same-topic exhibit is a stronger real match than a
+// same-topic-only one), capped at 5 so this stays a real "see also," not
+// a second catalog. Never includes the entry itself.
+function relatedFor(entry: MetricRegistryEntry, registry: MetricRegistryEntry[]): MetricRegistryEntry[] {
+  return registry
+    .filter((r) => r.id !== entry.id)
+    .map((r) => ({ r, shared: r.topics.filter((t) => entry.topics.includes(t)).length + (r.stage === entry.stage ? 1 : 0) }))
+    .filter((x) => x.shared > 0)
+    .sort((a, b) => b.shared - a.shared)
+    .slice(0, 5)
+    .map((x) => x.r);
+}
+
 // This is a real, full-corpus catalog (91 items) rendered as compact
 // summary rows, never all 91 full charts at once — the default view is
 // searchable text + an optional small sparkline preview, not a wall of
 // hydrated ResponsiveLine/WorldMap instances (see the issue's own "must
-// not render every chart on initial load" rule).
+// not render every chart on initial load" rule). Selecting a result
+// opens a focused detail view in the SAME route (ExplorerDetail.tsx) —
+// real, shareable via `?metric=<id>`, with real browser back/forward
+// support (pushState on open/close, unlike the plain filter changes
+// below which use replaceState to avoid spamming history per keystroke).
 export function Explorer({ exhibits }: { exhibits: Exhibit[] }) {
   const registry = useMemo(() => buildMetricRegistry(exhibits), [exhibits]);
   const exhibitById = useMemo(() => new Map(exhibits.map((e) => [e.id, e])), [exhibits]);
+  const registryById = useMemo(() => new Map(registry.map((r) => [r.id, r])), [registry]);
   const base = import.meta.env.BASE_URL;
 
   // Starts at the real default on both server and first client render —
@@ -38,11 +58,23 @@ export function Explorer({ exhibits }: { exhibits: Exhibit[] }) {
   const [filters, setFilters] = useState<ExplorerFilters>(DEFAULT_EXPLORER_FILTERS);
   useEffect(() => {
     setFilters(readExplorerFiltersFromUrl());
+    const onPopState = () => setFilters(readExplorerFiltersFromUrl());
+    window.addEventListener("popstate", onPopState);
+    return () => window.removeEventListener("popstate", onPopState);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
-  useEffect(() => {
-    writeExplorerFiltersToUrl(filters);
-  }, [filters]);
+
+  function updateFilters(next: ExplorerFilters, push = false) {
+    setFilters(next);
+    writeExplorerFiltersToUrl(next, push);
+  }
+
+  function openDetail(id: string) {
+    updateFilters({ ...filters, metric: id }, true);
+  }
+  function closeDetail() {
+    updateFilters({ ...filters, metric: null }, true);
+  }
 
   const filtered = useMemo(() => {
     let results = searchRegistry(registry, filters.q);
@@ -59,9 +91,29 @@ export function Explorer({ exhibits }: { exhibits: Exhibit[] }) {
   }, [registry, filters, exhibitById]);
 
   const activeChips: { key: string; label: string; clear: () => void }[] = [];
-  if (filters.q) activeChips.push({ key: "q", label: `Search: "${filters.q}"`, clear: () => setFilters((f) => ({ ...f, q: "" })) });
-  if (filters.stage !== "all") activeChips.push({ key: "stage", label: STAGE_LABEL[filters.stage], clear: () => setFilters((f) => ({ ...f, stage: "all" })) });
-  if (filters.topic !== "all") activeChips.push({ key: "topic", label: filters.topic, clear: () => setFilters((f) => ({ ...f, topic: "all" })) });
+  if (filters.q) activeChips.push({ key: "q", label: `Search: "${filters.q}"`, clear: () => updateFilters({ ...filters, q: "" }) });
+  if (filters.stage !== "all") activeChips.push({ key: "stage", label: STAGE_LABEL[filters.stage], clear: () => updateFilters({ ...filters, stage: "all" }) });
+  if (filters.topic !== "all") activeChips.push({ key: "topic", label: filters.topic, clear: () => updateFilters({ ...filters, topic: "all" }) });
+
+  // A real, currently-open detail view wins over the catalog entirely —
+  // see ExplorerDetail.tsx's own note on why this is a full swap, not a
+  // side panel, for this first detail-view pass.
+  const detailExhibit = filters.metric ? exhibitById.get(filters.metric) : undefined;
+  if (filters.metric && detailExhibit) {
+    const entry = registryById.get(filters.metric);
+    return (
+      <div className="track-enter">
+        <div className="panel">
+          <ExplorerDetail
+            exhibit={detailExhibit}
+            related={entry ? relatedFor(entry, registry) : []}
+            onClose={closeDetail}
+            onOpenRelated={openDetail}
+          />
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="track-enter">
@@ -79,21 +131,21 @@ export function Explorer({ exhibits }: { exhibits: Exhibit[] }) {
             placeholder="Search by title, source, or topic…"
             aria-label="Search indicators"
             value={filters.q}
-            onChange={(e) => setFilters((f) => ({ ...f, q: e.target.value }))}
+            onChange={(e) => updateFilters({ ...filters, q: e.target.value })}
           />
-          <select aria-label="Filter by stage" value={filters.stage} onChange={(e) => setFilters((f) => ({ ...f, stage: e.target.value as ExplorerFilters["stage"] }))}>
+          <select aria-label="Filter by stage" value={filters.stage} onChange={(e) => updateFilters({ ...filters, stage: e.target.value as ExplorerFilters["stage"] })}>
             <option value="all">All stages</option>
             {STAGES.map((s) => (
               <option key={s.id} value={s.id}>{s.label}</option>
             ))}
           </select>
-          <select aria-label="Filter by topic" value={filters.topic} onChange={(e) => setFilters((f) => ({ ...f, topic: e.target.value }))}>
+          <select aria-label="Filter by topic" value={filters.topic} onChange={(e) => updateFilters({ ...filters, topic: e.target.value })}>
             <option value="all">All topics</option>
             {ALL_TOPICS.map((t) => (
               <option key={t} value={t}>{t}</option>
             ))}
           </select>
-          <select aria-label="Sort" value={filters.sort} onChange={(e) => setFilters((f) => ({ ...f, sort: e.target.value as ExplorerFilters["sort"] }))}>
+          <select aria-label="Sort" value={filters.sort} onChange={(e) => updateFilters({ ...filters, sort: e.target.value as ExplorerFilters["sort"] })}>
             <option value="report-order">Sort: report order</option>
             <option value="alphabetical">Sort: alphabetical</option>
             <option value="longest-series">Sort: longest time series</option>
@@ -107,7 +159,7 @@ export function Explorer({ exhibits }: { exhibits: Exhibit[] }) {
                 {c.label} ×
               </button>
             ))}
-            <button type="button" className="ghost-btn" onClick={() => setFilters(DEFAULT_EXPLORER_FILTERS)}>
+            <button type="button" className="ghost-btn" onClick={() => updateFilters(DEFAULT_EXPLORER_FILTERS)}>
               Clear all
             </button>
           </div>
@@ -118,7 +170,7 @@ export function Explorer({ exhibits }: { exhibits: Exhibit[] }) {
         {filtered.length === 0 ? (
           <div className="trend-empty">
             No indicators match these filters.{" "}
-            <button type="button" className="link-btn" onClick={() => setFilters(DEFAULT_EXPLORER_FILTERS)}>Clear all filters</button>
+            <button type="button" className="link-btn" onClick={() => updateFilters(DEFAULT_EXPLORER_FILTERS)}>Clear all filters</button>
           </div>
         ) : (
           <ul className="explorer-results">
@@ -146,7 +198,19 @@ export function Explorer({ exhibits }: { exhibits: Exhibit[] }) {
                     </div>
                   )}
                   <div className="explorer-result-actions">
-                    <a className="pill" href={`${base}${entry.stage}/?methods=${entry.id}`}>Open →</a>
+                    {/* A real <a href>, not a bare button — works with no
+                        JS (navigates to the exhibit's own real stage page
+                        and deep-links its methodology drawer, same as
+                        PR 1's interim behavior) and is progressively
+                        enhanced to open the in-page detail view instead
+                        once JS is running, without a full navigation. */}
+                    <a
+                      className="pill"
+                      href={`${base}${entry.stage}/?methods=${entry.id}`}
+                      onClick={(e) => { e.preventDefault(); openDetail(entry.id); }}
+                    >
+                      Open →
+                    </a>
                   </div>
                 </li>
               );
