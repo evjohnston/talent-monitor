@@ -35,7 +35,7 @@ export function ExhibitPanel({
   // there's no hydration mismatch here either.
   const [visibleRows, setVisibleRows] = useState<Record<string, unknown>[] | null>(null);
   return (
-    <div className="panel">
+    <div className="panel" data-exhibit-id={exhibit.id}>
       <SectionHeader title={exhibit.title} takeaway={takeaway} level={headingLevel} />
       <div ref={chartRef}>
         <ExhibitChart exhibit={exhibit} emphasize={emphasize} onHoverCountry={onHoverCountry} onSelectCountry={onSelectCountry} onVisibleDataChange={setVisibleRows} />

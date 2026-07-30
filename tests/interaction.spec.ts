@@ -1,0 +1,111 @@
+import { test, expect } from "@playwright/test";
+import fs from "node:fs";
+
+// Real keyboard/download interaction checks — the axe-core sweep in
+// accessibility.spec.ts only catches automatically-detectable violations
+// (missing labels, contrast, landmarks); it can't confirm a control
+// actually operates correctly via keyboard, or that a download button
+// produces a real, non-empty file. This file exercises those by hand,
+// same "check the actual behavior, not just the markup" discipline as
+// the rest of this app's test suite.
+
+test.describe("methodology drawer", () => {
+  test("opens and closes via keyboard with no focus trap", async ({ page }) => {
+    await page.goto("foundation/", { waitUntil: "networkidle" });
+    const drawer = page.locator("details.methodology-drawer").first();
+    const summary = drawer.locator("summary");
+
+    // <details>/<summary> is native, so Enter on a focused summary toggles
+    // it with zero bespoke script — confirming that here, not assuming it
+    // from the markup alone.
+    await summary.focus();
+    await expect(drawer).not.toHaveJSProperty("open", true);
+    await page.keyboard.press("Enter");
+    await expect(drawer).toHaveJSProperty("open", true);
+    // Focus stays on the summary the browser already had focused — no
+    // trap, no jump into the newly-revealed body.
+    await expect(summary).toBeFocused();
+
+    // The body's own real content (citation link, download buttons) is
+    // reachable by continuing to Tab forward, not hidden from keyboard
+    // users despite being visually below the summary.
+    await page.keyboard.press("Tab");
+    const firstFocusable = drawer.locator("a, button").first();
+    await expect(firstFocusable).toBeFocused();
+
+    await summary.focus();
+    await page.keyboard.press("Enter");
+    await expect(drawer).toHaveJSProperty("open", false);
+    await expect(summary).toBeFocused();
+  });
+});
+
+test.describe("scrollytelling keyboard navigation", () => {
+  test("real Tab order reaches a late step's controls and updates the URL step state", async ({ page }) => {
+    await page.goto("", { waitUntil: "networkidle" });
+    const chip = page.locator('[data-step-id="research-leadership"] button.chip').first();
+    await expect(chip).toHaveCount(1);
+
+    // Tab forward for real, the same way a keyboard user reaches
+    // below-the-fold content — bounded, not an infinite loop, but high
+    // enough to cover everything above this, the last of 6 steps.
+    let reached = false;
+    for (let i = 0; i < 250 && !reached; i++) {
+      await page.keyboard.press("Tab");
+      reached = await chip.evaluate((el) => el === document.activeElement).catch(() => false);
+    }
+    expect(reached).toBe(true);
+
+    // Reaching a focusable element scrolls it into view natively, which
+    // is exactly what the IntersectionObserver in Scrollytelling.tsx
+    // watches for — confirms the URL sync isn't mouse-scroll-only.
+    await expect(page).toHaveURL(/step=research-leadership/);
+
+    await page.keyboard.press("Enter");
+    await expect(chip).toHaveAttribute("aria-pressed", "true");
+  });
+});
+
+test.describe("download menu", () => {
+  test("CSV, JSON, and SVG buttons produce real, non-empty files", async ({ page }) => {
+    await page.goto("foundation/", { waitUntil: "networkidle" });
+    const drawer = page.locator("details.methodology-drawer").first();
+    await drawer.locator("summary").click();
+
+    const [csv] = await Promise.all([
+      page.waitForEvent("download"),
+      drawer.getByRole("button", { name: /Download CSV/ }).first().click(),
+    ]);
+    expect(csv.suggestedFilename()).toMatch(/\.csv$/);
+    const csvPath = await csv.path();
+    expect(csvPath).toBeTruthy();
+    const csvContent = fs.readFileSync(csvPath as string, "utf-8");
+    const csvLines = csvContent.trim().split("\n");
+    expect(csvLines.length).toBeGreaterThan(1); // header + at least one real row
+    expect(csvLines[0]).toContain(",");
+
+    const [json] = await Promise.all([
+      page.waitForEvent("download"),
+      drawer.getByRole("button", { name: "Download JSON" }).click(),
+    ]);
+    expect(json.suggestedFilename()).toMatch(/\.json$/);
+    const jsonPath = await json.path();
+    const parsed = JSON.parse(fs.readFileSync(jsonPath as string, "utf-8"));
+    expect(Array.isArray(parsed.rows)).toBe(true);
+    expect(parsed.rows.length).toBeGreaterThan(0);
+
+    // Not every exhibit renders an <svg> (BarRow-based ones don't, see
+    // MethodologyDrawer.tsx's own hasSvg check) — this stage's hero is a
+    // real SeriesChart/line exhibit, so the button is expected here.
+    const svgButton = drawer.getByRole("button", { name: "Download SVG" });
+    await expect(svgButton).toHaveCount(1);
+    const [svg] = await Promise.all([
+      page.waitForEvent("download"),
+      svgButton.click(),
+    ]);
+    expect(svg.suggestedFilename()).toMatch(/\.svg$/);
+    const svgPath = await svg.path();
+    const svgContent = fs.readFileSync(svgPath as string, "utf-8");
+    expect(svgContent).toContain("<svg");
+  });
+});

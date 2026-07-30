@@ -1,7 +1,7 @@
 {
   "compilerOptions": {
     "target": "ES2022",
-    "lib": ["ES2023"],
+    "lib": ["ES2023", "DOM"],
     "module": "ESNext",
     "types": ["node"],
     "skipLibCheck": true,
@@ -13,5 +13,5 @@
     "noEmit": true,
     "strict": true
   },
-  "include": ["scripts", "data"]
+  "include": ["tests", "playwright.config.ts"]
 }

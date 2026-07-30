@@ -45,11 +45,27 @@ export function NewsTicker({ items, loading }: { items: NewsItem[]; loading?: bo
     );
   }
 
-  function Item({ item, dupKey }: { item: NewsItem; dupKey: string }) {
+  // `focusable`/`hidden` exist for a real keyboard-trap bug caught by
+  // tests/interaction.spec.ts, not a hypothetical one: while
+  // `.ticker-track` is actively mid-CSS-animation, Chromium's real
+  // sequential-focus-navigation silently fails to land on a
+  // transform-positioned anchor and drops focus to <body> instead —
+  // confirmed by hand, a keyboard user tabbing from the page's very start
+  // got stuck cycling inside the ticker forever and could never reach the
+  // nav, the KPIs, or a single chart panel. `tabIndex={-1}` while
+  // `!paused` removes every story link from the Tab sequence entirely
+  // during autoplay (Tab now skips straight over the ticker to real page
+  // content); they become real tab stops again the moment a reader
+  // actually pauses it (click/Enter the ⏸ control), when their position
+  // is genuinely static. The second, duplicated copy of the list (`b-`
+  // keys, existing purely so the CSS animation can loop seamlessly) stays
+  // permanently untabbable and `aria-hidden`, since a screen reader
+  // reading linearly shouldn't hear every real story twice.
+  function Item({ item, dupKey, focusable = true, hidden }: { item: NewsItem; dupKey: string; focusable?: boolean; hidden?: boolean }) {
     return (
-      <span className="ticker-item" key={dupKey}>
+      <span className="ticker-item" key={dupKey} aria-hidden={hidden || undefined}>
         <span className="ticker-tag" style={{ background: STAGE_COLOR[item.stage] }}>{STAGE_LABEL[item.stage]}</span>
-        <a className="ticker-link" href={item.link} target="_blank" rel="noreferrer" title={`via ${item.feedName}`}>{item.title}</a>
+        <a className="ticker-link" href={item.link} target="_blank" rel="noreferrer" title={`via ${item.feedName}`} tabIndex={focusable ? 0 : -1}>{item.title}</a>
         <span className="ticker-sep">· {item.feedName}</span>
         <span className="ticker-sep">· {freshnessLabel(item.date)}</span>
         <span className="ticker-sep">●</span>
@@ -79,8 +95,8 @@ export function NewsTicker({ items, loading }: { items: NewsItem[]; loading?: bo
           className={`ticker-track${paused ? " paused" : ""}`}
           style={{ animationDuration: `${Math.max(20, items.length * 4)}s`, transform: manualOffsetPx ? `translateX(${-manualOffsetPx}px)` : undefined }}
         >
-          {items.map((item) => <Item key={`a-${item.id}`} item={item} dupKey={`a-${item.id}`} />)}
-          {items.map((item) => <Item key={`b-${item.id}`} item={item} dupKey={`b-${item.id}`} />)}
+          {items.map((item) => <Item key={`a-${item.id}`} item={item} dupKey={`a-${item.id}`} focusable={paused} />)}
+          {items.map((item) => <Item key={`b-${item.id}`} item={item} dupKey={`b-${item.id}`} focusable={false} hidden />)}
         </div>
       </div>
       <button className="ticker-ctrl" aria-label="Next story" onClick={() => setManualOffsetPx((p) => Math.max(0, p - NUDGE_PX))}>›</button>

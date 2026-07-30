@@ -12,7 +12,9 @@
     "gen-continent-map": "tsx scripts/gen-continent-map.ts",
     "typecheck": "tsc -b --noEmit",
     "test": "vitest run",
-    "test:a11y": "playwright test",
+    "test:a11y": "playwright test tests/accessibility.spec.ts",
+    "test:interaction": "playwright test tests/interaction.spec.ts",
+    "test:visual": "playwright test tests/visual-regression.spec.ts",
     "generate-downloads": "tsx scripts/generate-downloads.ts"
   },
   "dependencies": {
