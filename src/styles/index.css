@@ -180,7 +180,12 @@ a { color: inherit; }
 .pagehead .sub { color: var(--slate); font-size: 11px; margin-top: 2px; }
 
 /* ── controls: shared button/pill/chip language, no radius ───────── */
-.pill, .chip, .ghost-btn { font-family: var(--sans); font-size: 11px; border-radius: var(--r); border: 1px solid var(--line-2); background: var(--paper); color: var(--ink-2); padding: 4px 10px; cursor: pointer; }
+/* padding: 5px (not 4px) top/bottom is a real, checked fix, not an
+   arbitrary bump — measured by hand at 23px real rendered height with
+   4px, 1px short of WCAG 2.5.8's 24px minimum target size. This is this
+   app's single most-reused interactive class (every chip/pill/ghost
+   button sitewide), so the fix is here once, not per caller. */
+.pill, .chip, .ghost-btn { font-family: var(--sans); font-size: 11px; border-radius: var(--r); border: 1px solid var(--line-2); background: var(--paper); color: var(--ink-2); padding: 5px 10px; cursor: pointer; }
 .pill { cursor: default; }
 /* Only the Overview "Open <stage> →" pill is a real link (the rest are
    static badges) — anchors default to underline/blue, so undo that here

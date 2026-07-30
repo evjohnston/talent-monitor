@@ -1152,6 +1152,45 @@ real page state (pinned countries, series-picker selections) — that's
 this drawer's own smaller piece of a larger, still-open download/share
 mechanism.
 
+## Responsive and reduced-motion sweep (2026-07-30)
+
+Closes #8. Most of this stage's own requirements were already satisfied
+by construction in #7 (the scrollytelling's mobile layout is the same
+plain stacked order the no-JS fallback uses, no separate "mobile mode"
+to verify) — this pass is the real, systematic check across every route
+this session touched, not an assumption that "should be fine" was
+actually true.
+
+**Checked, not assumed**: a real Playwright sweep of all 9 routes at
+mobile (390×844) and tablet (768×1024) found zero horizontal overflow —
+including with every methodology drawer opened at once on
+`/graduate-training/` (the >6-series picker's own widest real button
+row) and after scrolling through every real step of the Overview
+sequence on mobile. The wide real tables (`/methodology/`'s 163-row
+crosswalk, `/downloads/`'s 91-row exhibit table) also introduce no
+horizontal page overflow.
+
+**A real touch-target gap found and fixed, not left at "probably
+fine"**: `.chip`/`.pill`/`.ghost-btn` — this app's single most-reused
+interactive class, used everywhere from year-chips to nav tabs to the
+new scrollytelling field/metric selectors — measured at a real 23px
+tall, 1px under WCAG 2.5.8's 24px minimum target size. Fixed by bumping
+vertical padding from 4px to 5px (23px -> 25px, confirmed by hand after
+rebuilding), a small, shared fix rather than a per-component patch.
+Verified no visual regression from the 2px height change across the
+main nav and a real series-picker legend after the fix.
+
+`prefers-reduced-motion` confirmed working for real, not just assumed
+from earlier sessions' own claims: emulated `reducedMotion: "reduce"` in
+a real browser context and confirmed the page actually sees the media
+query as true, zero Sankey particle-dot elements render (the existing
+`usePrefersReducedMotion` gate, reused unchanged by the two Sankeys the
+Overview sequence itself reuses), and `scroll-behavior` computes to
+`auto`, not `smooth` (the existing global reduced-motion override).
+Nothing new this session introduces its own scroll-triggered or
+decorative animation to gate — the scrollytelling's core mechanic is
+plain CSS `position: sticky`, which isn't an animation at all.
+
 ## Overview scrollytelling (2026-07-30)
 
 Closes #7. `Overview.tsx` no longer opens with 6 equal KPI cards and a
