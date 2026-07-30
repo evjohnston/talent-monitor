@@ -223,3 +223,22 @@ test.describe("explorer compare mode", () => {
     await expect(compareBtn).toBeDisabled();
   });
 });
+
+test.describe("country profile", () => {
+  test("the section nav is a real, keyboard-reachable link list — not a map — and jumps to the right section", async ({ page }) => {
+    await page.goto("countries/united-states/", { waitUntil: "networkidle" });
+    const link = page.getByRole("link", { name: "Retention and immigration" });
+    await expect(link).toBeVisible();
+    await link.focus();
+    await page.keyboard.press("Enter");
+    await expect(page).toHaveURL(/#profile-section-retention-and-immigration/);
+    await expect(page.locator("#profile-section-retention-and-immigration")).toBeVisible();
+  });
+
+  test("a supporting metric links to its own full indicator's real methodology drawer", async ({ page }) => {
+    await page.goto("countries/united-states/", { waitUntil: "networkidle" });
+    const metric = page.locator(".supporting-metric").first();
+    const href = await metric.getAttribute("href");
+    expect(href).toMatch(/\?methods=/);
+  });
+});

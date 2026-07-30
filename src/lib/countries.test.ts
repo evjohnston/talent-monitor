@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { codeFromCountryName, countryName, countryColor, continentOf } from "./countries.ts";
+import { codeFromCountryName, countryName, countryColor, continentOf, countrySlug, codeFromCountrySlug } from "./countries.ts";
 
 describe("codeFromCountryName", () => {
   it("resolves the report's own real country-name variants to the same code", () => {
@@ -77,4 +77,56 @@ describe("continentOf", () => {
     expect(continentOf(null)).toBeNull();
     expect(continentOf("ZZ")).toBeNull();
   });
+});
+
+describe("country profile slugs (issue #19)", () => {
+  // The 9 initial country-profile countries, per docs/
+  // CLAUDE_CODE_SIX_DEFERRED_FEATURES.md's locked scope — each slug must
+  // round-trip back to the same real alpha-2 code, and match the issue's
+  // own worked example ("india" -> /countries/india/).
+  const PROFILE_COUNTRIES: [string, string][] = [
+    ["US", "united-states"],
+    ["CN", "china"],
+    ["IN", "india"],
+    ["GB", "united-kingdom"],
+    ["DE", "germany"],
+    ["KR", "south-korea"],
+    ["JP", "japan"],
+    ["CA", "canada"],
+    ["AU", "australia"],
+  ];
+
+  it.each(PROFILE_COUNTRIES)("generates and round-trips the real slug for %s", (code, expectedSlug) => {
+    expect(countrySlug(code)).toBe(expectedSlug);
+    expect(codeFromCountrySlug(expectedSlug)).toBe(code);
+  });
+
+  it("returns null for a bogus slug rather than guessing", () => {
+    expect(codeFromCountrySlug("not-a-real-country")).toBeNull();
+  });
+
+  it("has no slug collisions across the full real ISO country list", async () => {
+    // A generic, mechanical slugifier (not a hand-typed table) risks two
+    // different real countries colliding on the same slug — checked
+    // against the full real ISO list, not just the 9 profile countries.
+    const countries = (await import("i18n-iso-countries")).default;
+    const seen = new Map<string, string>();
+    const collisions: string[] = [];
+    for (const code of Object.keys(countries.getAlpha2Codes())) {
+      const slug = countrySlug(code);
+      if (!slug) continue;
+      if (seen.has(slug)) collisions.push(`${slug}: ${seen.get(slug)} vs ${code}`);
+      seen.set(slug, code);
+    }
+    expect(collisions).toEqual([]);
+  });
+
+  it.each(["Republic of Korea", "South Korea", "Great Britain", "United States of America"])(
+    "resolves the real report-data name form %s to a code with a valid slug",
+    (name) => {
+      const code = codeFromCountryName(name);
+      expect(code).not.toBeNull();
+      expect(countrySlug(code)).not.toBeNull();
+    },
+  );
 });

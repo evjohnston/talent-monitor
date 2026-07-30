@@ -45,7 +45,7 @@ const TOPIC_RULES: { topic: string; pattern: RegExp }[] = [
   { topic: "H-1B", pattern: /h-1b/i },
   { topic: "OPT", pattern: /\bopt\b/i },
   { topic: "PERM and green cards", pattern: /perm|green card/i },
-  { topic: "Retention and stay rates", pattern: /plan to stay|stay in the united states|stay intention|talent .* lose|j-1 scholars|work at higher rates/i },
+  { topic: "Retention and stay rates", pattern: /plan to stay|stay in the united states|stay intention|plan to do after graduation|talent .* lose|j-1 scholars|work at higher rates/i },
   { topic: "AI companies and founders", pattern: /founder|founded|ai compan/i },
   { topic: "Research publications and citations", pattern: /cited|citation|selective venue|top papers|catch up.*conference|research impact/i },
   { topic: "Prizes", pattern: /nobel|science's top prizes|laureate/i },

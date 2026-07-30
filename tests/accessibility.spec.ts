@@ -22,6 +22,8 @@ const ROUTES = [
   "methodology/",
   "downloads/",
   "explorer/",
+  "countries/",
+  "countries/united-states/",
 ];
 
 for (const route of ROUTES) {
