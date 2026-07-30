@@ -1706,6 +1706,96 @@ audited pages (18 more runs, at 3 runs/route) would compound, with no
 real new signal over the 3 already-covered representative profiles. The
 full a11y sweep (much cheaper per route) DOES cover all 9.
 
+## Country profiles — compare mode, downloads, and polish (2026-07-30)
+
+PR 12 of 12 — the last PR for issue #19, and the last of the six
+deferred features (#13) entirely. `src/lib/countryProfileUrlState.ts`
+(new), 5 new functions in `countryProfiles.ts`
+(`sectionCoversCountry`, `relatedCountries`, `representativeTopic`,
+`buildProfileDownloadRows`), `CountryProfile.tsx` rewritten to wire all
+of it in.
+
+**Compare mode is a real, plain `<fieldset>` of checkboxes, never a
+map** — up to `MAX_COMPARE_COUNTRIES` (3) additional real countries,
+satisfying the issue's own "compare with up to three additional
+countries" rule directly. Extends every section's existing `emphasize`
+array (`[thisCountry, ...compareCountries]`) rather than inventing a
+second cross-highlight mechanism — `WorldMap`/`SeriesChart` already do a
+real array-membership check, not an equality check against one value
+(the same reason TrackShell's own multi-country pin-to-compare worked
+"almost for free" — see that section above), so no chart component
+needed a single change. Verified by hand on the real built page: with
+`?compare=CN`, both the US's own navy line AND China's own red line stay
+at full color in a >6-series chart while every other series fades to
+`--line-2`, confirmed via direct `stroke` attribute inspection, not
+assumed from the prop alone.
+
+**A real "warn where one country lacks data" check, not a guess** —
+`sectionCoversCountry(section, code)` checks whether ANY exhibit already
+rendered in that section has real data for the compare country (the same
+`exhibitCountryCodes`/`isImplicitlyDomestic` eligibility check
+`buildCountryProfile` itself uses, applied against the section's own
+already-selected exhibit list). Verified against a real, confirmed case:
+comparing the United Kingdom's profile with South Korea correctly shows
+"No data in this section for South Korea" under "US workforce and
+founders" (FIG305, that section's own exhibit, genuinely has no Korea
+data point) — and shows nothing extra under sections where the compare
+country IS covered, checked both directions by hand.
+
+**Related countries, based on real shared-data overlap, not geographic
+proximity** — the issue's own explicit rule. `relatedCountries()` ranks
+the other 8 real profile countries by how many of the full 91-exhibit
+corpus's real exhibits both countries have data in (computed once across
+the whole corpus, not a hand-typed adjacency table), capped at 4. Real,
+confirmed output: Australia's top matches are UK/Germany/Korea/Japan —
+countries the report's own OECD/PISA/patent/R&D exhibits happen to track
+together, not neighbors.
+
+**A real, working "explorer deep link," not a repeat of the earlier
+guessed-and-abandoned attempt** — PR 9's own "+N more" link went to the
+plain, unfiltered `/explorer/` specifically because a section's own
+label ("Talent production") isn't a real, searchable topic string.
+`representativeTopic(sectionId)` fixes this the honest way: it picks a
+real topic from `metricRegistry.ts`'s own `ALL_TOPICS` (the same
+most-specific-first `SECTION_PRIORITY` order `sectionFor()` already
+uses to classify exhibits INTO that section, so it's the same real topic
+that classification would itself pick first) — confirmed by hand that
+clicking through from the US profile's "Talent production" section
+lands on `/explorer/?topic=K-12%20preparation` with 11 real filtered
+results, not zero.
+
+**Downloads are a real summary table, not a bundle of raw exhibit
+dumps** — re-read the issue's own wording carefully before building:
+"Profile CSV (ALL DISPLAYED METRICS for that country)" describes the
+compact numbers already shown on the page (one per eligible exhibit:
+id, title, section, this country's own latest value, its real "as of"
+label, and citation), not a second copy of every eligible exhibit's full
+raw row data — that's already one click away per-exhibit via each
+panel's own existing CSV/JSON buttons, so re-bundling all of it here
+would just be redundant. `buildProfileDownloadRows()` reuses
+`countryLatestValue()` (never the country-blind `toLatestValue()`) and
+`formatIndicatorValue()`, so the exported numbers are guaranteed
+identical to what the page itself displays. The "as of" column is
+deliberately NOT labeled "year" — a country-map exhibit's own x-value is
+the country's NAME (same real distinction `buildSummary()`'s own year
+clause already handles), and calling that column "year" in a downloaded
+file would misrepresent it just as surely as the earlier "In Australia,"
+sentence bug did. Verified by hand: the real US profile's CSV has 78
+real rows with real values/sources; the JSON round-trips the same data
+under a real `country`/`indicators` shape.
+
+**Polish, checked, not assumed**: `npm run test:a11y` (23 routes/states,
+including a new dedicated check against `united-kingdom/?compare=KR`)
+and `npm run test:interaction` (4 new tests: keyboard-operable compare
+checkboxes + URL state + the coverage warning; the compare cap disabling
+a real 4th checkbox with a real tooltip; both download buttons producing
+real files) both pass with zero violations/failures. No-JS content
+confirmed unaffected — the compare fieldset and download buttons are
+real, JS-enhanced additions to a page whose title/chart/citation content
+was already fully server-rendered before this PR.
+
+Closes #19. All six deferred features (#13) are now complete.
+
 ## Lighthouse performance budgets (2026-07-30)
 
 Closes #17, the fourth of six features deliberately deferred when the

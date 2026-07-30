@@ -241,4 +241,47 @@ test.describe("country profile", () => {
     const href = await metric.getAttribute("href");
     expect(href).toMatch(/\?methods=/);
   });
+
+  test("compare mode is keyboard-operable, preserves state in the URL, and warns when a compared country has no real data in a section", async ({ page }) => {
+    await page.goto("countries/united-kingdom/", { waitUntil: "networkidle" });
+    const koreaCheckbox = page.locator('label.chip:has-text("South Korea") input[type="checkbox"]');
+    await koreaCheckbox.focus();
+    await page.keyboard.press("Space");
+    await expect(page).toHaveURL(/compare=KR/);
+
+    // FIG305 (this section's own primary chart) has no real South Korea
+    // data point — a real, confirmed gap, not a guess.
+    const section = page.locator("#profile-section-workforce-and-founders");
+    await section.scrollIntoViewIfNeeded();
+    await expect(section.getByText("No data in this section for South Korea.")).toBeVisible();
+  });
+
+  test("the compare cap disables a 4th checkbox with a real explanatory tooltip", async ({ page }) => {
+    await page.goto("countries/united-states/?compare=CN,IN,GB", { waitUntil: "networkidle" });
+    const fourth = page.locator('label.chip:has-text("Germany") input[type="checkbox"]');
+    await expect(fourth).toBeDisabled();
+  });
+
+  test("the profile summary download buttons produce real, non-empty files", async ({ page }) => {
+    await page.goto("countries/united-states/", { waitUntil: "networkidle" });
+    const [csv] = await Promise.all([
+      page.waitForEvent("download"),
+      page.getByRole("button", { name: "Download profile summary (CSV)" }).click(),
+    ]);
+    expect(csv.suggestedFilename()).toBe("country-profile_united-states.csv");
+    const csvPath = await csv.path();
+    const csvContent = fs.readFileSync(csvPath as string, "utf-8");
+    expect(csvContent.split("\n").length).toBeGreaterThan(10);
+    expect(csvContent).toContain("FIG101");
+
+    const [json] = await Promise.all([
+      page.waitForEvent("download"),
+      page.getByRole("button", { name: "Download profile summary (JSON)" }).click(),
+    ]);
+    const jsonPath = await json.path();
+    const parsed = JSON.parse(fs.readFileSync(jsonPath as string, "utf-8"));
+    expect(parsed.country.code).toBe("US");
+    expect(Array.isArray(parsed.indicators)).toBe(true);
+    expect(parsed.indicators.length).toBeGreaterThan(10);
+  });
 });

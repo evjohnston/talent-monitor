@@ -64,3 +64,14 @@ test("/explorer/?compare=FIG101,FIG103&view=compare (compare mode) has no automa
   const summary = results.violations.map((v) => `${v.id} (${v.impact}, ${v.nodes.length} nodes): ${v.description}`);
   expect(summary, summary.join("\n")).toEqual([]);
 });
+
+// A country profile's own real compare state (checked checkboxes, the
+// per-section "no data" warning) is likewise only reachable via
+// JS-driven ?compare= state, never exercised by the plain per-route
+// sweep above.
+test("/countries/united-kingdom/?compare=KR (country compare mode) has no automatically detectable accessibility violations", async ({ page }) => {
+  await page.goto("countries/united-kingdom/?compare=KR", { waitUntil: "networkidle" });
+  const results = await new AxeBuilder({ page }).analyze();
+  const summary = results.violations.map((v) => `${v.id} (${v.impact}, ${v.nodes.length} nodes): ${v.description}`);
+  expect(summary, summary.join("\n")).toEqual([]);
+});
