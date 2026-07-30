@@ -59,7 +59,7 @@ function useHeadlineKpis(ctx: DashboardContext) {
       },
       {
         stage: "degree-production" as const,
-        label: "U.S. research doctorates",
+        label: "US research doctorates",
         value: degreeVal ? degreeVal.value.toLocaleString() : "—",
         numeric: degreeVal?.value,
         formatValue: (n: number) => Math.round(n).toLocaleString(),
@@ -95,7 +95,7 @@ function useHeadlineKpis(ctx: DashboardContext) {
       },
       {
         stage: "research-output" as const,
-        label: "Top U.S. patent recipient, 2025",
+        label: "Top US patent recipient, 2025",
         value: researchTop?.rows[0] ? researchTop.rows[0].value.toLocaleString() : "—",
         numeric: researchTop?.rows[0]?.value,
         formatValue: (n: number) => Math.round(n).toLocaleString(),
@@ -113,7 +113,7 @@ export function Overview({ ctx }: { ctx: DashboardContext }) {
   return (
     <div className="track-enter">
       <div className="finding-headline">
-        "Growing Less, Keeping Less" — the report's own title for its conclusion. The U.S. underdevelops its own
+        "Growing Less, Keeping Less" — the report's own title for its conclusion. The US underdevelops its own
         STEM talent at home and underretains the international talent it trains to fill the gap, and the two
         problems compound each other.
       </div>

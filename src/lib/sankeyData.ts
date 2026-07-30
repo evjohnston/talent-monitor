@@ -64,13 +64,13 @@ export function retentionFunnelSankey(exhibits: Exhibit[]): { nodes: SankeyNodeI
 
   const nodes: SankeyNodeInput[] = [
     { id: "cohort", label: "International STEM PhDs", detail: "full cohort" },
-    { id: "stay5", label: "In the U.S. at 5 years", detail: `${stay5.toFixed(1)}% of the cohort` },
+    { id: "stay5", label: "In the US at 5 years", detail: `${stay5.toFixed(1)}% of the cohort` },
     { id: "left5", label: "Left within 5 years", detail: `${left5.toFixed(1)}% of the cohort`, color: "var(--slate)" },
-    { id: "stay10", label: "In the U.S. at 10 years", detail: `${stay10.toFixed(1)}% of the cohort` },
-    { id: "left10", label: "Left between 5-10 years", detail: `${left5to10.toFixed(1)}% of the cohort`, color: "var(--slate)" },
+    { id: "stay10", label: "In the US at 10 years", detail: `${stay10.toFixed(1)}% of the cohort` },
+    { id: "left10", label: "Left between 5–10 years", detail: `${left5to10.toFixed(1)}% of the cohort`, color: "var(--slate)" },
   ];
   const links: SankeyLinkInput[] = [
-    { source: "cohort", target: "stay5", value: stay5, detail: `${stay5.toFixed(1)}% remained in the U.S. through year 5` },
+    { source: "cohort", target: "stay5", value: stay5, detail: `${stay5.toFixed(1)}% remained in the US through year 5` },
     { source: "cohort", target: "left5", value: left5, detail: `${left5.toFixed(1)}% had left within 5 years` },
     { source: "stay5", target: "stay10", value: stay10OfStay5, detail: `${stay10.toFixed(1)}% of the original cohort remained through year 10` },
     { source: "stay5", target: "left10", value: left5to10, detail: `${left5to10.toFixed(1)}% of the original cohort left between years 5 and 10` },

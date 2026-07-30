@@ -780,7 +780,12 @@ guess.
   means something in the export's shape changed and `inferKind`/`PARTS`
   need a look, not that the run silently succeeded.
 - **New analyst notes** — `data/talent/notes.ts`, one `StageNote` per
-  stage, newest shown.
+  stage, newest shown. Editing this file alone changes nothing served —
+  `scripts/import-talent-charts.ts` bakes `NOTES` into `public/data/
+  talent.json` at import time, so `npm run import-talent-charts` has to
+  re-run after a notes edit too, not just after a `talent_charts/`
+  refresh (a real gotcha caught doing the 2026-07-29 editorial pass, see
+  "Editorial style pass").
 - **A recurring bad chart** (wrong `ChartKind`, wrong color mode) — fix it
   at the general level (`inferKind` in the importer, or the mode-detection
   heuristics in `ExhibitChart.tsx`), not with a one-off special case for
@@ -931,3 +936,69 @@ Not yet done: no automated a11y check runs in CI (the sweep above was a
 manual scratchpad script, `@axe-core/playwright` isn't a committed
 dependency) — a real follow-up, same "zero to something, not zero to
 comprehensive" caveat as the Vitest suite above.
+
+## Editorial style pass (2026-07-29)
+
+Read the real "Hoover Style Guide April 2026.pdf" (repo root, gitignored
+— see "Hoover brand sources") in full and applied its concrete,
+checkable rules to this app's OWN authored prose — analyst notes
+(`data/talent/notes.ts`), stage blurbs (`src/lib/types.ts`), the
+Overview hero headline/KPI labels, and one section title. Deliberately
+NOT applied to exhibit data (`title`/`sourceShort`/`sourceLong`/
+`columns` on every `Exhibit`) — those are the report's own verbatim
+citation text from `titles_and_sources.csv`, and rewriting a source's own
+words to match a different house style would break the traceability
+this app's whole honesty model depends on (see "Data model").
+
+- **"US," not "U.S."** — the guide's own `United States / US` entry is
+  explicit: spell out as a noun, abbreviate with no periods as an
+  adjective, and "Use 'US' in place of 'U.S.' even when the latter is
+  part of a title in a citation." Fixed the 10 real instances of "U.S."
+  across our own prose (confirmed by grep, not sampled): the Overview
+  hero headline and two KPI labels, one Foundation section title, one
+  `STAGES` blurb, three Sankey node/link labels in `sankeyData.ts`, and
+  two analyst notes. Citations/exhibit data untouched per above.
+- **En dash for number ranges, not a hyphen** — caught two real cases:
+  `data/talent/notes.ts`'s "57,439-57,806 range" and `sankeyData.ts`'s
+  "Left between 5-10 years," both fixed to the real en dash (–). Exhibit-
+  ID ranges in code comments (`FIG102-105`) are developer-facing, not
+  reader-facing prose, and left alone.
+- **Spell out single-digit numbers in running prose** — the guide's own
+  "online-only materials" exception (this app is one) is more permissive
+  than general Chicago style: spell out zero through nine, numerals for
+  10 and up. Checked every analyst note by hand against this rule rather
+  than blanket-converting: only one real violation existed ("PISA math
+  scores sat 7 points below" -> "seven points below"); every other
+  digit-count in the five other notes is either already 10+ (correct as
+  a numeral), a year (never spelled out), or part of a genuine number
+  cluster/comparison spanning a large number in the same clause (CMS's
+  own clustering exception — e.g. "rose from 2 to 2,925" reads worse, not
+  better, if only the small number were spelled out).
+- **Em dash spacing — deliberately NOT touched.** The guide says an em
+  dash should be closed up to its surrounding text (`her—on a cold`), but
+  this codebase's own established prose voice (every comment, this file,
+  every analyst note) uses a spaced em dash (` — `) with total
+  consistency across 37 files / 183 instances. That's this project's own
+  deliberate register for explanatory/narrative prose, not an oversight
+  — converting it wholesale would be a large, high-risk mechanical change
+  to a convention that predates this pass and that CLAUDE.md's own
+  "House style" section (silent on dash spacing specifically) doesn't
+  call an error. Flagged here rather than changed unilaterally; worth a
+  real decision from whoever owns this app's voice if it ever comes up
+  again, not something to guess at case by case.
+- **Real dead code found and removed while checking `U.S.` usages**:
+  `src/data/metrics.ts`, a 1,679-line metric registry from Phase 1
+  (`5be595e`, "report-to-web crosswalk and metric registry"), had zero
+  importers anywhere in the app — confirmed by grep before deleting, not
+  assumed. Superseded by the real `Exhibit`/`talent.json` model this
+  rebuild actually shipped; deleting it removed dozens of its own now-
+  moot `U.S.` instances along with the rest of the dead file.
+- **A real gotcha, caught by hand**: editing `data/talent/notes.ts`
+  alone did nothing to the served page — `scripts/import-talent-
+  charts.ts` imports `NOTES` from that file and bakes it into
+  `public/data/talent.json` at import time (`notes: NOTES`, confirmed by
+  reading the script), the same as every exhibit. `npm run
+  import-talent-charts` has to re-run after ANY `notes.ts` edit, not
+  just after a `talent_charts/` refresh — confirmed by grepping the
+  built `dist/` output for the old text after a full rebuild still
+  showed it, before finding the real cause.

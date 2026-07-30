@@ -72,7 +72,7 @@ export const STAGES: { id: Stage; label: string; blurb: string }[] = [
   {
     id: "degree-production",
     label: "Degree Production",
-    blurb: "Completions and doctorates. How many STEM degrees the U.S. actually produces, and who earns them.",
+    blurb: "Completions and doctorates. How many STEM degrees the US actually produces, and who earns them.",
   },
   {
     id: "graduate-training",

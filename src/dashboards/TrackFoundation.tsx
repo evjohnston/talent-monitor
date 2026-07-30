@@ -17,7 +17,7 @@ export function TrackFoundation({ ctx }: { ctx: DashboardContext }) {
       heroId="FIG401"
       sections={[
         {
-          title: "How U.S. students compare internationally",
+          title: "How US students compare internationally",
           ids: ["FIG402", "FIG403", "FIG404"],
         },
         {
