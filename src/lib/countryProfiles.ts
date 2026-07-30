@@ -97,6 +97,45 @@ export function exhibitCountryCodes(exhibit: Exhibit): Set<string> {
   return codes;
 }
 
+// The country-specific value a summary or supporting-metric callout
+// needs — NOT plain toLatestValue(exhibit), which defaults to whichever
+// column happens to be numerically first and has no country context at
+// all. A real, confirmed bug this caught: calling toLatestValue(FIG109)
+// for both China's and India's profile returned the exact same number
+// (FIG109's "China" column, since it's numericColumns()[0]) regardless
+// of which country's profile was asking. Handles both real shapes
+// exhibitCountryCodes() already distinguishes: a wide-format exhibit
+// picks the column that resolves to this country (preferring a real
+// observed column over a "(projected)" one when both exist, e.g.
+// FIG109's "China" vs "China (projected)"); a long-format exhibit
+// filters to the rows whose identity column resolves to this country
+// before taking the latest real value.
+export function countryLatestValue(exhibit: Exhibit, code: string): { x: string | number; value: number } | null {
+  const numCols = numericColumns(exhibit);
+  const xKey = exhibit.columns[0];
+
+  const matchingCols = numCols.filter((c) => resolveHeaderCountryCode(c) === code);
+  if (matchingCols.length > 0) {
+    const preferred = matchingCols.find((c) => !/projected/i.test(c)) ?? matchingCols[0];
+    return toLatestValue(exhibit, preferred);
+  }
+
+  const identityCols = exhibit.columns.filter((c) => !numCols.includes(c));
+  const valueCol = numCols[0];
+  if (!valueCol) return null;
+  for (let i = exhibit.rows.length - 1; i >= 0; i--) {
+    const row = exhibit.rows[i];
+    const matchesCountry = identityCols.some((c) => {
+      const raw = row[c];
+      return typeof raw === "string" && resolveCountryCode(raw) === code;
+    });
+    if (matchesCountry && isNum(row[valueCol])) {
+      return { x: (row[xKey] ?? "") as string | number, value: row[valueCol] as number };
+    }
+  }
+  return null;
+}
+
 // This report is about the United States' own STEM talent pipeline — an
 // exhibit with no explicit country dimension at all (a plain "Year ->
 // doctorates awarded" series, say) is inherently about the US, not about
@@ -127,7 +166,7 @@ export const PROFILE_COUNTRIES: ProfileCountry[] = (
 // (see CLAUDE.md's "Country profiles" section for what each PR checked).
 // Not a feature flag masking incomplete work: every enabled country's
 // profile is fully real, exactly like every other route in this app.
-export const ENABLED_PROFILE_CODES: readonly string[] = ["US"];
+export const ENABLED_PROFILE_CODES: readonly string[] = ["US", "CN", "IN"];
 
 export function enabledProfileCountries(): ProfileCountry[] {
   return PROFILE_COUNTRIES.filter((c) => ENABLED_PROFILE_CODES.includes(c.code));
@@ -221,6 +260,29 @@ function sectionFor(entry: MetricRegistryEntry): ProfileSectionId | null {
   return null;
 }
 
+// Whether ExhibitChart's real rendering for this exhibit can correctly
+// highlight (or rank by) ONE specific country. SeriesChart and WorldMap
+// both accept a real `emphasize` prop (already wired through
+// ExhibitPanel); BarRow (the ranked-bar fallback) and LeaderboardYears do
+// not — confirmed by reading ExhibitChart.tsx directly, not assumed.
+// For most ranked-bar/leaderboard-years exhibits that's harmless (each
+// row already carries its own real country in its label, e.g. FIG512's
+// "China · Baidu" — a mixed ranking, just not highlighted). But a real,
+// confirmed exception exists: FIG308 and FIG508 are WIDE-format
+// ranked-bar exhibits (countries as separate columns, e.g. FIG508's
+// "France, Germany, ..., China" columns with no shared "Country" identity
+// column at all) — the generic toRankedBars() fallback ranks by
+// whichever column happens to be LAST, which is silently wrong for every
+// country's profile except whichever one that happens to be. Detected
+// structurally (a numeric column header itself resolves to a country),
+// not by exhibit id, in case a future data refresh introduces another
+// exhibit with this same real shape.
+export function isSafeAsCountryChart(exhibit: Exhibit): boolean {
+  if (exhibit.kind !== "ranked-bar" && exhibit.kind !== "leaderboard-years") return true;
+  const numCols = numericColumns(exhibit);
+  return !numCols.some((c) => resolveHeaderCountryCode(c) !== null);
+}
+
 export interface ProfileSectionData {
   id: ProfileSectionId;
   label: string;
@@ -257,7 +319,7 @@ function buildSummary(country: ProfileCountry, eligible: { exhibit: Exhibit; ent
     return `The report does not contain a comparable indicator series for ${country.name}.`;
   }
   const primary = [...eligible].sort((a, b) => a.entry.chapter - b.entry.chapter || a.entry.id.localeCompare(b.entry.id))[0];
-  const latest = toLatestValue(primary.exhibit);
+  const latest = countryLatestValue(primary.exhibit, country.code) ?? toLatestValue(primary.exhibit);
   if (!latest) {
     return `${country.name} appears in ${eligible.length} of the report's real indicators.`;
   }
@@ -308,7 +370,14 @@ export function buildCountryProfile(code: string, exhibits: Exhibit[]): CountryP
 
   const sections: ProfileSectionData[] = [];
   for (const { id, label } of PROFILE_SECTIONS) {
-    const sectionExhibits = (bySection.get(id) ?? []).sort((a, b) => a.chapter - b.chapter || a.id.localeCompare(b.id));
+    // Chart-safe exhibits sort first — CountryProfile.tsx renders
+    // sectionExhibits[0] as the section's full-chart "primary," and an
+    // exhibit that ExhibitChart can't actually highlight for THIS
+    // country (see isSafeAsCountryChart above) must never win that slot
+    // even if it has an earlier real chapter/id.
+    const sectionExhibits = (bySection.get(id) ?? []).sort(
+      (a, b) => Number(isSafeAsCountryChart(b)) - Number(isSafeAsCountryChart(a)) || a.chapter - b.chapter || a.id.localeCompare(b.id),
+    );
     if (sectionExhibits.length > 0) {
       sections.push({ id, label, exhibits: sectionExhibits, isMissing: false });
     } else if (universalSections.has(id)) {

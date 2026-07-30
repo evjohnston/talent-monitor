@@ -145,7 +145,11 @@ function MapBody({
         // of buttons — the real role differs by which map this is, not
         // a single label that happens to fit either.
         role={onSelect ? "group" : "img"}
-        aria-label="World map, shaded by real per-country value — each country is individually labeled with its real number, keyboard-navigable"
+        aria-label={
+          onSelect
+            ? "World map, shaded by real per-country value — each country is individually labeled with its real number, keyboard-navigable"
+            : "World map, shaded by real per-country value"
+        }
       >
         <CentroidCapture geoData={geoData} onReady={handleCentroids} />
         <ZoomableGroup
@@ -178,7 +182,20 @@ function MapBody({
                     className="map-geography"
                     tabIndex={code && onSelect ? 0 : -1}
                     role={code && onSelect ? "button" : undefined}
-                    aria-label={code ? `${countryName(code)}, ${hasValue ? value.toLocaleString() : "no data"} ${unit}${onSelect ? ", press Enter to pin" : ""}` : undefined}
+                    // Only set in the interactive (onSelect) case — the
+                    // outer <svg>'s role is "img" when onSelect is absent
+                    // (see this file's own note above), and an "img" role
+                    // means its content is one atomic, non-addressable
+                    // unit: a per-country aria-label on an individual
+                    // <path> underneath it is a real, confirmed
+                    // aria-prohibited-attr violation in that mode (caught
+                    // live on the country-profile pages, the first real
+                    // caller to render a WorldMap with no onSelect at
+                    // all — every existing TrackShell caller always
+                    // passes one, so this never surfaced before). The
+                    // real per-country value is still visible via color
+                    // and the hover tooltip either way.
+                    aria-label={code && onSelect ? `${countryName(code)}, ${hasValue ? value.toLocaleString() : "no data"} ${unit}, press Enter to pin` : undefined}
                     style={{
                       default: { outline: "none", transition: "fill 0.2s" },
                       hover: { outline: "none", fill: "var(--red)", cursor: code && onSelect ? "pointer" : "default" },

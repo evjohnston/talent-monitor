@@ -24,6 +24,8 @@ const ROUTES = [
   "explorer/",
   "countries/",
   "countries/united-states/",
+  "countries/china/",
+  "countries/india/",
 ];
 
 for (const route of ROUTES) {

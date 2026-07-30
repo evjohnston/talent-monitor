@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { buildCountryProfile, exhibitCountryCodes, isImplicitlyDomestic, PROFILE_COUNTRIES } from "./countryProfiles.ts";
+import { buildCountryProfile, exhibitCountryCodes, isImplicitlyDomestic, isSafeAsCountryChart, PROFILE_COUNTRIES } from "./countryProfiles.ts";
 import type { Exhibit } from "./types.ts";
 
 function fixture(overrides: Partial<Exhibit> = {}): Exhibit {
@@ -90,6 +90,36 @@ describe("isImplicitlyDomestic", () => {
   });
 });
 
+describe("isSafeAsCountryChart", () => {
+  it("is true for timeseries/share-timeseries/country-map — ExhibitChart's SeriesChart and WorldMap both support real per-country emphasis", () => {
+    expect(isSafeAsCountryChart(fixture({ kind: "timeseries" }))).toBe(true);
+    expect(isSafeAsCountryChart(fixture({ kind: "share-timeseries" }))).toBe(true);
+    expect(isSafeAsCountryChart(fixture({ kind: "country-map", columns: ["Country", "Value"], rows: [{ Country: "China", Value: 1 }] }))).toBe(true);
+  });
+
+  it("is false for a real wide-format ranked-bar exhibit (FIG508-style: countries as columns, no shared identity column)", () => {
+    // BarRow has no per-country emphasis at all, and the generic
+    // toRankedBars() fallback ranks by whichever column is LAST — for
+    // this shape that's silently wrong for every country's profile
+    // except whichever one happens to be positioned last.
+    const exhibit = fixture({
+      kind: "ranked-bar",
+      columns: ["Year", "Germany", "China"],
+      rows: [{ Year: 2020, Germany: 100, China: 200 }],
+    });
+    expect(isSafeAsCountryChart(exhibit)).toBe(false);
+  });
+
+  it("is true for a long-format ranked-bar exhibit with its own explicit Country identity column", () => {
+    const exhibit = fixture({
+      kind: "ranked-bar",
+      columns: ["Country", "Company", "mean"],
+      rows: [{ Country: "China", Company: "Baidu", mean: 500 }],
+    });
+    expect(isSafeAsCountryChart(exhibit)).toBe(true);
+  });
+});
+
 describe("PROFILE_COUNTRIES", () => {
   it("has exactly the 9 real countries locked by the source scope doc, each with a real slug", () => {
     expect(PROFILE_COUNTRIES.map((c) => c.code)).toEqual(["US", "CN", "IN", "GB", "DE", "KR", "JP", "CA", "AU"]);
@@ -161,6 +191,35 @@ describe("buildCountryProfile", () => {
     expect(section!.exhibits).toEqual([]);
   });
 
+  it("sorts a section's exhibits chart-safe-first, so an unsafe wide-format ranked-bar exhibit never wins the primary-chart slot", () => {
+    // Regression: FIG508 ("Who Spends the Most on R&D?", a real wide-
+    // format ranked-bar exhibit) was picked as the China profile's own
+    // Patents-and-R&D PRIMARY chart purely by chapter/id tie-break —
+    // its rendered ranking silently used whichever country's column
+    // happened to be last, not China's. A real, lower-chapter but
+    // chart-safe exhibit must now sort ahead of it even though FIG508's
+    // own chapter/id would otherwise win.
+    const unsafe = fixture({
+      id: "FIG508",
+      chapter: 5,
+      title: "Who Spends the Most on R&D?",
+      kind: "ranked-bar",
+      columns: ["Year", "Germany", "China"],
+      rows: [{ Year: 2020, Germany: 100, China: 200 }],
+    });
+    const safe = fixture({
+      id: "FIG509",
+      chapter: 5,
+      title: "How Has R&D Intensity Changed?",
+      kind: "timeseries",
+      columns: ["Year", "China"],
+      rows: [{ Year: 2020, China: 2.5 }],
+    });
+    const profile = buildCountryProfile("CN", [unsafe, safe]);
+    const section = profile!.sections.find((s) => s.id === "patents-and-rd");
+    expect(section!.exhibits[0].id).toBe("FIG509");
+  });
+
   it("never shows a US-only-natured section (no real multi-country exhibit at all) as missing for a non-US country", () => {
     const profile = buildCountryProfile("CN", [fixture()]); // a plain US-domestic exhibit, no country dimension anywhere
     expect(profile!.sections.find((s) => s.id === "talent-production")).toBeUndefined();
@@ -176,5 +235,54 @@ describe("buildCountryProfile", () => {
   it("states plainly when the report has no comparable indicator for a country, rather than fabricating one", () => {
     const profile = buildCountryProfile("AU", [fixture()]);
     expect(profile!.summary).toContain("does not contain a comparable indicator series");
+  });
+
+  it("picks the RIGHT country's own value from a real multi-country wide-format exhibit, not whichever column comes first", () => {
+    // Regression: a first version called plain toLatestValue(exhibit),
+    // which has no country context and defaults to numericColumns()[0]
+    // — China's and India's summaries both showed China's own number
+    // (FIG109-style: "China" is literally the first numeric column)
+    // until this was caught by hand comparing the two real summaries.
+    const exhibit = fixture({
+      id: "FIG109",
+      title: "Who Will Produce the Most STEM PhDs?",
+      columns: ["Year", "China", "India"],
+      rows: [{ Year: 2020, China: 43399, India: 16968 }],
+    });
+    const cn = buildCountryProfile("CN", [exhibit]);
+    const inp = buildCountryProfile("IN", [exhibit]);
+    expect(cn!.summary).toContain("43,399");
+    expect(inp!.summary).toContain("16,968");
+    expect(cn!.summary).not.toContain("16,968");
+    expect(inp!.summary).not.toContain("43,399");
+  });
+
+  it("prefers a real observed column over a same-country '(projected)' one when both exist", () => {
+    const exhibit = fixture({
+      id: "FIG109",
+      title: "Who Will Produce the Most STEM PhDs?",
+      columns: ["Year", "China", "China (projected)"],
+      rows: [
+        { Year: 2020, China: 43399, "China (projected)": null },
+        { Year: 2050, China: null, "China (projected)": 118382 },
+      ],
+    });
+    const profile = buildCountryProfile("CN", [exhibit]);
+    expect(profile!.summary).toContain("43,399");
+    expect(profile!.summary).not.toContain("118,382");
+  });
+
+  it("picks the right country's own value from a real long-format (row-per-country) exhibit", () => {
+    const exhibit = fixture({
+      id: "FIG512",
+      title: "How Skewed Are AI Research Citation Counts by Company?",
+      kind: "ranked-bar",
+      columns: ["Country", "Company", "mean"],
+      rows: [{ Country: "China", Company: "Baidu", mean: 500 }, { Country: "United States", Company: "OpenAI", mean: 4110 }],
+    });
+    const cn = buildCountryProfile("CN", [exhibit]);
+    const us = buildCountryProfile("US", [exhibit]);
+    expect(cn!.summary).toContain("500");
+    expect(us!.summary).toContain("4,110");
   });
 });

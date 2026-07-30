@@ -161,8 +161,21 @@ export function toDistributionStats(exhibit: Exhibit): { rows: DistributionStats
 // into one label, since the first column alone repeats across rows for
 // these shapes and would otherwise collide. Ranked by the most recent
 // real-numeric column (e.g. TAB506's 2025 patent count, not its 2005 one).
+//
+// A column literally named "Year" is excluded from the ranking-candidate
+// pool even when its coerced values are numeric — every other exhibit
+// shape in this app already treats a Year column as an axis/identity,
+// never a value being measured, and TAB604 is a real, confirmed case
+// where getting this wrong breaks the label entirely: its real column
+// order is Country, Year, Status, Count — with "Year" counted as
+// numeric, the old code assumed labelKeys stop at the FIRST numeric
+// column (Year, index 1), silently dropping "Status" (which comes AFTER
+// it) from every row's label. Every one of TAB604's real India rows
+// rendered as the bare label "India," twelve times, with no way to tell
+// them apart — confirmed live on the real /retention-immigration/ stage
+// page, not hypothetical.
 export function toRankedBars(exhibit: Exhibit, topN = 12): { rows: { label: string; value: number }[]; column: string; max: number; truncated: number } | null {
-  const cols = numericColumns(exhibit);
+  const cols = numericColumns(exhibit).filter((c) => !/^year$/i.test(c));
   const col = cols[cols.length - 1];
   if (col === undefined) return null;
   const firstNumericIndex = exhibit.columns.findIndex((c) => cols.includes(c));

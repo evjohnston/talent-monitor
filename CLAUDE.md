@@ -1538,6 +1538,105 @@ metadata/social titles, and a final print/no-JS/performance pass beyond
 what this PR already verified (zero axe-core violations on both new
 routes; real no-JS content confirmed by `curl`ing the built HTML).
 
+## Country profiles — China and India (2026-07-30)
+
+PR 10 of 12 for issue #19 — the roadmap's own "widest range of profile
+differences" trio, minus the US (already enabled in PR 9).
+`ENABLED_PROFILE_CODES` now reads `["US", "CN", "IN"]`. Hand-verifying
+these two real, very differently-covered countries (China: 35 real
+indicators; India: 15, with a real missing "Patents and R&D" section)
+surfaced three real, confirmed bugs — none hypothetical, all caught by
+actually reading the rendered output, not by inspecting the mechanism
+and assuming it was correct.
+
+**Bug 1 — no country context in the summary/supporting-metric value at
+all.** `buildSummary()` called plain `toLatestValue(exhibit)`, which
+defaults to `numericColumns(exhibit)[0]` with zero awareness of WHICH
+country the profile is even for. Caught immediately: China's and
+India's real summaries both read the exact same number (FIG109's real
+"China" column value, since "China" happens to be that exhibit's first
+numeric column) regardless of which profile was open. Fixed with a new
+`countryLatestValue(exhibit, code)` (`countryProfiles.ts`) that resolves
+the actual column (wide format, preferring a real observed column over a
+same-country "(projected)" one when both exist) or filters to the actual
+matching rows (long format) for that SPECIFIC country — used by both
+`buildSummary()` and `CountryProfile.tsx`'s `SupportingMetric`, replacing
+the country-blind `toLatestValue()` call in both places.
+
+**Bug 2 — a country-profile "primary chart" that's silently wrong for
+every country except one.** China's own "Patents and R&D" section
+initially primaried FIG508 ("Who Spends the Most on R&D?"), a real
+WIDE-format `ranked-bar` exhibit (countries as separate columns, e.g.
+"France, Germany, ..., China," no shared "Country" identity column).
+`BarRow`/`LeaderboardYears` have no `emphasize` support at all (confirmed
+by reading `ExhibitChart.tsx` directly — only `SeriesChart`/`WorldMap`
+accept it), and the generic `toRankedBars()` fallback ranks by whichever
+column is LAST — for this shape that's silently wrong for every
+country's profile except whichever one happens to be positioned last in
+the CSV (China, incidentally, which is why the China profile "looked"
+right at first glance while being wrong by construction). Fixed with a
+new `isSafeAsCountryChart(exhibit)` — true for `timeseries`/
+`share-timeseries`/`country-map` (real `emphasize` support) and for a
+`ranked-bar`/`leaderboard-years` exhibit with its own explicit country
+identity column (a real, if unhighlighted, per-row attribution — not
+wrong, just not visually emphasized), false only for the narrow, real,
+confirmed case a full corpus sweep found exactly twice (FIG308, FIG508).
+`buildCountryProfile()` now sorts each section's exhibits chart-safe-first
+so an unsafe exhibit can never win the primary slot even with an earlier
+real chapter/id; `CountryProfile.tsx` falls back to rendering every one
+of that section's exhibits as compact supporting-metric stats (still
+using the correct, country-specific `countryLatestValue()`) rather than
+one full, misleading chart.
+
+**Bug 3 — a real, already-shipped bug on the LIVE `/retention-
+immigration/` stage page, found by hand-reviewing the India profile, not
+introduced by it.** TAB604's own real "How Many PERM Certifications Go
+Unused?" panel showed the bare label "India" twelve times in a row, with
+no way to tell any of those real rows apart — confirmed live on the
+actual production-shaped stage page before touching anything, via a
+direct screenshot, independent of the country-profiles work. Root cause,
+in `exhibitData.ts`'s `toRankedBars()`: TAB604's real column order is
+`Country, Year, Status, Count` — "Year" coerces to a real number, so the
+old code's `labelKeys` computation (everything before the FIRST numeric
+column) stopped collecting at "Year" and silently dropped "Status" (a
+real, meaningful dimension that comes AFTER it) from every row's label.
+Fixed by excluding a column literally named "Year" (case-insensitive)
+from the ranking-candidate pool `toRankedBars()` considers — every other
+shape in this app already treats a Year column as an axis/identity,
+never a value being measured, so this is a real, general, non-regressive
+fix (confirmed: TAB604 is the only real `ranked-bar` exhibit in the
+current corpus this pattern affects; TAB501 has the same real "Year
+coerces to numeric" property but is dispatched through its own bespoke
+`computeAiConferenceCatchUp()` branch in `ExhibitChart.tsx`, never through
+the generic path this fix touches).
+
+**Bug 4 — a real, latent `aria-prohibited-attr` violation in
+`WorldMap.tsx`, caught by the a11y suite's own new checks for these two
+routes, not shipped blind.** `WorldMap`'s outer `<svg>` correctly picks
+`role="img"` when no `onSelect` is passed (already documented, fixed for
+a different real bug during the earlier accessibility pass) — but every
+individual `<Geography>` `<path>` STILL set its own per-country
+`aria-label` regardless of `onSelect`, which is invalid: an `img` role's
+content is one atomic, non-addressable unit, so a labeled child
+underneath it is a real ARIA violation. This never surfaced before
+because every existing real caller (`TrackShell`) always passes
+`onSelect` — `CountryProfile.tsx` (no click-to-pin on a profile page) is
+the first real caller to render a `WorldMap` in the read-only mode at
+all. Fixed by only setting the per-country `aria-label` when `onSelect`
+is present (zero behavior change on any existing page, since every one
+of them already passes it) and correcting the outer map's own
+`aria-label` text to stop claiming "keyboard-navigable" in the mode
+where nothing actually is.
+
+Bugs 1-3 are now real regression tests (`countryProfiles.test.ts`,
+`exhibitData.test.ts`); bug 4's regression coverage is the a11y suite
+itself (`tests/accessibility.spec.ts`'s own new checks against
+`/countries/china/`/`/countries/india/`, which is what caught it in the
+first place). Every one of the four was confirmed to fail on the old
+code before being fixed, same discipline as every other test added this
+session. Both new routes pass the full a11y/interaction suite with zero
+violations.
+
 ## Lighthouse performance budgets (2026-07-30)
 
 Closes #17, the fourth of six features deliberately deferred when the
