@@ -1,10 +1,11 @@
 import { useEffect, useMemo, useState } from "react";
 import type { Exhibit } from "../lib/types.ts";
 import { STAGES } from "../lib/types.ts";
-import { buildMetricRegistry, searchRegistry, ALL_TOPICS, type MetricRegistryEntry } from "../lib/metricRegistry.ts";
-import { readExplorerFiltersFromUrl, writeExplorerFiltersToUrl, DEFAULT_EXPLORER_FILTERS, type ExplorerFilters } from "../lib/explorerUrlState.ts";
+import { buildMetricRegistry, searchRegistry, ALL_TOPICS, canAddToCompare, type MetricRegistryEntry } from "../lib/metricRegistry.ts";
+import { readExplorerFiltersFromUrl, writeExplorerFiltersToUrl, DEFAULT_EXPLORER_FILTERS, MAX_COMPARE, type ExplorerFilters } from "../lib/explorerUrlState.ts";
 import { Sparkline } from "../components/Sparkline.tsx";
 import { ExplorerDetail } from "../components/ExplorerDetail.tsx";
+import { ExplorerCompare } from "../components/ExplorerCompare.tsx";
 
 const STAGE_LABEL = Object.fromEntries(STAGES.map((s) => [s.id, s.label]));
 
@@ -46,6 +47,9 @@ function relatedFor(entry: MetricRegistryEntry, registry: MetricRegistryEntry[])
 // real, shareable via `?metric=<id>`, with real browser back/forward
 // support (pushState on open/close, unlike the plain filter changes
 // below which use replaceState to avoid spamming history per keystroke).
+// Up to 4 compatible indicators can also be selected for side-by-side
+// comparison (ExplorerCompare.tsx) — see metricRegistry.ts's own
+// canAddToCompare for the real compatibility rule.
 export function Explorer({ exhibits }: { exhibits: Exhibit[] }) {
   const registry = useMemo(() => buildMetricRegistry(exhibits), [exhibits]);
   const exhibitById = useMemo(() => new Map(exhibits.map((e) => [e.id, e])), [exhibits]);
@@ -76,6 +80,26 @@ export function Explorer({ exhibits }: { exhibits: Exhibit[] }) {
     updateFilters({ ...filters, metric: null }, true);
   }
 
+  const compareEntries = filters.compare.map((id) => registryById.get(id)).filter((e): e is MetricRegistryEntry => !!e);
+
+  function toggleCompare(entry: MetricRegistryEntry) {
+    const already = filters.compare.includes(entry.id);
+    const next = already ? filters.compare.filter((id) => id !== entry.id) : [...filters.compare, entry.id];
+    updateFilters({ ...filters, compare: next });
+  }
+  function openCompareView() {
+    updateFilters({ ...filters, view: "compare" }, true);
+  }
+  function closeCompareView() {
+    updateFilters({ ...filters, view: "catalog" }, true);
+  }
+  function removeFromCompare(id: string) {
+    const next = filters.compare.filter((c) => c !== id);
+    // Leaving compare mode entirely once fewer than 2 real items remain —
+    // comparing one thing to nothing isn't a real comparison.
+    updateFilters({ ...filters, compare: next, view: next.length >= 2 ? filters.view : "catalog" });
+  }
+
   const filtered = useMemo(() => {
     let results = searchRegistry(registry, filters.q);
     if (filters.stage !== "all") results = results.filter((r) => r.stage === filters.stage);
@@ -94,6 +118,23 @@ export function Explorer({ exhibits }: { exhibits: Exhibit[] }) {
   if (filters.q) activeChips.push({ key: "q", label: `Search: "${filters.q}"`, clear: () => updateFilters({ ...filters, q: "" }) });
   if (filters.stage !== "all") activeChips.push({ key: "stage", label: STAGE_LABEL[filters.stage], clear: () => updateFilters({ ...filters, stage: "all" }) });
   if (filters.topic !== "all") activeChips.push({ key: "topic", label: filters.topic, clear: () => updateFilters({ ...filters, topic: "all" }) });
+
+  // Compare mode wins over everything else when active — a reader who
+  // explicitly asked to compare shouldn't have that state silently
+  // dropped by also having a stale ?metric= in the URL.
+  if (filters.view === "compare" && compareEntries.length >= 2) {
+    return (
+      <div className="track-enter">
+        <div className="panel">
+          <ExplorerCompare
+            exhibits={compareEntries.map((e) => exhibitById.get(e.id)).filter((e): e is Exhibit => !!e)}
+            onClose={closeCompareView}
+            onRemove={removeFromCompare}
+          />
+        </div>
+      </div>
+    );
+  }
 
   // A real, currently-open detail view wins over the catalog entirely —
   // see ExplorerDetail.tsx's own note on why this is a full swap, not a
@@ -165,6 +206,22 @@ export function Explorer({ exhibits }: { exhibits: Exhibit[] }) {
           </div>
         )}
 
+        {compareEntries.length > 0 && (
+          <div className="pinned-country-bar">
+            <span>Comparing:</span>
+            {compareEntries.map((entry) => (
+              <span className="pinned-country-chip" key={entry.id}>
+                {entry.id}
+                <button type="button" aria-label={`Remove ${entry.title} from comparison`} onClick={() => removeFromCompare(entry.id)}>×</button>
+              </span>
+            ))}
+            {compareEntries.length >= 2 && (
+              <button type="button" className="pill" onClick={openCompareView}>View comparison →</button>
+            )}
+            <button type="button" className="ghost-btn" onClick={() => updateFilters({ ...filters, compare: [] })}>Clear</button>
+          </div>
+        )}
+
         <div className="trend-note" style={{ marginBottom: 8 }}>{filtered.length} of {registry.length} indicators shown.</div>
 
         {filtered.length === 0 ? (
@@ -177,6 +234,8 @@ export function Explorer({ exhibits }: { exhibits: Exhibit[] }) {
             {filtered.map((entry) => {
               const exhibit = exhibitById.get(entry.id);
               const preview = exhibit ? previewValues(exhibit) : null;
+              const isComparing = filters.compare.includes(entry.id);
+              const canAdd = isComparing || canAddToCompare(entry, compareEntries);
               return (
                 <li key={entry.id} className="explorer-result">
                   <div className="explorer-result-main">
@@ -198,6 +257,16 @@ export function Explorer({ exhibits }: { exhibits: Exhibit[] }) {
                     </div>
                   )}
                   <div className="explorer-result-actions">
+                    <button
+                      type="button"
+                      className="chip"
+                      aria-pressed={isComparing}
+                      disabled={!canAdd}
+                      title={!canAdd ? `Comparisons are limited to ${MAX_COMPARE} compatible indicators of the same real measure type` : undefined}
+                      onClick={() => toggleCompare(entry)}
+                    >
+                      {isComparing ? "Comparing ✓" : "Compare"}
+                    </button>
                     {/* A real <a href>, not a bare button — works with no
                         JS (navigates to the exhibit's own real stage page
                         and deep-links its methodology drawer, same as

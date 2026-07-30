@@ -191,3 +191,35 @@ test.describe("explorer indicator detail", () => {
     await expect(page.getByRole("button", { name: "Back to explorer" })).toBeVisible();
   });
 });
+
+test.describe("explorer compare mode", () => {
+  test("selecting 2 compatible indicators, viewing, and removing one is keyboard-operable end to end", async ({ page }) => {
+    await page.goto("explorer/?stage=degree-production", { waitUntil: "networkidle" });
+    const compareButtons = page.locator('.explorer-result button.chip:has-text("Compare")');
+    await compareButtons.nth(0).focus();
+    await page.keyboard.press("Enter");
+    await compareButtons.nth(1).focus();
+    await page.keyboard.press("Enter");
+    await expect(page).toHaveURL(/compare=/);
+
+    const viewButton = page.getByRole("button", { name: "View comparison →" });
+    await viewButton.focus();
+    await page.keyboard.press("Enter");
+    await expect(page).toHaveURL(/view=compare/);
+
+    const panels = page.locator(".explorer-compare .panel");
+    await expect(panels).toHaveCount(2);
+
+    await page.getByRole("button", { name: /^Remove .+ from comparison$/ }).first().click();
+    // Down to 1 real item — no longer a real comparison, back to the catalog.
+    await expect(page).not.toHaveURL(/view=compare/);
+    await expect(page.locator(".explorer-results")).toBeVisible();
+  });
+
+  test("an incompatible indicator's Compare control is genuinely disabled, not just visually implied", async ({ page }) => {
+    await page.goto("explorer/?compare=FIG101", { waitUntil: "networkidle" });
+    await page.getByRole("searchbox").fill("Which Companies Lead in U.S. Patents");
+    const compareBtn = page.locator(".explorer-result").first().locator('button.chip:has-text("Compare")');
+    await expect(compareBtn).toBeDisabled();
+  });
+});

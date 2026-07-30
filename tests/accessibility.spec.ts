@@ -44,3 +44,13 @@ test("/explorer/?metric=FIG101 (indicator detail) has no automatically detectabl
   const summary = results.violations.map((v) => `${v.id} (${v.impact}, ${v.nodes.length} nodes): ${v.description}`);
   expect(summary, summary.join("\n")).toEqual([]);
 });
+
+// Compare mode's own real view (two independent, real, compatible
+// timeseries exhibits) is likewise only reachable via real JS-driven
+// state, same reasoning as the detail-view check above.
+test("/explorer/?compare=FIG101,FIG103&view=compare (compare mode) has no automatically detectable accessibility violations", async ({ page }) => {
+  await page.goto("explorer/?compare=FIG101,FIG103&view=compare", { waitUntil: "networkidle" });
+  const results = await new AxeBuilder({ page }).analyze();
+  const summary = results.violations.map((v) => `${v.id} (${v.impact}, ${v.nodes.length} nodes): ${v.description}`);
+  expect(summary, summary.join("\n")).toEqual([]);
+});
