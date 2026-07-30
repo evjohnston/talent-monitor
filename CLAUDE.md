@@ -1152,6 +1152,97 @@ real page state (pinned countries, series-picker selections) — that's
 this drawer's own smaller piece of a larger, still-open download/share
 mechanism.
 
+## Overview scrollytelling (2026-07-30)
+
+Closes #7. `Overview.tsx` no longer opens with 6 equal KPI cards and a
+flat "Two Streams" panel — it now leads with 4 real headline numbers
+(down from 6, per the redesign brief's own "no more than four headline
+statistics above the first scroll"), then a real 6-step guided sequence
+(`src/components/Scrollytelling.tsx`), then the existing "What's
+happening at each stage" stage-entry-point section, now also linking to
+`/downloads/` for the user's own "view all the RAW data, not our
+processed files" direction.
+
+**The core visual mechanic is plain CSS, not JavaScript** — each
+section's own visual gets `position: sticky` (scoped per-section, not a
+global scroll listener), so it stays pinned while that section's own
+text scrolls past, then releases to the next section's own sticky visual
+once its text runs out. This is a deliberate choice, not a shortcut:
+native CSS sticky needs zero script to work, so there's no separate
+"what does this look like with JS off" version to maintain for the core
+effect — a no-JS reader gets the exact same sticky-then-release behavior
+a JS reader does. Below 900px, sticky positioning is disabled entirely
+and each step's visual renders inline right after its own text — the
+same plain linear reading order the no-JS fallback uses on any screen
+size, not a separately-maintained "mobile mode."
+
+Each step gets a real `<h2>` — already-native keyboard/screen-reader
+heading navigation, not a bespoke widget invented for a need HTML
+already meets. The one real JavaScript enhancement layered on top: a
+lightweight `IntersectionObserver` that updates `?step=<id>` via
+`replaceState` as each step's heading crosses the viewport center — the
+same replaceState-only, no-history-spam pattern already used for pinned
+countries and theme. Verified by hand: scrolling to the last step
+updates the URL to `?step=research-leadership` with no extra history
+entries.
+
+**Six real steps, six real data sources — nothing fabricated**:
+1. Two streams — reuses the existing `twoStreamsSankey`/`Sankey`
+   directly, no new code.
+2. Degree production by level — a new `DegreeLevelExplorer.tsx` combines
+   FIG108's real time series (the same data step 1's Sankey already
+   uses) with TAB101's real field-level bookend comparison (first real
+   year vs. most recent real year — TAB101 has no full per-field time
+   series, so the field view is honestly a real snapshot pair, not a
+   fabricated trend line between them).
+3. The domestic pipeline — a new `PipelineFunnel.tsx` reads TAB401's own
+   real STEM-entrant cohort outcomes, distinguishing "left STEM but
+   stayed in college" from "left college entirely" using that exhibit's
+   own real columns, not an inferred split.
+4. Immigration gates — a new `ImmigrationGates.tsx` shows one real,
+   hand-confirmed fact per gate from 4 different real exhibits (FIG603's
+   STEM OPT approval rate, FIG303's H-1B concentration, FIG606's real
+   41% PERM-certification-expiration rate, TAB605's real ~149-year
+   India EB-2 wait) — deliberately NOT a Sankey implying one real cohort
+   tracked through all five gates in sequence, since no such dataset
+   exists; five real, separately-sourced facts about five different
+   real populations and years, stated as such.
+5. The retention gap — reuses the existing `retentionFunnelSankey`/
+   `Sankey` directly, no new code, including its own existing
+   population-mismatch caveat.
+6. Research leadership — a new `ResearchMetricSwitcher.tsx`, one real
+   US-vs-China measure at a time (conferences/FIG501, publications/
+   FIG502, patents/TAB506, R&D intensity/FIG509) — never combined into
+   an invented composite score, since a share and a raw patent count
+   don't share a unit. TAB506 (a company-level exhibit) is aggregated to
+   real country totals for this one comparison, the same real 2025
+   figures already shown on the Research Output stage page.
+
+New `src/lib/scrollyData.ts` holds all the real data-prep for steps 2-4
+and 6 (steps 1 and 5 reuse `sankeyData.ts` unchanged) — every function
+tested against both synthetic fixtures and, by hand, the real imported
+data before any UI was built on top of it.
+
+**A real layout bug caught by screenshot, not shipped blind**:
+`PipelineFunnel`'s own real labels ("Finished with a STEM bachelor's")
+are full descriptive phrases, not the short country/company names every
+other real `.barrow` caller uses — the shared component's default 108px
+name column truncated them into unreadable "Finished with a ST…"
+fragments, confirmed in an actual screenshot before this was caught.
+Fixed with a new `.barrow-wide` modifier (a wider name column, real text
+wrapping) used only by `PipelineFunnel`, not a global change to every
+other real `.barrow` caller's already-correct short-label layout.
+
+Verified: zero axe-core violations (added to the committed suite would
+be redundant — `/` was already covered), all 87 unit tests passing,
+real interaction confirmed by hand with Playwright (the field selector
+swaps to real per-field bars, the metric switcher swaps to real
+per-metric bars, the URL updates on scroll), and the no-JS fallback
+confirmed separately — with JavaScript disabled, all 6 real `<h2>`
+headings, 3 real chart `<svg>`s (the 2 Sankeys plus step 2's Nivo line
+chart), and all 4 real immigration-gate facts are present in the raw
+HTML, not injected by script.
+
 ## The /downloads/ route (2026-07-30)
 
 Closes #6. `src/pages/downloads.astro` + `src/dashboards/Downloads.tsx` —
