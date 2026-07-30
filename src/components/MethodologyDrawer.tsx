@@ -108,6 +108,12 @@ export function MethodologyDrawer({ exhibit, chartRef, visibleRows }: { exhibit:
         {exhibit.sourceUrls.map((u) => (
           <div key={u}><a href={u} target="_blank" rel="noreferrer">{u}</a></div>
         ))}
+        <div>
+          {/* The real, full report-to-web crosswalk row for this exact
+              exhibit — a stable anchor on /methodology/'s own crosswalk
+              table (see Methodology.tsx), not just the top of that page. */}
+          <a href={`${import.meta.env.BASE_URL}methodology/#crosswalk-${exhibit.id}`}>Full methodology for {exhibit.id} →</a>
+        </div>
         <div className="methodology-actions">
           <button
             type="button"

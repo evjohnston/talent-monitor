@@ -1152,6 +1152,92 @@ real page state (pinned countries, series-picker selections) — that's
 this drawer's own smaller piece of a larger, still-open download/share
 mechanism.
 
+## The /methodology/ route (2026-07-30)
+
+Closes #5. `src/pages/methodology.astro` + `src/dashboards/Methodology.tsx`
+— a real, full methodology reference, added as the 8th nav entry
+(`DashboardNav.astro`'s new `REFERENCE` row, separate from the 6-stage
+`Track` row so that one still reads as exactly the pipeline it always
+was) alongside a new `/downloads/` entry (route not yet built — see #6).
+
+Twelve real sections, every one backed by actual data or actual code,
+never invented copy:
+
+- **Definitions** — foreign-born, noncitizen, temporary visa holder,
+  international student, and 6 more. Framed explicitly as general
+  definitions from the federal data sources this site draws on (NCES,
+  NCSES, USCIS, DOL, State, IIE), NOT a claimed quotation of the report's
+  own manuscript — `writing/*.docx` is deliberately gitignored,
+  unpublished draft content this app has no access to, so claiming to
+  quote its exact wording would be an unverifiable claim.
+- **Data-source catalog** — `src/lib/dataSourceCatalog.ts`, a real,
+  tested function grouping every exhibit's own `sourceShort` by citing
+  organization (19 real organizations across 91 exhibits) — generated
+  from the same data every chart already cites, not a hand-authored
+  second copy that could drift out of sync. Caught and fixed a real,
+  confirmed source-data inconsistency in the process: USCIS's own H-1B
+  Employer Data Hub citation appears both with and without a trailing
+  period across two different exhibits — normalized at read time (talent_
+  charts/titles_and_sources.csv itself stays untouched as real committed
+  source data). Also handles a real edge case a naive comma-split would
+  break on: one citation ("IPO Association (2005, 2015), Harrity...")
+  has a comma inside parentheses before its real delimiter — the
+  extractor tracks paren depth and only splits at a real top-level comma.
+- **Calculation methods** — every exhibit with a real `derivedFrom` (the
+  6 exhibits from the methodology-drawer work above), rendered directly
+  from data already on each `Exhibit`, not re-authored.
+- **Employer-name normalization / corporate-parent aggregation** — the
+  real content from `entityResolution.ts`'s own section above, now
+  actually documented on a public page instead of just in code comments.
+- **Missing-data conventions** — the real, already-established importer
+  practices (Grand Total row dropping, blank-column dropping, thousands-
+  comma coercion), plus every exhibit's own real `dataNote` (FIG101's
+  estimate/confirmed year mix, FIG601 vs. FIG602's different populations).
+- **Projection methods** — a real, newly-confirmed finding: FIG109/FIG110
+  (international doctorate-production comparisons) each store the
+  report's own author-generated projections in a separate "(Country)
+  (projected)" column per country, kept apart from observed values. Every
+  other exhibit is an observed historical statistic, not a forecast —
+  stated plainly rather than left ambiguous.
+- **Geographic and country definitions**, **known source/methodology
+  breaks** — real, already-established facts from `countries.ts` and
+  `docs/report-crosswalk-notes.md`, consolidated onto one public page
+  instead of scattered across code comments and internal docs.
+- **Report-to-web crosswalk** — rendered directly from `content/report-
+  crosswalk.csv` via a new `src/lib/loadCrosswalk.ts` (same
+  `process.cwd()`-based build-time read pattern as `loadTalentData.ts`),
+  not a hand-authored second copy — all 163 real report items, including
+  the 77 archived-and-excluded ones, each with a real, stable
+  `#crosswalk-<report_id>` anchor.
+- **Revision history** — the real `generatedAt` import timestamp; full
+  dated history stays in `CLAUDE.md` itself rather than a second,
+  competing changelog.
+- **Search** — one real client-side text filter (this app's first — no
+  prior search UI existed anywhere to reuse) across both the definitions
+  list and the crosswalk table, since those are the two genuinely
+  list-shaped sections; the other ten sections are each a handful of
+  prose blocks that don't need filtering.
+
+**Real per-exhibit deep link, closing the "methodology link should open
+the relevant section" requirement**: `MethodologyDrawer.tsx` now has a
+real "Full methodology for `<id>` →" link to `/methodology/#crosswalk-
+<exhibit.id>`, landing directly on that exhibit's own crosswalk row
+(`.crosswalk-table tbody tr:target` highlights it), not just the top of
+the page. Verified by hand with Playwright: clicking the link from a real
+exhibit's drawer navigates to the exact right anchor and the target row
+genuinely exists.
+
+Extracted `parseCsv` out of `scripts/import-talent-charts.ts` into a
+shared `src/lib/parseCsv.ts` (pure string parsing, no fs/DOM dependency)
+so `loadCrosswalk.ts` uses the exact same real RFC4180 parser instead of
+a second, potentially-inconsistent implementation — the importer's own
+behavior is unchanged, just reading from one shared place now.
+
+Verified: zero axe-core violations on the new route (same suite as every
+other page), all 69 unit tests passing, real search filtering confirmed
+against the live page, no console errors beyond the same pre-existing
+unrelated news-ticker CORS noise every other page already has.
+
 ## Real employer-name normalization (2026-07-30)
 
 `src/lib/entityResolution.ts` — `canonicalizeCompany()` — canonicalizes

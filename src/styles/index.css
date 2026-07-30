@@ -329,6 +329,11 @@ a.pill { cursor: pointer; text-decoration: none; display: inline-block; }
   text-transform: uppercase; color: var(--slate); margin: 10px 0 4px;
 }
 .dashboard-nav { display: flex; gap: 4px; flex-wrap: wrap; margin: 0 0 12px; border-bottom: 1px solid var(--line); padding-bottom: 10px; }
+/* The Track row's own border-bottom already separates the nav block from
+   page content below — a second full border here would just double up,
+   so this row only needs breathing room above it, not its own rule. */
+.dashboard-nav-reference { border-bottom: none; padding-bottom: 0; margin-top: -6px; }
+.dashboard-nav-reference .dashboard-nav-btn { font-size: 12px; padding: 5px 12px 4px; }
 .dashboard-nav-btn {
   font-family: var(--sans); font-size: 13px; font-weight: 700; border: 1px solid var(--line-2); border-bottom: 3px solid var(--line-2);
   background: var(--paper); color: var(--ink-2); padding: 7px 14px 5px; border-radius: var(--r); cursor: pointer;
@@ -412,6 +417,25 @@ a.pill { cursor: pointer; text-decoration: none; display: inline-block; }
   .methodology-drawer:not([open]) > *:not(summary) { display: block !important; }
   .methodology-drawer .expandable-methods-caret { display: none; }
 }
+
+/* ── /methodology/ route ───────────────────────────────────────────── */
+code { font-family: var(--mono); background: var(--panel-2); padding: 1px 4px; font-size: 0.92em; }
+.search-field { display: flex; }
+.search-input {
+  width: 100%; max-width: 480px; font: inherit; font-size: 14px; padding: 8px 12px;
+  border: 1px solid var(--line-2); border-radius: var(--r); background: var(--paper); color: var(--ink);
+}
+.search-input:focus-visible { outline: 2px solid var(--focus-ring); outline-offset: 1px; }
+.definitions-list { display: grid; gap: var(--sp-3); }
+.definitions-list dt { font-weight: 700; margin-bottom: 2px; }
+.definitions-list dd { margin: 0; color: var(--ink-2); line-height: 1.6; }
+.methodology-calc-row { margin-top: var(--sp-3); line-height: 1.6; }
+.methodology-calc-row:first-of-type { margin-top: var(--sp-2); }
+.methodology-calc-row > div { color: var(--ink-2); margin-top: 2px; }
+.methodology-list { margin: var(--sp-2) 0 0; padding-left: 1.2em; line-height: 1.6; color: var(--ink-2); }
+.methodology-list li { margin-bottom: var(--sp-2); }
+.crosswalk-table td, .crosswalk-table th { padding-right: var(--sp-2); }
+.crosswalk-table tbody tr:target { background: var(--panel-2); }
 
 /* ── tooltip ────────────────────────────────────────────────────── */
 /* Fixed dark-on-white regardless of page theme — a floating overlay reads

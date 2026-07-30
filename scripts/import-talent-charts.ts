@@ -14,49 +14,13 @@ import { join } from "node:path";
 import type { ChartKind, DataFile, Exhibit, Stage } from "../src/lib/types.ts";
 import { NOTES } from "../data/talent/notes.ts";
 import { canonicalizeCompany } from "../src/lib/entityResolution.ts";
+import { parseCsv } from "../src/lib/parseCsv.ts";
 
 const ROOT = join(import.meta.dirname, "..");
 const CHARTS_DIR = join(ROOT, "talent_charts");
 const DATA_DIR = join(CHARTS_DIR, "data");
 const TITLES_CSV = join(CHARTS_DIR, "titles_and_sources.csv");
 const OUT_FILE = join(ROOT, "public", "data", "talent.json");
-
-// ---- minimal RFC4180 CSV parser (handles quoted fields, doubled quotes,
-// and commas/newlines inside quotes) — no dependency needed for this. ----
-function parseCsv(text: string): string[][] {
-  const rows: string[][] = [];
-  let row: string[] = [];
-  let field = "";
-  let inQuotes = false;
-  for (let i = 0; i < text.length; i++) {
-    const c = text[i];
-    if (inQuotes) {
-      if (c === '"') {
-        if (text[i + 1] === '"') { field += '"'; i++; } else { inQuotes = false; }
-      } else {
-        field += c;
-      }
-    } else if (c === '"') {
-      inQuotes = true;
-    } else if (c === ",") {
-      row.push(field);
-      field = "";
-    } else if (c === "\n" || c === "\r") {
-      if (c === "\r" && text[i + 1] === "\n") i++;
-      row.push(field);
-      rows.push(row);
-      row = [];
-      field = "";
-    } else {
-      field += c;
-    }
-  }
-  if (field.length > 0 || row.length > 0) {
-    row.push(field);
-    rows.push(row);
-  }
-  return rows.filter((r) => r.length > 1 || (r.length === 1 && r[0] !== ""));
-}
 
 function coerce(raw: string): string | number | null {
   const v = raw.trim();
