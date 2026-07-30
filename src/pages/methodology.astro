@@ -1,0 +1,19 @@
+---
+import BaseLayout from "../layouts/BaseLayout.astro";
+import { Methodology } from "../dashboards/Methodology.tsx";
+import { buildDashboardContext, formatGenerated } from "../lib/buildContext.ts";
+import { loadTalentData } from "../lib/loadTalentData.ts";
+import { loadCrosswalk } from "../lib/loadCrosswalk.ts";
+
+const data = loadTalentData();
+const ctx = buildDashboardContext(data);
+// content/report-crosswalk.csv is read directly at build time (same
+// process.cwd()-based pattern loadTalentData.ts uses), not bundled into
+// the client's own hydration payload as a second data source — Astro
+// still serializes the resolved crosswalk ARRAY as a prop to hydrate the
+// React island with, same as `ctx` already is.
+const crosswalk = loadCrosswalk();
+---
+<BaseLayout active="methodology" generated={formatGenerated(data)}>
+  <Methodology ctx={ctx} crosswalk={crosswalk} client:load />
+</BaseLayout>

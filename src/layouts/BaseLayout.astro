@@ -1,0 +1,123 @@
+---
+import "../styles/index.css";
+import DashboardNav from "../components/DashboardNav.astro";
+import { NewsTickerLoader } from "../components/NewsTickerLoader.tsx";
+import { ThemeToggle } from "../components/ThemeToggle.tsx";
+import { ExpandableMethods } from "../components/ChartFrame.tsx";
+import type { Dashboard } from "../lib/urlState.ts";
+// Hoover Institution's own primary logo (tower symbol + "HOOVER
+// INSTITUTION" wordmark, horizontal lockup) — solo Hoover identity, not
+// the old Tech Futures Lab wordmark this masthead used to show. Extracted
+// from HooverBrandingGuide2023.pdf's own Primary Logos page (a real,
+// solid-fill vector lockup at print-vector quality, not a lossy photo) as
+// two flat-color raster variants: black for a light background, white for
+// a dark one — both explicitly sanctioned reproduction colors per that
+// guide's own Logo Colors page. See CLAUDE.md's "Hoover brand sources"
+// section for the full extraction/attribution notes.
+import logoLightBg from "../assets/logos/hoover-logo-light-bg.png";
+import logoDarkBg from "../assets/logos/hoover-logo-dark-bg.png";
+
+interface Props {
+  active: Dashboard;
+  generated: string;
+}
+const { active, generated } = Astro.props;
+const description = "A pipeline view of US STEM talent, from foundation through degree production, graduate training, workforce entry, retention, and research output.";
+---
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Global Talent Monitor</title>
+    <meta name="description" content={description} />
+    <!--
+      Sets the real theme before first paint, so a returning dark-mode
+      reader never sees a light flash while JS boots. Runs as a plain
+      blocking <head> script rather than a React effect, unlike the old
+      SPA's App.tsx — this is exactly the kind of thing the Astro
+      migration lets move out of a client-only island: it has to run
+      before paint either way, so it doesn't cost anything by not being
+      React. ThemeToggle.tsx (a real island) just reads whatever this
+      already set and takes over from there for clicks.
+    -->
+    <script is:inline>
+      (function () {
+        var saved = localStorage.getItem("gtm-theme");
+        var dark = saved === "dark" || (!saved && window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches);
+        if (dark) document.documentElement.dataset.theme = "dark";
+      })();
+    </script>
+  </head>
+  <body>
+    <!--
+      Real <header>/<main>/<footer> landmarks — confirmed missing by an
+      axe-core accessibility audit (landmark-one-main: no <main> at all;
+      region: masthead/ticker/pagehead content sat outside any landmark,
+      both a direct consequence of the same gap). Everything persistent
+      across every page (logo, ticker) is <header>; the one thing that's
+      genuinely this page's own content is <main>; the citation/coverage
+      note stays a real <footer>, nested inside <main> since it's the
+      talent-pipeline content's own footer, not unrelated site chrome.
+    -->
+    <header>
+      <div class="topbar">
+        <div class="topbar-inner">
+          <img class="wordmark-logo" src={logoLightBg.src} data-dark-src={logoDarkBg.src} alt="Hoover Institution" />
+          <span class="topbar-meta">
+            <span>● static build</span>
+            <span title="Imported from talent_charts/ — see CLAUDE.md's Ingestion section">{generated}</span>
+          </span>
+          <ThemeToggle client:load />
+        </div>
+      </div>
+
+      <NewsTickerLoader client:load />
+    </header>
+
+    <main class="wrap">
+      <div class="pagehead">
+        <div>
+          <h1>Global Talent Monitor</h1>
+          <div class="sub">STEM talent · foundation, degree production, graduate training, workforce entry, retention, research output</div>
+        </div>
+      </div>
+
+      <DashboardNav active={active} />
+
+      <slot />
+
+      <footer class="foot">
+        <ExpandableMethods summary="Coverage and methods differ by stage.">
+          Every number in this app traces to one exhibit in "The Great Talent Competition," a report built on
+          primary data from NCES, NCSES/NSF, USCIS, DOL, the State Department, IIE, OECD, UNESCO, OpenAlex,
+          Clarivate, the Nobel Foundation and ACM, Times Higher Education, WIPO, and USPTO PatentsView — see
+          each panel's own "Open methodology" for that exhibit's specific source and URL. Data is imported from
+          <code>talent_charts/</code> (that report's own R project) by <code>scripts/import-talent-charts.ts</code>,
+          not fetched live — there is no faster-than-annual source behind any of these series, so re-run the
+          import after a fresh export rather than expecting a nightly refresh. A handful of exhibits (marked in
+          that script) are computed inline in the report's own R pipeline from other tables rather than a
+          standalone CSV, and aren't yet ported.
+        </ExpandableMethods>
+        <div class="sig">Ideas Advancing Freedom</div>
+      </footer>
+    </main>
+
+    <script is:inline>
+      // Swaps the wordmark to the dark-bg variant when data-theme is
+      // "dark" — plain DOM, no React needed for a static <img> src swap.
+      // Runs on load and again whenever ThemeToggle flips the attribute.
+      (function () {
+        var img = document.querySelector(".wordmark-logo");
+        if (!img) return;
+        var lightSrc = img.src;
+        var darkSrc = img.dataset.darkSrc;
+        function sync() {
+          img.src = document.documentElement.dataset.theme === "dark" ? darkSrc : lightSrc;
+        }
+        sync();
+        new MutationObserver(sync).observe(document.documentElement, { attributes: true, attributeFilter: ["data-theme"] });
+      })();
+    </script>
+  </body>
+</html>

@@ -6,6 +6,38 @@
    cautionary takeaway. Nothing else gets color. */
 :root {
   --red: #98002e;
+  /* Confirmed against HooverBrandingGuide2023.pdf (repo root, gitignored
+     — see CLAUDE.md's "Hoover branding guide" note). Two DIFFERENT
+     official palettes exist and it matters which one a web app should
+     use:
+       - Pantone 404/877/8401 (--hoover-warm/-gray-light/-gray below) are
+         the PRINT/logo palette (the tower-symbol logo itself is reproduced
+         in these) — 8401 specifically is reserved "to be used by the
+         Hoover Legacy Society," not general-purpose.
+       - Appendix C, "Website Colors and Fonts," is the actual web palette
+         (--web-* below) — a blue-gray secondary family, not the print
+         palette's warm taupe/silver. This app's existing --slate/--mist/
+         --panel/--panel-2 were independently tuned to almost exactly this
+         real family already (confirmed by hand: e.g. old --mist #7c8794
+         vs. the brand guide's #718D9B differ by only a few RGB points) —
+         so those four are now snapped to the literal brand-guide hex
+         instead of the close-but-invented value that predated this check.
+     --red already matched Website Primary #98002E exactly before this
+     check — not a coincidence, this app's accent was picked to read as
+     Hoover Red from the start.
+  */
+  --hoover-warm: #887e6f; /* Pantone 404 — print/logo only, not the web palette */
+  --hoover-gray-light: #a7a9ac; /* Pantone 877 Silver — print/logo only */
+  --hoover-gray: #777575; /* Pantone 8401 Silver — Hoover Legacy Society use only, not general-purpose */
+  --web-primary-black: #000000;
+  --web-secondary-blue-light: #adbec7;
+  --web-secondary-blue: #718d9b;
+  --web-secondary-blue-dark: #43555f;
+  --web-secondary-oxblood: #4e0806;
+  --web-secondary-gray-50: #f8f8f8;
+  --web-secondary-gray-100: #e8e8e8;
+  --web-secondary-gray-300: #b9b9b9;
+  --web-secondary-gray-600: #707070;
   /* Continent tones — not used for country badges/bars/lines (see
      --country-* below for that); reused as a small, restrained
      categorical palette for named series that AREN'T countries (degree
@@ -23,8 +55,16 @@
   --country-eu: #b08343; --country-other: #8a93a3;
   /* One cautionary status color, for PolicyTakeaway's warning tone. */
   --status-uncertain: #b3862e;
-  --ink: #14181d; --ink-2: #3a434e; --slate: #5c6773; --mist: #7c8794;
-  --line: #dfe2e5; --line-2: #cdd3da; --panel: #f4f5f6; --panel-2: #eef1f4; --paper: #ffffff;
+  /* --ink/--ink-2/--line are kept as previously tuned — no exact match in
+     the brand guide's 8-color web secondary set, and inventing an
+     interpolated "brand-adjacent" shade for these would be less honest
+     than just tuning for contrast directly. --slate/--mist/--panel/
+     --panel-2/--paper below ARE literal brand-guide values (--paper was
+     already an exact #ffffff match to Website Primary white). */
+  --ink: #14181d; --ink-2: #3a434e;
+  --slate: var(--web-secondary-blue-dark); --mist: var(--web-secondary-blue);
+  --line: #dfe2e5; --line-2: var(--web-secondary-blue-light);
+  --panel: var(--web-secondary-gray-50); --panel-2: var(--web-secondary-gray-100); --paper: #ffffff;
   --sans: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
   --mono: "SF Mono", "IBM Plex Mono", ui-monospace, "Cascadia Code", Menlo, monospace;
   --maxw: 1440px;
@@ -78,14 +118,22 @@ a { color: inherit; }
 /* Absolutely positioned and centered on .topbar-inner itself, not just
    "centered in the leftover flex space" — a flex-based center would drift
    off-true-center as soon as the left and right groups have different
-   total widths. Height matches .theme-toggle's fixed 24px so it lines up
-   with the row's other fixed-height elements; width is intentionally
-   unset/auto so the browser scales off the image's real aspect ratio. */
+   total widths. Width is intentionally unset/auto so the browser scales
+   off the image's real aspect ratio.
+   Height is 32px, not .theme-toggle's 24px — Hoover's own horizontal
+   lockup (tower symbol + two-line "HOOVER INSTITUTION" wordmark) is a
+   wider, more detailed mark than the old single-line Tech Futures Lab
+   wordmark this replaced, and needs a little more room for the tower
+   icon's linework to read as a tower rather than a smudge. 32px keeps the
+   topbar's own height (still governed by its other, unchanged 24px
+   elements) comfortably taller than the logo, and roughly matches the
+   brand guide's own stated minimum WIDTH for this lockup (7/8 in ≈ 84px
+   at 96dpi ≈ this logo's real aspect ratio at a 32px height). */
 .wordmark-logo {
   position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%);
-  height: 24px; width: auto; display: block;
+  height: 32px; width: auto; display: block;
 }
-.topbar-meta { margin-left: auto; font-family: var(--mono); font-size: 10px; color: var(--mist); display: flex; gap: 14px; flex-wrap: wrap; align-items: center; }
+.topbar-meta { margin-left: auto; font-family: var(--mono); font-size: 10px; color: var(--slate); display: flex; gap: 14px; flex-wrap: wrap; align-items: center; }
 .theme-toggle {
   border: 1px solid var(--line-2); background: var(--paper); color: var(--ink-2);
   width: 24px; height: 24px; border-radius: var(--r); cursor: pointer; font-size: 12px;
@@ -114,14 +162,14 @@ a { color: inherit; }
 .ticker-link { font: inherit; color: inherit; text-decoration: none; }
 .ticker-link:hover { color: var(--red); }
 .ticker-tag { flex: none; font-family: var(--mono); font-size: 8.5px; letter-spacing: 0.04em; text-transform: uppercase; color: #fff; padding: 1px 4px; }
-.ticker-sep { flex: none; color: var(--line-2); }
+.ticker-sep { flex: none; color: var(--slate); }
 @keyframes ticker-scroll { from { transform: translateX(0); } to { transform: translateX(-50%); } }
 .ticker-ctrl {
   flex: none; border: none; border-left: 1px solid var(--line); background: none; color: var(--ink-2);
   cursor: pointer; padding: 0 10px; font-size: 13px;
 }
 .ticker-ctrl:hover { color: var(--red); background: var(--panel); }
-.ticker-empty { flex: 1; padding: 6px 12px; font-size: 11px; color: var(--mist); }
+.ticker-empty { flex: 1; padding: 6px 12px; font-size: 11px; color: var(--slate); }
 .ticker-static-list { flex: 1; overflow-x: auto; display: flex; }
 .ticker-static-list .ticker-item { border-right: 1px solid var(--line); }
 @media (prefers-reduced-motion: reduce) { .ticker-track { animation: none; } }
@@ -129,13 +177,30 @@ a { color: inherit; }
 /* ── page head ──────────────────────────────────────────────────── */
 .pagehead { display: flex; justify-content: space-between; align-items: flex-start; padding: 16px 0 10px; gap: 12px; flex-wrap: wrap; }
 .pagehead h1 { font-size: 17px; font-weight: 700; letter-spacing: -0.01em; }
-.pagehead .sub { color: var(--mist); font-size: 11px; margin-top: 2px; }
+.pagehead .sub { color: var(--slate); font-size: 11px; margin-top: 2px; }
 
 /* ── controls: shared button/pill/chip language, no radius ───────── */
-.pill, .chip, .ghost-btn { font-family: var(--sans); font-size: 11px; border-radius: var(--r); border: 1px solid var(--line-2); background: var(--paper); color: var(--ink-2); padding: 4px 10px; cursor: pointer; }
+/* padding: 5px (not 4px) top/bottom is a real, checked fix, not an
+   arbitrary bump — measured by hand at 23px real rendered height with
+   4px, 1px short of WCAG 2.5.8's 24px minimum target size. This is this
+   app's single most-reused interactive class (every chip/pill/ghost
+   button sitewide), so the fix is here once, not per caller. */
+.pill, .chip, .ghost-btn { font-family: var(--sans); font-size: 11px; border-radius: var(--r); border: 1px solid var(--line-2); background: var(--paper); color: var(--ink-2); padding: 5px 10px; cursor: pointer; }
 .pill { cursor: default; }
+/* Only the Overview "Open <stage> →" pill is a real link (the rest are
+   static badges) — anchors default to underline/blue, so undo that here
+   rather than on the shared .pill rule. */
+a.pill { cursor: pointer; text-decoration: none; display: inline-block; }
 .chip:hover, .ghost-btn:hover { border-color: var(--slate); color: var(--ink); }
 .chip[aria-pressed="true"] { background: var(--surface-selected); border-color: var(--surface-selected); color: var(--on-selected); }
+/* label.chip wrapping a real disabled checkbox (country profile compare
+   control) — a <label> gets no native disabled appearance the way a
+   <button disabled> does, so this makes the cap-reached state visible. */
+.chip-disabled { color: var(--slate); cursor: not-allowed; }
+.chip-disabled:hover { border-color: var(--line-2); color: var(--slate); }
+
+.compare-control { border: none; padding: 0; margin: 0; }
+.compare-control legend { padding: 0; margin-bottom: 4px; }
 .ghost-btn:hover { border-color: var(--red); color: var(--red); }
 
 /* ── panel: the one container primitive, border only, no shadow, no radius ── */
@@ -149,10 +214,12 @@ a { color: inherit; }
    rather than a second button style. */
 .tab-bar { display: flex; gap: 4px; flex-wrap: wrap; margin-bottom: 10px; }
 
-.kpirow { display: grid; grid-template-columns: repeat(5, 1fr); gap: var(--sp-1); margin-bottom: var(--sp-1); }
-/* Paired with .kpirow on the same element for a row with 6 cards
-   (Overview's one-per-stage KPI row) instead of the default 5. */
-.kpirow-6 { grid-template-columns: repeat(6, 1fr); }
+/* 4 columns — the Overview's own real headline-KPI count, per the
+   redesign brief's "no more than four headline statistics above the
+   first scroll." Confirmed by hand this is the only real caller left
+   (grepped every Track*.tsx) before changing this default away from its
+   old 5/6-column shape; no other page reaches for this class. */
+.kpirow { display: grid; grid-template-columns: repeat(4, 1fr); gap: var(--sp-1); margin-bottom: var(--sp-1); }
 .kpi { padding: var(--sp-2); min-width: 0; }
 .kpi.hi { background: var(--red); border-color: var(--red); color: #fff; }
 .kpi .label { font-size: var(--fs-card-label); font-weight: 600; letter-spacing: 0.04em; text-transform: uppercase; color: var(--ink-2); overflow-wrap: break-word; }
@@ -177,6 +244,17 @@ a { color: inherit; }
 .track-enter { animation: trackFadeIn 0.35s ease-out; }
 @media (prefers-reduced-motion: reduce) { .track-enter { animation: none; } }
 
+/* ── track-section — a named editorial group of exhibits within a stage
+   (see TrackShell.tsx's `sections` prop) — a real subheading over its own
+   row, not just another same-weight panel. Sized at --fs-section-title,
+   distinctly larger than a single exhibit panel's own <h3> title, and a
+   top border/margin heavier than the gap between ordinary rows, so a
+   reader feels a real chapter break, not a continuation of the same grid. */
+.track-section { margin-top: var(--sp-5); padding-top: var(--sp-3); border-top: 2px solid var(--ink); }
+.track-section:first-of-type { margin-top: var(--sp-3); }
+.track-section > .section-header h3 { font-size: var(--fs-section-title); font-weight: 700; }
+.track-section > .section-header { margin-bottom: var(--sp-2); }
+
 /* ── Overview hero headline — the report's own titled thesis, quoted and
    attributed, not a computed finding. The one intentionally centered,
    full-width, larger-type element in the app besides the topbar. */
@@ -193,20 +271,41 @@ a { color: inherit; }
 .barrow.clickable:hover .name { color: var(--red); }
 .barrow.active .name { color: var(--red); font-weight: 600; }
 .barrow .name { font-size: 11px; color: var(--ink-2); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+/* PipelineFunnel's own real labels ("Finished with a STEM bachelor's")
+   are full descriptive phrases, not short country/company names — the
+   default 108px name column truncated them into unreadable "Finished
+   with a ST…" fragments, confirmed by hand in a real screenshot before
+   this existed. A wider column here, not a global change, since every
+   other real .barrow caller's labels are genuinely short. */
+.barrow-wide { grid-template-columns: 220px 1fr 50px; }
+.barrow-wide .name { white-space: normal; overflow: visible; text-overflow: clip; line-height: 1.3; }
 .barrow .track { height: 12px; background: var(--panel); border-radius: 0; overflow: hidden; }
 .barrow .fill { height: 100%; }
 .barrow .v { text-align: right; font-size: 10.5px; color: var(--ink-2); }
 
+/* ── boxplot-row (BoxPlotRow.tsx) — a real box-and-whisker in the same
+   label|track|value grid as .barrow, for the real 5-number-summary shape
+   (FIG512/513) the generic ranked-bar used to flatten to one column.
+   Whisker (min-max) sits center; the box (25th-75th) sits on top of it;
+   the median is a solid tick; the mean is a separate dot so the gap
+   between them — the whole point of showing a distribution, not just a
+   rank — stays visible. ─────────────────────────────────────────────── */
+.boxplot-track { position: relative; overflow: visible; }
+.boxplot-whisker { position: absolute; top: 50%; height: 1px; background: var(--slate); transform: translateY(-50%); }
+.boxplot-box { position: absolute; top: 1px; bottom: 1px; background: var(--red); opacity: 0.55; min-width: 2px; }
+.boxplot-median { position: absolute; top: 0; bottom: 0; width: 2px; background: var(--ink); }
+.boxplot-mean { position: absolute; top: 50%; width: 5px; height: 5px; border-radius: 50%; background: var(--mist); border: 1px solid var(--paper); transform: translate(-50%, -50%); }
+
 /* ── tables: leaderboards ──────────────────────────────────────────── */
 .lb { width: 100%; border-collapse: collapse; font-size: 11.5px; }
-.lb thead th { font-family: var(--mono); font-size: 9.5px; letter-spacing: 0.06em; text-transform: uppercase; color: var(--mist); font-weight: 500; text-align: left; padding: 0 0 5px; border-bottom: 1px solid var(--line-2); }
+.lb thead th { font-family: var(--mono); font-size: 9.5px; letter-spacing: 0.06em; text-transform: uppercase; color: var(--slate); font-weight: 500; text-align: left; padding: 0 0 5px; border-bottom: 1px solid var(--line-2); }
 .lb thead th.right { text-align: right; }
 .lb tbody td { padding: 5px 0; border-bottom: 1px solid var(--line); vertical-align: middle; }
 .lb tbody tr:last-child td { border-bottom: none; }
 .lb tbody tr.clickable { cursor: pointer; }
 .lb tbody tr.clickable:hover { background: var(--panel); }
 .lb tbody tr.active { background: var(--panel-2); }
-.lb .rank { font-family: var(--mono); color: var(--mist); width: 20px; }
+.lb .rank { font-family: var(--mono); color: var(--slate); width: 20px; }
 .lb .org-name { font-weight: 500; color: var(--ink); }
 .lb .count { font-family: var(--mono); font-variant-numeric: tabular-nums; color: var(--ink-2); }
 .lb .right { text-align: right; }
@@ -250,15 +349,21 @@ a { color: inherit; }
    repeated inside each button. */
 .dashboard-nav-heading {
   font-family: var(--sans); font-size: 9px; font-weight: 600; letter-spacing: 0.08em;
-  text-transform: uppercase; color: var(--mist); margin: 10px 0 4px;
+  text-transform: uppercase; color: var(--slate); margin: 10px 0 4px;
 }
 .dashboard-nav { display: flex; gap: 4px; flex-wrap: wrap; margin: 0 0 12px; border-bottom: 1px solid var(--line); padding-bottom: 10px; }
+/* The Track row's own border-bottom already separates the nav block from
+   page content below — a second full border here would just double up,
+   so this row only needs breathing room above it, not its own rule. */
+.dashboard-nav-reference { border-bottom: none; padding-bottom: 0; margin-top: -6px; }
+.dashboard-nav-reference .dashboard-nav-btn { font-size: 12px; padding: 5px 12px 4px; }
 .dashboard-nav-btn {
   font-family: var(--sans); font-size: 13px; font-weight: 700; border: 1px solid var(--line-2); border-bottom: 3px solid var(--line-2);
   background: var(--paper); color: var(--ink-2); padding: 7px 14px 5px; border-radius: var(--r); cursor: pointer;
+  text-decoration: none; display: inline-block;
 }
 .dashboard-nav-btn:hover { border-color: var(--slate); color: var(--ink); }
-.dashboard-nav-btn[aria-pressed="true"] {
+.dashboard-nav-btn[aria-current="page"] {
   background: var(--surface-selected); border-color: var(--surface-selected); border-bottom-color: var(--red); color: var(--on-selected);
 }
 
@@ -279,14 +384,139 @@ a { color: inherit; }
   padding: var(--sp-2); margin: 0 0 var(--sp-2);
 }
 
+/* ── pinned-country-bar — TrackShell.tsx's click-to-pin/compare state (a
+   real WorldMap.tsx onSelect caller, finally — see that file's own
+   dead-prop note in CLAUDE.md). Reuses --surface-selected/--on-selected,
+   the same "this is the active thing" treatment .dashboard-nav-btn
+   [aria-current] already uses, rather than inventing a second "selected"
+   visual language. One chip per pinned country (country-compare mode —
+   more than one can be pinned at once), each independently removable. */
+.pinned-country-bar {
+  display: flex; align-items: center; flex-wrap: wrap; gap: var(--sp-1) var(--sp-2); font-size: var(--fs-body);
+  background: var(--surface-selected); color: var(--on-selected);
+  padding: var(--sp-2) var(--sp-3); margin: 0 0 var(--sp-2);
+}
+.pinned-country-chip {
+  display: inline-flex; align-items: center; gap: 4px;
+  border: 1px solid var(--on-selected); padding: 2px 4px 2px 8px; font-weight: 600;
+}
+.pinned-country-chip button {
+  background: none; border: none; color: inherit; cursor: pointer; font-size: 13px; line-height: 1; padding: 0 2px;
+}
+.pinned-country-chip button:hover { color: var(--red); }
+.pinned-country-hint { color: var(--on-selected); opacity: 0.75; font-size: 11px; }
+.pinned-country-bar .ghost-btn { margin-left: auto; background: transparent; border-color: var(--on-selected); color: var(--on-selected); }
+.pinned-country-bar .ghost-btn:hover { border-color: var(--red); color: var(--red); }
+
 /* ── ExpandableMethods — collapses the long Sources & Method prose ── */
 .expandable-methods { margin-top: var(--sp-3); }
 .expandable-methods-toggle {
-  background: none; border: none; padding: 0; font: inherit; font-size: 12px; color: var(--ink-2);
-  cursor: pointer; text-align: left; display: block; width: 100%;
+  list-style: none; font: inherit; font-size: 12px; color: var(--ink-2);
+  cursor: pointer; display: block; width: 100%;
 }
+.expandable-methods-toggle::-webkit-details-marker { display: none; }
 .expandable-methods-caret { color: var(--red); font-weight: 600; font-size: 11px; margin-left: 4px; }
+.expandable-methods-caret::before { content: "▼ Open methodology"; }
+.expandable-methods[open] .expandable-methods-caret::before { content: "▲ Close"; }
 .expandable-methods-body { margin-top: var(--sp-2); font-size: var(--fs-methods); line-height: 1.6; color: var(--ink-2); }
+
+/* ── MethodologyDrawer's own structured fields, above the citation ── */
+.methodology-fields { margin: 0 0 var(--sp-2); font-size: var(--fs-methods); line-height: 1.6; }
+.methodology-fields dt { color: var(--slate); font-weight: 600; margin-top: var(--sp-2); }
+.methodology-fields dt:first-child { margin-top: 0; }
+.methodology-fields dd { margin: 0; color: var(--ink-2); }
+.methodology-actions { display: flex; gap: var(--sp-2); flex-wrap: wrap; margin-top: var(--sp-2); }
+.methodology-actions .ghost-btn { font-size: var(--fs-methods); margin-top: 0; }
+
+/* A closed <details>'s content is hidden by the UA stylesheet's own
+   `details:not([open]) > *:not(summary) { display: none }` rule — not by
+   this app's CSS, so overriding a class on the body div does nothing on
+   its own. Overriding the SAME selector shape (higher specificity via
+   :not([open]), not just !important) is what actually defeats it, forcing
+   every methodology drawer's real citation/methodology text to print even
+   when closed on screen, per the redesign brief's "must remain printable"
+   requirement. */
+@media print {
+  .methodology-drawer:not([open]) > *:not(summary) { display: block !important; }
+  .methodology-drawer .expandable-methods-caret { display: none; }
+}
+
+/* ── /methodology/ route ───────────────────────────────────────────── */
+code { font-family: var(--mono); background: var(--panel-2); padding: 1px 4px; font-size: 0.92em; }
+.search-field { display: flex; }
+.search-input {
+  width: 100%; max-width: 480px; font: inherit; font-size: 14px; padding: 8px 12px;
+  border: 1px solid var(--line-2); border-radius: var(--r); background: var(--paper); color: var(--ink);
+}
+.search-input:focus-visible { outline: 2px solid var(--focus-ring); outline-offset: 1px; }
+.definitions-list { display: grid; gap: var(--sp-3); }
+.definitions-list dt { font-weight: 700; margin-bottom: 2px; }
+.definitions-list dd { margin: 0; color: var(--ink-2); line-height: 1.6; }
+.methodology-calc-row { margin-top: var(--sp-3); line-height: 1.6; }
+.methodology-calc-row:first-of-type { margin-top: var(--sp-2); }
+.methodology-calc-row > div { color: var(--ink-2); margin-top: 2px; }
+.methodology-list { margin: var(--sp-2) 0 0; padding-left: 1.2em; line-height: 1.6; color: var(--ink-2); }
+.methodology-list li { margin-bottom: var(--sp-2); }
+/* `.lb thead th`'s own `padding: 0 0 5px` (zero right-padding) beats a
+   plain `.crosswalk-table th` on specificity (2 compound parts vs. 1) —
+   real bug caught by hand (header text ran together edge to edge before
+   this). `thead th` matches that same specificity instead of just
+   hoping a bare class selector wins. */
+.crosswalk-table td { padding-right: var(--sp-2); }
+.crosswalk-table thead th { padding-right: var(--sp-2); }
+.crosswalk-table tbody tr:target { background: var(--panel-2); }
+
+/* ── /downloads/ route ─────────────────────────────────────────────── */
+.downloads-toolbar { display: flex; flex-direction: column; gap: var(--sp-2); margin-top: 12px; }
+.download-links { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; font-size: 12.5px; }
+.download-links .sep { color: var(--line-2); }
+.download-links a, .link-btn {
+  color: var(--red); text-decoration: underline; background: none; border: none; padding: 0; font: inherit; cursor: pointer;
+}
+.download-links a:hover, .link-btn:hover { color: var(--ink); }
+/* Same real specificity bug as .crosswalk-table above — .lb thead th's
+   own padding-right:0 otherwise wins over a bare .downloads-table th. */
+.downloads-table td { vertical-align: top; padding-right: var(--sp-3); }
+.downloads-table thead th { padding-right: var(--sp-3); }
+.downloads-table td:last-child, .downloads-table thead th:last-child { padding-right: 0; }
+
+/* ── Overview scrollytelling ────────────────────────────────────────
+   The core "visual sticks while its own text scrolls past" mechanic is
+   plain CSS position:sticky, scoped to each section — no JavaScript
+   computes this, so it works identically whether script runs or not.
+   `.scrolly-text`'s own real min-height is what gives each section real
+   scroll room for its sticky visual to hold its position through; a
+   short text block just releases sooner, which is fine and honest, not
+   padded out artificially to force a fixed dwell time. */
+.scrolly-section { display: grid; grid-template-columns: 1fr 1fr; gap: var(--sp-5); align-items: start; padding: var(--sp-6) 0; border-top: 1px solid var(--line); }
+.scrolly-section:first-child { border-top: none; padding-top: var(--sp-3); }
+.scrolly-text { min-height: 40vh; display: flex; flex-direction: column; justify-content: center; }
+.scrolly-eyebrow { font-family: var(--mono); font-size: 10px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--slate); margin-bottom: var(--sp-1); }
+.scrolly-text h2 { font-size: var(--fs-section-title); font-weight: 700; margin-bottom: var(--sp-2); }
+.scrolly-body { font-size: var(--fs-body); color: var(--ink-2); line-height: 1.6; }
+.scrolly-body p { margin-bottom: var(--sp-2); }
+.scrolly-body p:last-child { margin-bottom: 0; }
+.scrolly-caveat { font-size: 12.5px; font-style: italic; color: var(--slate); }
+
+/* ── immigration-gates sequence (Overview scrollytelling, step 4) ──── */
+.gates-list { list-style: none; display: flex; flex-direction: column; gap: var(--sp-3); }
+.gates-item { display: flex; gap: var(--sp-2); align-items: baseline; }
+.gates-num {
+  font-family: var(--mono); font-size: 11px; font-weight: 700; color: var(--paper); background: var(--red);
+  width: 20px; height: 20px; border-radius: 50%; display: flex; align-items: center; justify-content: center; flex: none;
+}
+.gates-label { font-weight: 700; font-size: 13px; }
+.gates-fact { color: var(--ink-2); font-size: 12.5px; line-height: 1.5; }
+.scrolly-visual { position: sticky; top: 24px; align-self: start; }
+
+@media (max-width: 900px) {
+  /* Sticky positioning is a desktop-only enhancement — below this width,
+     every section's own visual renders inline right after its own text,
+     the same plain linear order a no-JS reader on any screen size sees. */
+  .scrolly-section { grid-template-columns: 1fr; gap: var(--sp-3); padding: var(--sp-4) 0; }
+  .scrolly-text { min-height: 0; }
+  .scrolly-visual { position: static; }
+}
 
 /* ── tooltip ────────────────────────────────────────────────────── */
 /* Fixed dark-on-white regardless of page theme — a floating overlay reads
@@ -294,18 +524,59 @@ a { color: inherit; }
    dark mode and would otherwise turn this into invisible white-on-white). */
 .tip { position: fixed; transform: translate(-50%, calc(-100% - 10px)); background: #14181d; color: #fff; font-size: 10.5px; line-height: 1.5; padding: 5px 8px; border-radius: 0; pointer-events: none; z-index: 50; white-space: nowrap; }
 
+/* @nivo/line's sliceTooltip — Nivo's own TooltipWrapper already handles
+   fixed/absolute positioning near the cursor, so this only needs the same
+   visual skin as .tip above, not its position/transform rules. */
+.nivo-tip { background: #14181d; color: #fff; font-size: 10.5px; line-height: 1.5; padding: 5px 8px; white-space: nowrap; }
+
 /* ── SeriesChart's legend/empty-state ──────────────────────────────── */
 .trend-legend { display: flex; gap: 14px; flex-wrap: wrap; align-items: center; margin-top: 8px; font-family: var(--mono); font-size: 10px; color: var(--ink-2); }
 .legend-item { display: inline-flex; align-items: center; gap: 5px; }
 .swatch { width: 11px; height: 3px; display: inline-block; }
-.trend-note { color: var(--mist); font-style: italic; margin-left: auto; }
-.trend-empty { font-size: 11px; color: var(--mist); padding: 6px 0; line-height: 1.4; }
+/* The >6-series picker's legend toggles (SeriesChart.tsx) — same look as
+   a plain legend item, just a real <button> so it's keyboard-reachable.
+   Hidden state is carried by opacity + strikethrough on the whole item,
+   NOT by recoloring the swatch — most non-tracked countries already
+   render in the same muted --country-other gray a "hidden" indicator
+   color would use, so graying the swatch on toggle-off would make "this
+   series is off" indistinguishable from "this series is on, but it's a
+   minor country" (confirmed by hand: FIG206's real 17-country legend
+   made this ambiguity obvious immediately). The swatch's real color
+   never changes; only the label's own presentation does. */
+.legend-item-toggle { background: none; border: none; padding: 0; font: inherit; font-family: inherit; color: inherit; cursor: pointer; }
+/* Text color + strikethrough, not opacity, carries "this series is
+   hidden" — axe-core caught the previous opacity:0.4 approach failing
+   WCAG AA (it blends --ink-2 down to ~2:1 against a white/paper panel,
+   confirmed by hand: rgb(58,67,78) at 40% opacity over white measures
+   #b0b4b8). --slate keeps the same "quieter than active" signal at a
+   real 7.7:1. The swatch alone still dims — it's decorative color
+   matching, not text a reader needs to resolve. */
+.legend-item-toggle[aria-pressed="false"] { color: var(--slate); text-decoration: line-through; }
+.legend-item-toggle[aria-pressed="false"] .swatch { opacity: 0.4; }
+.legend-item-toggle:hover { color: var(--red); }
+.series-picker-toggle-all { background: none; border: none; padding: 0; font: inherit; color: var(--red); font-weight: 600; cursor: pointer; text-decoration: underline; }
+.trend-note { color: var(--slate); font-style: italic; margin-left: auto; }
+/* A timeseries exhibit that mixes a real 0-1 rate column with count
+   columns (see ExhibitChart.tsx) renders as two stacked charts, never one
+   shared axis — this just spaces them apart. */
+.count-rate-split > .trend-note { margin: var(--sp-2) 0; }
+.count-rate-split > figure + .trend-note { margin-top: var(--sp-3); }
+.trend-empty { font-size: 11px; color: var(--slate); padding: 6px 0; line-height: 1.4; }
 
-.foot { padding: 16px 0 32px; font-family: var(--mono); font-size: 10px; color: var(--mist); line-height: 1.6; }
+/* A country profile section's own supporting metrics (issue #19) — a
+   compact real stat + link, deliberately smaller than a full ExhibitPanel
+   so a section reads as "one chart plus a couple of related numbers,"
+   not a second row of full chart cards (the issue's own "not a dashboard
+   card wall" rule). */
+.supporting-metric { display: block; padding: var(--sp-2); border: 1px solid var(--line-2); text-decoration: none; color: inherit; }
+.supporting-metric:hover { border-color: var(--slate); }
+.supporting-metric-value { font-size: 18px; font-weight: 700; margin-top: 4px; }
+
+.foot { padding: 16px 0 32px; font-family: var(--mono); font-size: 10px; color: var(--slate); line-height: 1.6; }
 .foot code { background: var(--panel-2); padding: 1px 4px; border-radius: 0; }
 .foot .sig { color: var(--red); font-weight: 600; margin-top: 10px; font-size: 11px; }
 
-@media (max-width: 1100px) { .kpirow, .kpirow-6 { grid-template-columns: repeat(2,1fr); } .row3 { grid-template-columns: 1fr; } }
+@media (max-width: 1100px) { .kpirow { grid-template-columns: repeat(2,1fr); } .row3 { grid-template-columns: 1fr; } }
 @media (max-width: 620px) { .wrap { padding: 0 14px 32px; } }
 @media (prefers-reduced-motion: reduce) { * { scroll-behavior: auto !important; } }
 
@@ -322,11 +593,11 @@ a { color: inherit; }
   .mapbox { height: 440px; }
 }
 @media (max-width: 768px) {
-  .kpirow, .kpirow-6 { grid-template-columns: repeat(2, 1fr); }
+  .kpirow { grid-template-columns: repeat(2, 1fr); }
   .mapbox { height: 340px; }
 }
 @media (max-width: 480px) {
-  .kpirow, .kpirow-6 { grid-template-columns: 1fr; }
+  .kpirow { grid-template-columns: 1fr; }
 }
 
 /* ── keyboard focus — every custom interactive element gets a visible,
@@ -343,3 +614,43 @@ svg [role="button"]:focus-visible { outline: 2px solid var(--focus-ring); outlin
 input:focus-visible, select:focus-visible, button:focus-visible {
   outline: 2px solid var(--focus-ring); outline-offset: 2px;
 }
+
+/* ── internal component gallery (dev-only route, issue #14) — purely
+   structural layout helpers for the gallery page itself, not new design
+   tokens or a second design-system package. ─────────────────────────── */
+.gallery h3 { font-size: var(--fs-section-title); margin: var(--sp-4) 0 var(--sp-2); }
+.gallery-swatch-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: var(--sp-3); margin-bottom: var(--sp-3); }
+.gallery-token-group { border: 1px solid var(--line); padding: var(--sp-2); }
+.gallery-swatch-row { display: flex; align-items: center; gap: 6px; margin-top: 4px; }
+.gallery-swatch { display: inline-block; width: 18px; height: 18px; border: 1px solid var(--line-2); flex: none; }
+.gallery-spacing-row { display: flex; align-items: flex-end; gap: var(--sp-3); margin-bottom: var(--sp-3); }
+.gallery-spacing-item { text-align: center; }
+.gallery-spacing-box { background: var(--red); margin-bottom: 4px; }
+
+/* ── chart annotations (issue #15) — the accessible list is the real
+   interface; the Nivo marker on the chart itself is a decorative,
+   non-focusable enhancement layered on top of it. ───────────────────── */
+.chart-annotations { margin-top: 6px; }
+.chart-annotation-list { list-style: none; margin: 6px 0 0; padding: 0; display: flex; flex-direction: column; gap: 2px; }
+.chart-annotation-btn { display: block; width: 100%; text-align: left; background: none; border: none; padding: 3px 0; font: inherit; font-size: 11px; color: var(--slate); cursor: pointer; }
+.chart-annotation-btn:hover { color: var(--ink); }
+.chart-annotation-detail { font-size: 11px; color: var(--ink-2); padding: 2px 0 6px 12px; border-left: 2px solid var(--line-2); margin-left: 2px; }
+
+/* ── explorer catalog (issue #18) ─────────────────────────────────────── */
+.explorer-results { list-style: none; margin: 0; padding: 0; }
+.explorer-result { display: flex; align-items: center; gap: var(--sp-3); padding: var(--sp-2) 0; border-top: 1px solid var(--line); }
+.explorer-result-main { flex: 1; min-width: 0; }
+.explorer-result-title { font-weight: 600; margin-bottom: 2px; }
+.explorer-result-preview { flex: none; }
+.explorer-result-actions { flex: none; }
+@media (max-width: 620px) {
+  .explorer-result { flex-wrap: wrap; }
+  .explorer-result-preview { display: none; }
+}
+
+/* ── explorer indicator detail (issue #18) ────────────────────────────── */
+.explorer-detail .panel { margin-top: 0; }
+.explorer-related-list { list-style: none; margin: 0; padding: 0; }
+.explorer-related-list li { padding: 4px 0; border-top: 1px solid var(--line); }
+.exhibit-table-wrap { overflow-x: auto; }
+.exhibit-table { width: 100%; }

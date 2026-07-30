@@ -9,6 +9,10 @@
   // No secrets needed at all — this Worker is a plain CORS proxy for RSS
   // feeds, nothing more. Never put real credentials in this file regardless.
   "vars": {
-    "ALLOWED_ORIGINS": "http://localhost:5173,http://localhost:5183,https://evjohnston.github.io"
+    // localhost:4321 is astro dev's default port (was :5173, Vite's
+    // default, before the 2026-07 Astro migration) — kept alongside the
+    // old Vite ports rather than replacing them, in case anything local
+    // still runs the old toolchain.
+    "ALLOWED_ORIGINS": "http://localhost:4321,http://localhost:5173,http://localhost:5183,https://evjohnston.github.io"
   }
 }

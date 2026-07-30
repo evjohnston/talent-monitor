@@ -29,6 +29,16 @@ const MAX_DOTS_PER_LINK = 40;
 // elsewhere, a filter change). Count scales with the link's real value
 // relative to the diagram's max, capped so one huge link can't spawn
 // hundreds of concurrently-animating SMIL elements.
+// Rounded to 2 decimals before going into the path string — an SVG
+// coordinate doesn't need float64's full precision, and the Astro
+// migration made that precision actively harmful: Math.sin can return a
+// value that differs from Node (the Astro build's SSR pass) by a couple
+// ULPs versus the browser (the client hydration pass) despite identical
+// inputs, which without rounding produced a real React hydration-mismatch
+// warning on every page with a Sankey (confirmed by hand — server/client
+// path strings differed only from the 12th significant digit onward).
+const round2 = (n: number) => Math.round(n * 100) / 100;
+
 export function scatterMotionDots(x0: number, y0: number, x1: number, y1: number, width: number, count: number, linkSeed: number): MotionDot[] {
   const n = Math.max(0, Math.min(MAX_DOTS_PER_LINK, Math.round(count)));
   const xm = (x0 + x1) / 2;
@@ -39,9 +49,11 @@ export function scatterMotionDots(x0: number, y0: number, x1: number, y1: number
     const h3 = Math.sin(linkSeed * 78.234 + i * 45.164) * 12321.987;
     const jitter = h3 - Math.floor(h3);
     const offset = u * (width / 2) * 0.85;
+    const y0o = round2(y0 + offset);
+    const y1o = round2(y1 + offset);
     dots.push({
-      pathD: `M${x0},${y0 + offset} C${xm},${y0 + offset} ${xm},${y1 + offset} ${x1},${y1 + offset}`,
-      r: 1.5 + Math.abs(u) * 1.0,
+      pathD: `M${round2(x0)},${y0o} C${round2(xm)},${y0o} ${round2(xm)},${y1o} ${round2(x1)},${y1o}`,
+      r: round2(1.5 + Math.abs(u) * 1.0),
       delay: jitter * 4.5,
       dur: 3.6 + jitter * 2.6,
     });

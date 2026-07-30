@@ -1,0 +1,12 @@
+---
+import BaseLayout from "../layouts/BaseLayout.astro";
+import { Overview } from "../dashboards/Overview.tsx";
+import { buildDashboardContext, formatGenerated } from "../lib/buildContext.ts";
+import { loadTalentData } from "../lib/loadTalentData.ts";
+
+const data = loadTalentData();
+const ctx = buildDashboardContext(data);
+---
+<BaseLayout active="overview" generated={formatGenerated(data)}>
+  <Overview ctx={ctx} client:load />
+</BaseLayout>

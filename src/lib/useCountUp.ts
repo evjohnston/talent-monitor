@@ -9,7 +9,14 @@ import { usePrefersReducedMotion } from "./useReducedMotion.ts";
 // under prefers-reduced-motion.
 export function useCountUp(target: number, durationMs = 900): number {
   const reducedMotion = usePrefersReducedMotion();
-  const [value, setValue] = useState(reducedMotion ? target : 0);
+  // Starts at the real target, not 0 — this is what renders during
+  // Astro's static build and what a reader sees before hydration (the
+  // Astro migration's no-JS floor requires a real number, never a
+  // placeholder). The mount effect below then resets to 0 and animates
+  // back up, so the count-up reveal still happens, just as a JS-only
+  // flourish layered on top of an always-true initial value rather than
+  // something the real number depends on.
+  const [value, setValue] = useState(target);
   const startRef = useRef<number | null>(null);
   const fromRef = useRef(0);
 
@@ -17,6 +24,7 @@ export function useCountUp(target: number, durationMs = 900): number {
     if (reducedMotion) { setValue(target); return; }
     fromRef.current = 0;
     startRef.current = null;
+    setValue(0);
     let raf = 0;
     const step = (now: number) => {
       if (startRef.current == null) startRef.current = now;

@@ -43,17 +43,35 @@ const COMMON_NAME_REVERSE: Record<string, string> = Object.fromEntries(
   Object.entries(COMMON_NAME).map(([code, name]) => [name.toLowerCase(), code])
 );
 
+// Extra resolvable aliases for codeFromCountryName() ONLY, not for
+// countryName()'s display direction — i18n-iso-countries' own fuzzy
+// matching already resolves "South Korea" and "Republic of Korea" to KR
+// (confirmed by hand), but not the bare word "Korea" alone, which is
+// exactly what FIG608's own real data uses. Real, confirmed bug found by
+// countries.test.ts, not a hypothetical: toCountryMapValues() drops any
+// row whose name doesn't resolve, so FIG608's map was silently missing
+// South Korea's real data point entirely before this existed. KR's own
+// ISO display name is already "South Korea" (countryName("KR") needs no
+// COMMON_NAME override), so this only extends what INPUT text resolves,
+// not what gets displayed.
+const EXTRA_NAME_ALIASES: Record<string, string> = {
+  korea: "KR",
+};
+
 // Reverse of countryName() — a human-readable name (as typed into a URL's
 // ?countries=china,india, or read back out of one) to the real alpha-2 code
 // every other lookup in this app keys off. i18n-iso-countries' own fuzzy
 // name matching handles most cases; COMMON_NAME_REVERSE covers the same
 // handful this file already overrides for display (e.g. "china" rather
-// than "People's Republic of China").
+// than "People's Republic of China"); EXTRA_NAME_ALIASES covers real
+// source-data names that need no display override but still don't
+// resolve via the library alone.
 export function codeFromCountryName(name: string): string | null {
   const trimmed = name.trim();
   if (!trimmed) return null;
   const lower = trimmed.toLowerCase();
   if (COMMON_NAME_REVERSE[lower]) return COMMON_NAME_REVERSE[lower];
+  if (EXTRA_NAME_ALIASES[lower]) return EXTRA_NAME_ALIASES[lower];
   return countries.getAlpha2Code(trimmed, "en") ?? null;
 }
 
@@ -98,4 +116,32 @@ export function countryColor(code: string | null | undefined): string {
   if (code === "IN") return "var(--country-in)";
   if (EU_COUNTRIES.has(code)) return "var(--country-eu)";
   return "var(--country-other)";
+}
+
+// A URL-safe slug for a country profile route (/countries/<slug>/, issue
+// #19) — lowercase, hyphenated real display name (e.g. "south-korea"),
+// not a bare ISO code, since the issue's own locked route pattern uses a
+// real readable segment. Derived mechanically from countryName() so it
+// always matches whatever this file already displays for that code,
+// rather than a second hand-typed table that could drift from it.
+export function countrySlug(code: string | null | undefined): string | null {
+  if (!code) return null;
+  const name = countryName(code);
+  if (name === "Unknown") return null;
+  return name
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-+|-+$/g, "");
+}
+
+const SLUG_TO_CODE: Record<string, string> = Object.fromEntries(
+  Object.keys(countries.getAlpha2Codes())
+    .map((code) => [countrySlug(code), code] as const)
+    .filter((pair): pair is [string, string] => pair[0] !== null)
+);
+
+// Reverse of countrySlug() — resolves a URL segment back to the real
+// alpha-2 code, for the [slug].astro route's own getStaticPaths/lookup.
+export function codeFromCountrySlug(slug: string): string | null {
+  return SLUG_TO_CODE[slug.toLowerCase()] ?? null;
 }

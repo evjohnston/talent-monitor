@@ -1,0 +1,48 @@
+---
+import "../../styles/index.css";
+import DashboardNav from "../../components/DashboardNav.astro";
+import { ComponentGallery } from "../../dashboards/ComponentGallery.tsx";
+
+// Dev-only component gallery (issue #14) — deliberately gated on a real
+// PUBLIC_ env flag rather than import.meta.env.DEV. DEV would make this
+// route's real content untestable by this repo's own Playwright harness
+// (tests/*.spec.ts all drive `astro preview`, a production-mode server —
+// DEV is always false there, same as a real deploy), while an env flag
+// lets a dedicated test build set PUBLIC_ENABLE_DEV_GALLERY=true and get
+// real, checkable content through the exact same astro-preview pipeline.
+// A normal production build (build-and-deploy.yml never sets this var)
+// renders the plain "not available" notice below instead — the real,
+// deliberate default this issue's own "preferred behavior: disable in
+// production" asks for. Not in DashboardNav.astro's own STAGES/REFERENCE
+// lists and not in any sitemap (this repo has no sitemap generator), so
+// it's unreachable from any real navigation either way.
+const enabled = import.meta.env.PUBLIC_ENABLE_DEV_GALLERY === "true";
+---
+
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="robots" content="noindex, nofollow" />
+    <title>Component gallery (internal) — Global Talent Monitor</title>
+  </head>
+  <body>
+    <main class="wrap">
+      <div class="pagehead">
+        <div>
+          <h1>Component gallery</h1>
+          <div class="sub">Internal, development-only — not part of the public site</div>
+        </div>
+      </div>
+      {enabled ? (
+        <>
+          <DashboardNav active="overview" />
+          <ComponentGallery client:load />
+        </>
+      ) : (
+        <p>This page is only available in a build with <code>PUBLIC_ENABLE_DEV_GALLERY=true</code> set. It is not part of the deployed production site.</p>
+      )}
+    </main>
+  </body>
+</html>

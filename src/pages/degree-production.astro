@@ -1,0 +1,12 @@
+---
+import BaseLayout from "../layouts/BaseLayout.astro";
+import { TrackDegreeProduction } from "../dashboards/TrackDegreeProduction.tsx";
+import { buildDashboardContext, formatGenerated } from "../lib/buildContext.ts";
+import { loadTalentData } from "../lib/loadTalentData.ts";
+
+const data = loadTalentData();
+const ctx = buildDashboardContext(data);
+---
+<BaseLayout active="degree-production" generated={formatGenerated(data)}>
+  <TrackDegreeProduction ctx={ctx} client:load />
+</BaseLayout>

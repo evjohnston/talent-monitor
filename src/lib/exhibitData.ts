@@ -25,6 +25,22 @@ function yearColumns(exhibit: Exhibit): string[] {
   return exhibit.columns.slice(1).filter((c) => /^\d{4}$/.test(c.trim()));
 }
 
+// A series counts as rate-shaped only when its real values ALL sit within
+// [-1.5, 1.5] AND its name contains a rate/percent/share word — magnitude
+// alone isn't enough (TAB404's real "Antarctica" study-abroad count is a
+// genuine count that just happens to stay under 1.5), and an unanchored
+// name match on "rate" isn't enough either (it would wrongly catch
+// "doctorates"). Underscores are normalized to spaces first so "US_Share"
+// still matches \bshare\b, which — being a real word-character in regex —
+// it otherwise wouldn't. Used by ExhibitChart.tsx to split a timeseries
+// that mixes a real rate column in among count columns (FIG603) onto its
+// own axis instead of a shared one — see content/report-crosswalk.csv's
+// own FIG603 caveat.
+export function isRateShapedSeries(s: Series): boolean {
+  return /\brate\b|\bpercent\b|\bshare\b|%/i.test(s.label.replace(/_/g, " ")) &&
+    s.values.every((v) => v == null || Math.abs(v) <= 1.5);
+}
+
 // timeseries / share-timeseries: first column is the x-axis (usually
 // "Year"), every other real-numeric column is its own series.
 export function toSeriesChart(exhibit: Exhibit): { x: (string | number)[]; series: Series[] } {
@@ -83,13 +99,83 @@ export function toLeaderboardYears(exhibit: Exhibit): { years: string[]; rows: Y
   return { years, rows };
 }
 
+export interface DistributionStatsRow {
+  label: string;
+  mean: number;
+  min: number;
+  q1: number;
+  median: number;
+  q3: number;
+  max: number;
+  skewness?: number;
+  kurtosis?: number;
+}
+
+// A real, recurring shape (FIG512, FIG513 — a 5-number summary per
+// company/entity: min/25th/median/75th/max, plus mean/skewness/kurtosis)
+// that the generic ranked-bar fallback used to flatten into ranking by
+// whichever real-numeric column happened to come last (kurtosis — a real
+// but, for a policy reader, fairly opaque statistic), throwing away the
+// other 8 real columns entirely. Detected structurally (does the exhibit
+// have all 5 real quantile-shaped columns?), not by exhibit id — a
+// second exhibit already has this exact shape, so it's a recurring
+// pattern to fix generally, not a one-off. See BoxPlotRow.tsx for the
+// real box-and-whisker rendering this feeds.
+const DIST_STATS_COLUMNS = ["min", "25th_percentile", "median_50th", "75th_percentile", "max"] as const;
+const DIST_STATS_EXCLUDE = new Set([...DIST_STATS_COLUMNS, "mean", "std", "sum", "skewness", "kurtosis"]);
+
+export function toDistributionStats(exhibit: Exhibit): { rows: DistributionStatsRow[] } | null {
+  if (!DIST_STATS_COLUMNS.every((c) => exhibit.columns.includes(c)) || !exhibit.columns.includes("mean")) return null;
+  const labelKeys = exhibit.columns.filter((c) => !DIST_STATS_EXCLUDE.has(c));
+  const rows: DistributionStatsRow[] = [];
+  for (const r of exhibit.rows) {
+    const mean = r.mean, min = r.min, q1 = r["25th_percentile"], median = r.median_50th, q3 = r["75th_percentile"], max = r.max;
+    if (![mean, min, q1, median, q3, max].every(isNum)) continue;
+    // Same adjacent-identical-value dedup as toRankedBars — this shape
+    // has the same real Country+Company leading-columns pattern.
+    const parts: string[] = [];
+    for (const k of labelKeys) {
+      const v = String(r[k] ?? "").trim();
+      if (v && v !== parts[parts.length - 1]) parts.push(v);
+    }
+    if (parts.length === 0) continue;
+    rows.push({
+      label: parts.join(" · "),
+      mean: mean as number, min: min as number, q1: q1 as number, median: median as number, q3: q3 as number, max: max as number,
+      skewness: isNum(r.skewness) ? r.skewness : undefined,
+      kurtosis: isNum(r.kurtosis) ? r.kurtosis : undefined,
+    });
+  }
+  if (rows.length === 0) return null;
+  // Ranked by median, not mean — the more representative "typical" value
+  // for a real, heavily right-skewed distribution (citation counts: a
+  // handful of outlier papers/patents inflate the mean well above what a
+  // typical entry looks like). The mean is still shown as its own marker
+  // in the box plot itself, so the size of that gap stays visible.
+  rows.sort((a, b) => b.median - a.median);
+  return { rows };
+}
+
 // ranked-bar catch-all: every leading non-numeric column identifies a row
 // (e.g. FIG512's Country+Company, TAB604's Country+Year+Status) — joined
 // into one label, since the first column alone repeats across rows for
 // these shapes and would otherwise collide. Ranked by the most recent
 // real-numeric column (e.g. TAB506's 2025 patent count, not its 2005 one).
+//
+// A column literally named "Year" is excluded from the ranking-candidate
+// pool even when its coerced values are numeric — every other exhibit
+// shape in this app already treats a Year column as an axis/identity,
+// never a value being measured, and TAB604 is a real, confirmed case
+// where getting this wrong breaks the label entirely: its real column
+// order is Country, Year, Status, Count — with "Year" counted as
+// numeric, the old code assumed labelKeys stop at the FIRST numeric
+// column (Year, index 1), silently dropping "Status" (which comes AFTER
+// it) from every row's label. Every one of TAB604's real India rows
+// rendered as the bare label "India," twelve times, with no way to tell
+// them apart — confirmed live on the real /retention-immigration/ stage
+// page, not hypothetical.
 export function toRankedBars(exhibit: Exhibit, topN = 12): { rows: { label: string; value: number }[]; column: string; max: number; truncated: number } | null {
-  const cols = numericColumns(exhibit);
+  const cols = numericColumns(exhibit).filter((c) => !/^year$/i.test(c));
   const col = cols[cols.length - 1];
   if (col === undefined) return null;
   const firstNumericIndex = exhibit.columns.findIndex((c) => cols.includes(c));
@@ -114,3 +200,11 @@ export function toRankedBars(exhibit: Exhibit, topN = 12): { rows: { label: stri
   const max = Math.max(1, ...rows.map((r) => r.value));
   return { rows, column: col, max, truncated: Math.max(0, all.length - rows.length) };
 }
+
+// Re-exported from dateRange.ts, not defined here — see that file's own
+// note on why: this function has no real dependency on the type-only
+// SeriesChart.tsx/LeaderboardYears.tsx imports above, and keeping it out
+// of this file is what lets scripts/generate-downloads.ts (a Node build
+// script, checked under tsconfig.node.json's own DOM/JSX-free project)
+// import it without pulling in code that needs --jsx to even resolve.
+export { realDateRange } from "./dateRange.ts";

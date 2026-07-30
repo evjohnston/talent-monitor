@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Leaderboard, type LeaderboardRow } from "./Leaderboard.tsx";
 
 export interface YearsRow {
@@ -17,12 +17,19 @@ export function LeaderboardYears({
   unit = "records",
   nameLabel = "Name",
   topN = 12,
+  onVisibleRowsChange,
 }: {
   years: string[];
   rows: YearsRow[];
   unit?: string;
   nameLabel?: string;
   topN?: number;
+  // Reports the real, currently-shown (one year, top-N ranked) subset up
+  // to MethodologyDrawer's download menu — this shape ALWAYS differs from
+  // the exhibit's own complete rows (every year, every entity), unlike
+  // SeriesChart's own >6-series picker, which only differs when the
+  // picker is actually active.
+  onVisibleRowsChange?: (rows: LeaderboardRow[]) => void;
 }) {
   const [year, setYear] = useState(years[years.length - 1]);
   const ranked: LeaderboardRow[] = rows
@@ -30,6 +37,11 @@ export function LeaderboardYears({
     .filter((r) => r.value > 0)
     .sort((a, b) => b.value - a.value)
     .slice(0, topN);
+
+  useEffect(() => {
+    onVisibleRowsChange?.(ranked);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [year, rows]);
 
   return (
     <div>

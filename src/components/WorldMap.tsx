@@ -135,8 +135,21 @@ function MapBody({
         width={800}
         height={height}
         style={{ width: "100%", height: "100%", display: "block" }}
-        role="img"
-        aria-label="World map, shaded by real per-country value — each country is individually labeled with its real number, keyboard-navigable"
+        // role="img" on an element that CONTAINS focusable descendants is
+        // an invalid ARIA combination (WAI-ARIA's img role implies one
+        // atomic, non-interactive unit) — caught by axe-core's
+        // nested-interactive check, since every <Geography> below gets
+        // tabIndex=0/role="button" whenever onSelect is wired up. A
+        // read-only map (no onSelect, no focusable children) is
+        // genuinely one image; an interactive one is genuinely a group
+        // of buttons — the real role differs by which map this is, not
+        // a single label that happens to fit either.
+        role={onSelect ? "group" : "img"}
+        aria-label={
+          onSelect
+            ? "World map, shaded by real per-country value — each country is individually labeled with its real number, keyboard-navigable"
+            : "World map, shaded by real per-country value"
+        }
       >
         <CentroidCapture geoData={geoData} onReady={handleCentroids} />
         <ZoomableGroup
@@ -169,7 +182,20 @@ function MapBody({
                     className="map-geography"
                     tabIndex={code && onSelect ? 0 : -1}
                     role={code && onSelect ? "button" : undefined}
-                    aria-label={code ? `${countryName(code)}, ${hasValue ? value.toLocaleString() : "no data"} ${unit}` : undefined}
+                    // Only set in the interactive (onSelect) case — the
+                    // outer <svg>'s role is "img" when onSelect is absent
+                    // (see this file's own note above), and an "img" role
+                    // means its content is one atomic, non-addressable
+                    // unit: a per-country aria-label on an individual
+                    // <path> underneath it is a real, confirmed
+                    // aria-prohibited-attr violation in that mode (caught
+                    // live on the country-profile pages, the first real
+                    // caller to render a WorldMap with no onSelect at
+                    // all — every existing TrackShell caller always
+                    // passes one, so this never surfaced before). The
+                    // real per-country value is still visible via color
+                    // and the hover tooltip either way.
+                    aria-label={code && onSelect ? `${countryName(code)}, ${hasValue ? value.toLocaleString() : "no data"} ${unit}, press Enter to pin` : undefined}
                     style={{
                       default: { outline: "none", transition: "fill 0.2s" },
                       hover: { outline: "none", fill: "var(--red)", cursor: code && onSelect ? "pointer" : "default" },
@@ -189,7 +215,7 @@ function MapBody({
       {tip && (
         <Tooltip x={tip.x} y={tip.y}>
           {countryName(tip.code)} · {tip.code in values ? `${values[tip.code].toLocaleString()} ${unit}` : "no data"}
-          {onSelect ? " · click to filter" : ""}
+          {onSelect ? " · click to pin" : ""}
         </Tooltip>
       )}
     </>

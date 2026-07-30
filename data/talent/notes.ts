@@ -11,15 +11,15 @@ export const NOTES: StageNote[] = [
     author: "Staff",
     headline: "American math scores still haven't recovered to 2012 levels",
     body:
-      "PISA math scores sat 7 points below the 2012 baseline as of the 2022 assessment, even as reading and science both improved over the same stretch. The foundation the rest of this pipeline builds on is not flat; it is improving on two of three fronts and still recovering on the third.",
+      "PISA math scores sat seven points below the 2012 baseline as of the 2022 assessment, even as reading and science both improved over the same stretch. The foundation the rest of this pipeline builds on is not flat; it is improving on two of three fronts and still recovering on the third.",
   },
   {
     stage: "degree-production",
     date: "2026-07-28",
     author: "Staff",
-    headline: "U.S. research doctorates keep growing, slowly",
+    headline: "US research doctorates keep growing, slowly",
     body:
-      "American universities awarded 58,131 research doctorates in 2024, up from 250 in 1900 and roughly flat with the 57,439-57,806 range of the two prior years. STEM's share of bachelor's degrees has climbed from 18.9% in 1995 to 24.9% in 2024 — real growth, but degree production is not accelerating the way headline PhD counts alone suggest.",
+      "American universities awarded 58,131 research doctorates in 2024, up from 250 in 1900 and roughly flat with the 57,439–57,806 range of the two prior years. STEM's share of bachelor's degrees has climbed from 18.9% in 1995 to 24.9% in 2024 — real growth, but degree production is not accelerating the way headline PhD counts alone suggest.",
   },
   {
     stage: "graduate-training",
@@ -51,6 +51,6 @@ export const NOTES: StageNote[] = [
     author: "Staff",
     headline: "Patent leadership in critical technologies has already shifted",
     body:
-      "Google/Alphabet's U.S. utility patents fell from 3,195 in 2015 to 2,249 in 2025, even as China's BOE Technology Group rose from 21 patents in 2005 to 2,374 in 2025 and South Korea's Samsung Display rose from 2 to 2,925 over the same span. The patent-count leaderboard for critical technologies is not static, and the American incumbent's own count went down, not just relatively but in absolute terms.",
+      "Google/Alphabet's US utility patents fell from 3,195 in 2015 to 2,249 in 2025, even as China's BOE Technology Group rose from 21 patents in 2005 to 2,374 in 2025 and South Korea's Samsung Display rose from 2 to 2,925 over the same span. The patent-count leaderboard for critical technologies is not static, and the American incumbent's own count went down, not just relatively but in absolute terms.",
   },
 ];
