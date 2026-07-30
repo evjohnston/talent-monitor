@@ -970,6 +970,63 @@ typecheck` was silently skipping both — added them to
 cache-busting) `tsc -b` rebuild that they're now genuinely checked, not
 just passing by omission.
 
+## Real employer-name normalization (2026-07-30)
+
+`src/lib/entityResolution.ts` — `canonicalizeCompany()` — canonicalizes
+FIG302's own real "Company" column so a DERIVED metric like FIG303's
+top-10 concentration groups the same real employer together instead of
+splitting it across legal-entity-name variants. Adapted from the old
+pre-rebuild app's own `entityResolution.ts` (deleted in the talent
+rebuild, recoverable via `git show 5329bf1^:src/lib/entityResolution.ts`)
+— same two-layer pattern (mechanical legal-suffix stripping, then a
+small hand-verified alias table), rebuilt against FIG302's real data
+rather than reusing the old quantum/AI-specific alias table, which
+doesn't apply here.
+
+**Real research, not speculation** — pulled and reviewed FIG302's full
+252-row real employer list by hand (2026-07-30) before writing a single
+alias. Exactly one real, confirmed, CONTEMPORANEOUS same-parent case
+exists: "HP Enterprise Svcs LLC" and "Hewlett Packard Enterprise
+Company" are the same real company at the same time (a subsidiary and
+its parent), not a change of ownership — these canonicalize to one
+"Hewlett Packard Enterprise." Several REAL historical mergers also
+appear in the data (Satyam Computer Services, acquired by Tech Mahindra
+in 2013; Larsen & Toubro Infotech + Mindtree, merged into LTIMindtree in
+2022) — confirmed with the user (2026-07-30) that these deliberately do
+NOT get grouped: pre-merger years stay attributed to the entity that
+actually filed them, with the real relationship disclosed instead
+(`CORPORATE_LINEAGE` in `entityResolution.ts`) rather than silently
+merged into the successor's totals. Merging a historical acquisition
+into one grouping would misattribute economic activity across a change
+of ownership — a real methodological distinction, not a technicality.
+
+**FIG302's own exported rows are never touched** — canonicalization only
+feeds a NEW `canonicalizeFig302()` helper in `scripts/import-
+talent-charts.ts`, used by `buildFig303` and `buildTab303` (both already
+disclosed as computed-by-this-site derivations, not verbatim exhibits).
+FIG302 itself stays exactly as USCIS reported it — the real "raw file
+actually used," for the downloads work's own "link to raw source files"
+requirement.
+
+**Verified the real before/after, not assumed**: regenerated
+`talent.json` and diffed every exhibit. FIG303's top-10 concentration
+percentage is IDENTICAL in every year 2009-2026 — Hewlett Packard
+Enterprise's combined volume never crossed a top-10 threshold in any
+single year, so the one real grouping found didn't move any displayed
+number. TAB303's company SET is unchanged (no company added or removed
+from the union-of-top-10-firms), only its display names got the same
+mechanical suffix-stripping cleanup ("GOOGLE INC" -> "GOOGLE", "TATA
+CONSULTANCY SERVICES LIMITED" -> "TATA CONSULTANCY SERVICES"). A
+real, low-risk fix that's still worth having: correct grouping now,
+before a future data refresh's threshold shifts enough for it to matter.
+
+Real bug avoided, not hit: the recovered old file's own `ALIASES` lookup
+used a bare `ALIASES[key]` object index, which the old code's own
+comment says once collided with `Object.prototype.constructor` for a
+real company literally named "Constructor." `Object.hasOwn` is used here
+from the start — confirmed by a real test case
+(`entityResolution.test.ts`), not discovered by hitting the bug again.
+
 ## Editorial style pass (2026-07-29)
 
 Read the real "Hoover Style Guide April 2026.pdf" (repo root, gitignored

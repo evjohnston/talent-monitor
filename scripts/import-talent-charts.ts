@@ -13,6 +13,7 @@ import { readFileSync, writeFileSync, existsSync } from "node:fs";
 import { join } from "node:path";
 import type { ChartKind, DataFile, Exhibit, Stage } from "../src/lib/types.ts";
 import { NOTES } from "../data/talent/notes.ts";
+import { canonicalizeCompany } from "../src/lib/entityResolution.ts";
 
 const ROOT = join(import.meta.dirname, "..");
 const CHARTS_DIR = join(ROOT, "talent_charts");
@@ -223,11 +224,47 @@ const PARTS: Record<string, PartsSpec> = {
 // separate call than replicating a formula.
 const SKIP_COMPUTED = ["TAB603"];
 
-function buildFig303(fig302: { columns: string[]; rows: Record<string, string | number | null>[] } | null) {
-  if (!fig302) return null;
+type Table = { columns: string[]; rows: Record<string, string | number | null>[] };
+
+// FIG302's own exported rows stay exactly as USCIS reported them — the
+// "raw file actually used" (see the downloads work) never gets rewritten.
+// This builds a SEPARATE, re-aggregated view for FIG303/TAB303's own
+// already-derived, already-disclosed-as-computed calculations, grouping
+// only real, confirmed, CONTEMPORANEOUS same-parent subsidiary names
+// (src/lib/entityResolution.ts's own ALIASES — e.g. "HP Enterprise Svcs
+// LLC" + "Hewlett Packard Enterprise Company" are the same real company at
+// the same time, not a historical merger). A real historical
+// merger/acquisition (Satyam -> Tech Mahindra, L&T Infotech + Mindtree ->
+// LTIMindtree) deliberately does NOT get grouped here — each keeps its own
+// pre-merger years attributed to the entity that actually filed them (see
+// entityResolution.ts's CORPORATE_LINEAGE for the disclosed relationship
+// instead). Confirmed by hand against the real 252-row FIG302 employer
+// list (2026-07-30): only one real group exists (Hewlett Packard
+// Enterprise), so this changes FIG303/TAB303's numbers only where that one
+// real company was previously undercounted as two separate smaller ones.
+function canonicalizeFig302(fig302: Table): Table {
   const years = fig302.columns.filter((c) => /^\d{4}$/.test(c));
+  const byId = new Map<string, { name: string; values: Record<string, number> }>();
+  for (const row of fig302.rows) {
+    const raw = String(row.Company ?? "");
+    const { id, name } = canonicalizeCompany(raw);
+    if (!byId.has(id)) byId.set(id, { name, values: Object.fromEntries(years.map((y) => [y, 0])) });
+    const entry = byId.get(id)!;
+    for (const y of years) {
+      const v = row[y];
+      if (typeof v === "number") entry.values[y] += v;
+    }
+  }
+  const rows = [...byId.values()].map((e) => ({ Company: e.name, ...e.values }));
+  return { columns: fig302.columns, rows };
+}
+
+function buildFig303(fig302: Table | null) {
+  if (!fig302) return null;
+  const grouped = canonicalizeFig302(fig302);
+  const years = grouped.columns.filter((c) => /^\d{4}$/.test(c));
   const rows = years.map((year) => {
-    const values = fig302.rows
+    const values = grouped.rows
       .map((r) => (typeof r[year] === "number" ? (r[year] as number) : 0))
       .sort((a, b) => b - a);
     const total = values.reduce((s, v) => s + v, 0);
@@ -236,8 +273,6 @@ function buildFig303(fig302: { columns: string[]; rows: Record<string, string | 
   });
   return { columns: ["Year", "Top 10 employers' share of approvals"], rows };
 }
-
-type Table = { columns: string[]; rows: Record<string, string | number | null>[] };
 
 // TAB303 ("Top Employers Receiving H-1B Approvals") — real per-company
 // comparison of 2017 vs. 2025 share of approvals, from FIG302's own
@@ -249,12 +284,13 @@ type Table = { columns: string[]; rows: Record<string, string | number | null>[]
 // bookend year, ranked by the point change between them.
 function buildTab303(fig302: Table | null) {
   if (!fig302) return null;
+  const grouped = canonicalizeFig302(fig302);
   const FIRST_YEAR = "2017", LAST_YEAR = "2025";
-  if (!fig302.columns.includes(FIRST_YEAR) || !fig302.columns.includes(LAST_YEAR)) return null;
+  if (!grouped.columns.includes(FIRST_YEAR) || !grouped.columns.includes(LAST_YEAR)) return null;
   const shareByCompany = (year: string) => {
-    const total = fig302.rows.reduce((s, r) => s + (typeof r[year] === "number" ? (r[year] as number) : 0), 0);
+    const total = grouped.rows.reduce((s, r) => s + (typeof r[year] === "number" ? (r[year] as number) : 0), 0);
     return new Map(
-      fig302.rows.map((r) => {
+      grouped.rows.map((r) => {
         const count = typeof r[year] === "number" ? (r[year] as number) : 0;
         return [String(r.Company), { count, share: total > 0 ? (count / total) * 100 : 0 }];
       })
