@@ -1,4 +1,5 @@
 import type { DataFile, Exhibit, Stage, StageNote } from "../lib/types.ts";
+import type { ChartAnnotation } from "../lib/annotations.ts";
 
 // One shared bundle every dashboard reads from — built once per page at
 // build time (see lib/buildContext.ts) since each stage is now its own
@@ -12,4 +13,10 @@ export interface DashboardContext {
   exhibits: Exhibit[]; // the full real corpus, unfiltered
   exhibitsByStage: Record<Stage, Exhibit[]>;
   latestNote: Partial<Record<Stage, StageNote>>;
+  // Real, report-supported chart annotations (src/lib/annotations.ts),
+  // built once here from the same full exhibit corpus every other field
+  // on this context already reads — see ExhibitChart.tsx's own
+  // annotationsForExhibit() for how a panel narrows this down to just
+  // its own exhibit's entries.
+  annotations: ChartAnnotation[];
 }

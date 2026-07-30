@@ -609,3 +609,12 @@ input:focus-visible, select:focus-visible, button:focus-visible {
 .gallery-spacing-row { display: flex; align-items: flex-end; gap: var(--sp-3); margin-bottom: var(--sp-3); }
 .gallery-spacing-item { text-align: center; }
 .gallery-spacing-box { background: var(--red); margin-bottom: 4px; }
+
+/* ── chart annotations (issue #15) — the accessible list is the real
+   interface; the Nivo marker on the chart itself is a decorative,
+   non-focusable enhancement layered on top of it. ───────────────────── */
+.chart-annotations { margin-top: 6px; }
+.chart-annotation-list { list-style: none; margin: 6px 0 0; padding: 0; display: flex; flex-direction: column; gap: 2px; }
+.chart-annotation-btn { display: block; width: 100%; text-align: left; background: none; border: none; padding: 3px 0; font: inherit; font-size: 11px; color: var(--slate); cursor: pointer; }
+.chart-annotation-btn:hover { color: var(--ink); }
+.chart-annotation-detail { font-size: 11px; color: var(--ink-2); padding: 2px 0 6px 12px; border-left: 2px solid var(--line-2); margin-left: 2px; }

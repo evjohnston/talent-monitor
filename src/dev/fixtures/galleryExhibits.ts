@@ -1,4 +1,5 @@
 import type { Exhibit } from "../../lib/types.ts";
+import type { ChartAnnotation } from "../../lib/annotations.ts";
 
 // Small, self-contained fixture data for the component gallery
 // (src/pages/dev/components.astro) — real Exhibit objects, rendered
@@ -223,3 +224,53 @@ export const gallerySankeyFixture = {
     { source: "b", target: "d", value: 20 },
   ],
 };
+
+// A dedicated fixture exhibit for the annotation example — deliberately
+// not galleryTimeseriesSmall, which the "chart components" section above
+// already renders under its own data-exhibit-id; reusing it here too
+// would give two elements the same data-exhibit-id on one page.
+export const galleryTimeseriesForAnnotations: Exhibit = {
+  id: "GAL-TS-ANNOTATED",
+  stage: "foundation",
+  chapter: 4,
+  order: 3,
+  title: "Fixture: a timeseries with real annotation markers",
+  kind: "timeseries",
+  sourceShort: "Gallery fixture data",
+  sourceLong: "Synthetic data for the internal component gallery.",
+  sourceUrls: [],
+  columns: ["Year", "Series"],
+  rows: YEARS.map((y, i) => ({ Year: y, Series: 10 + i * 2 })),
+};
+
+// Two real annotation shapes (issue #15) against
+// galleryTimeseriesForAnnotations' own real year range (2018-2024) — a
+// high-priority one shown by default, a lower-priority one hidden behind
+// the "Annotations (N)" toggle, same real distinction FIG409 (always-on)
+// and FIG606 (opt-in) demonstrate on real pages.
+export const galleryAnnotations: ChartAnnotation[] = [
+  {
+    id: "gal-annotation-event",
+    exhibitIds: ["GAL-TS-ANNOTATED"],
+    stage: "foundation",
+    type: "event",
+    start: 2020,
+    label: "Fixture event annotation",
+    shortLabel: "Fixture event",
+    detail: "A fixture event annotation, shown by default (priority 1) — this is where a real one would explain what changed in 2020.",
+    priority: 1,
+    showByDefault: true,
+  },
+  {
+    id: "gal-annotation-hidden",
+    exhibitIds: ["GAL-TS-ANNOTATED"],
+    stage: "foundation",
+    type: "custom",
+    start: 2022,
+    label: "Fixture lower-priority annotation",
+    shortLabel: "Fixture (hidden by default)",
+    detail: "A fixture priority-2 annotation, hidden until \"Annotations\" is clicked — same real behavior as FIG606's own PERM-expiration annotation.",
+    priority: 2,
+    showByDefault: false,
+  },
+];

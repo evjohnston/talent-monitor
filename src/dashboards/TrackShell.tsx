@@ -106,7 +106,7 @@ export function TrackShell({
   function renderRow(row: Exhibit[]) {
     return (
       <div className="row3" key={row.map((e) => e.id).join("-")}>
-        {row.map((e) => <ExhibitPanel key={e.id} exhibit={e} emphasize={emphasize} onHoverCountry={setEmphasizeCountry} onSelectCountry={handleSelect} />)}
+        {row.map((e) => <ExhibitPanel key={e.id} exhibit={e} emphasize={emphasize} onHoverCountry={setEmphasizeCountry} onSelectCountry={handleSelect} annotations={ctx.annotations} />)}
       </div>
     );
   }
@@ -165,7 +165,7 @@ export function TrackShell({
         </div>
       )}
       {heroContent}
-      {hero && <ExhibitPanel exhibit={hero} emphasize={emphasize} onHoverCountry={setEmphasizeCountry} onSelectCountry={handleSelect} headingLevel={2} />}
+      {hero && <ExhibitPanel exhibit={hero} emphasize={emphasize} onHoverCountry={setEmphasizeCountry} onSelectCountry={handleSelect} headingLevel={2} annotations={ctx.annotations} />}
       {body}
       {exhibits.length === 0 && !heroContent && <div className="trend-empty">No exhibits imported for this stage yet.</div>}
     </div>

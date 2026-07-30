@@ -1,6 +1,7 @@
 import type { DataFile, Exhibit, Stage, StageNote } from "./types.ts";
 import { STAGES } from "./types.ts";
 import type { DashboardContext } from "../dashboards/types.ts";
+import { buildAnnotations } from "./annotations.ts";
 
 // Built once per page, at build time (each .astro page imports
 // public/data/talent.json directly and calls this) — the same
@@ -19,7 +20,9 @@ export function buildDashboardContext(data: DataFile | null): DashboardContext {
     if (!c || n.date > c.date) latestNote[n.stage] = n;
   }
 
-  return { data, exhibits, exhibitsByStage, latestNote };
+  const annotations = buildAnnotations(exhibits);
+
+  return { data, exhibits, exhibitsByStage, latestNote, annotations };
 }
 
 export function formatGenerated(data: DataFile | null): string {

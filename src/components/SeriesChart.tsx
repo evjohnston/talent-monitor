@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from "react";
 import { ResponsiveLine } from "@nivo/line";
 import type { SliceTooltipProps, LineCustomSvgLayer, LineSeries } from "@nivo/line";
 import { codeFromCountryName, countryColor, countryName } from "../lib/countries.ts";
+import type { ChartAnnotation } from "../lib/annotations.ts";
 
 // The redesign brief's own >6-series rule: some real exhibits have far
 // more series than a line chart can show legibly at once (TAB202's 3
@@ -76,6 +77,7 @@ export function SeriesChart({
   emphasize,
   ariaLabel,
   onVisibleSeriesChange,
+  annotations = [],
 }: {
   x: (string | number)[];
   series: Series[];
@@ -94,6 +96,16 @@ export function SeriesChart({
   // "every series" when the >6-series picker is actually active — most
   // exhibits never call this with anything but the full key set.
   onVisibleSeriesChange?: (keys: string[]) => void;
+  // Real, report-supported chart annotations for this exhibit (src/lib/
+  // annotations.ts) — optional, since most exhibits have none yet (5
+  // real ones exist at introduction, not every chart). Rendered as both
+  // a real Nivo marker (a decorative vertical line/label, not itself
+  // focusable) AND a real, always-present list of buttons below the
+  // chart — the list is the actual accessible interface; the marker is
+  // a visual enhancement on top of it, never the only way to reach the
+  // same information (essential annotation text must be accessible
+  // without hover, and reachable by keyboard).
+  annotations?: ChartAnnotation[];
 }) {
   const n = x.length;
   const DEFAULT_W = 380, DEFAULT_H = 260;
@@ -131,6 +143,16 @@ export function SeriesChart({
     onVisibleSeriesChange?.([...visibleKeys]);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [visibleKeys]);
+
+  // Annotation visibility — default view shows only priority/showByDefault
+  // annotations, same "don't overwhelm the default view" rule the series
+  // picker already applies. `showAllAnnotations` and `selectedAnnotationId`
+  // are plain local chart state, never written to the URL — see
+  // annotations.ts's own comment on why (deep-linkable IDs are reserved
+  // for methodology/editorial links opening a chart directly).
+  const [showAllAnnotations, setShowAllAnnotations] = useState(false);
+  const [selectedAnnotationId, setSelectedAnnotationId] = useState<string | null>(null);
+  const visibleAnnotations = showAllAnnotations ? annotations : annotations.filter((a) => a.showByDefault);
 
   function toggleKey(key: string) {
     setVisibleKeys((prev) => {
@@ -205,6 +227,23 @@ export function SeriesChart({
     </div>
   );
 
+  // Nivo's xScale is a "point" scale keyed by the exact string labels in
+  // `xLabels` — a marker's own value has to match one of those strings
+  // exactly, or Nivo silently can't place it. Guarded rather than
+  // assumed: an annotation's real year not being in THIS chart's current
+  // x domain (e.g. a >6-series picker viewing a narrower slice) skips
+  // that marker rather than erroring.
+  const markers = visibleAnnotations
+    .filter((a) => xLabels.includes(String(a.start)))
+    .map((a) => ({
+      axis: "x" as const,
+      value: String(a.start),
+      lineStyle: { stroke: "var(--slate)", strokeWidth: 1, strokeDasharray: "3 3" },
+      textStyle: { fill: "var(--slate)", fontSize: 9 },
+      legend: a.shortLabel ?? a.label,
+      legendOrientation: "vertical" as const,
+    }));
+
   return (
     <figure style={{ margin: 0 }}>
       {visibleSeries.length === 0 ? (
@@ -244,6 +283,7 @@ export function SeriesChart({
           useMesh={true}
           animate={false}
           layers={["grid", "markers", "axes", "areas", "crosshair", "lines", showEndpointLabels ? endpointLabels : "points", "points", "slices", "mesh"]}
+          markers={markers}
           role="img"
           ariaLabel={ariaLabel}
         />
@@ -286,6 +326,34 @@ export function SeriesChart({
           )
         )}
       </figcaption>
+      {annotations.length > 0 && (
+        <div className="chart-annotations">
+          <button type="button" className="chip" aria-pressed={showAllAnnotations} onClick={() => setShowAllAnnotations((v) => !v)}>
+            {showAllAnnotations ? "Fewer annotations" : `Annotations (${annotations.length})`}
+          </button>
+          {/* The real, always-present accessible interface — not the
+              decorative chart marker above, which has no DOM focus target
+              at all. A screen reader or keyboard user reaches every
+              annotation's full text here regardless of hover or the
+              marker's own on-chart position. */}
+          <ul className="chart-annotation-list">
+            {visibleAnnotations.map((a) => (
+              <li key={a.id}>
+                <button
+                  type="button"
+                  className="chart-annotation-btn"
+                  aria-expanded={selectedAnnotationId === a.id}
+                  onClick={() => setSelectedAnnotationId((prev) => (prev === a.id ? null : a.id))}
+                >
+                  {a.start}
+                  {a.end != null ? `–${a.end}` : ""}: {a.shortLabel ?? a.label}
+                </button>
+                {selectedAnnotationId === a.id && <div className="chart-annotation-detail">{a.detail}</div>}
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
     </figure>
   );
 }
