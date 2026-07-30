@@ -970,6 +970,53 @@ typecheck` was silently skipping both — added them to
 cache-busting) `tsc -b` rebuild that they're now genuinely checked, not
 just passing by omission.
 
+## Per-chart downloads (2026-07-30)
+
+`MethodologyDrawer.tsx`'s download menu (issue #4) now offers CSV, JSON,
+and SVG, plus copy-citation and copy-methodology-link, alongside the
+existing structured metadata fields.
+
+- **CSV/JSON** — `src/lib/csvExport.ts`'s `downloadCsv()` (already real)
+  gained a sibling `downloadJson()`; both share a new `triggerDownload()`
+  helper instead of repeating the Blob/createObjectURL/synthetic-`<a>`
+  sequence per format.
+- **SVG** — `src/lib/chartExport.ts`'s `downloadChartSvg()` is ONE
+  generic implementation for every chart kind, not per-component code:
+  `WorldMap`/`BoxPlotRow`/`BarRow`/`LeaderboardYears`/`Sankey` are all
+  hand-rolled real `<svg>` elements, and Nivo's `ResponsiveLine`
+  (`SeriesChart`) also renders a real `<svg role="img">` (confirmed
+  directly against `@nivo/core`'s source during the accessibility pass,
+  see that section above) — serializing whichever real `<svg>` is
+  actually in the DOM works identically regardless of which component put
+  it there. `ExhibitPanel.tsx` wraps `<ExhibitChart>` in a plain ref'd
+  `<div>` (confirmed no CSS targets `.panel`'s children via a direct-child
+  selector before adding it) so `MethodologyDrawer` can find that
+  exhibit's own chart without needing to know its `ChartKind`. Verified
+  against two real, structurally different chart kinds by hand with
+  Playwright — a Nivo `SeriesChart` and a hand-rolled `WorldMap` — both
+  produce a real, valid, standalone SVG file (own `xmlns`, real `<path>`
+  content).
+- **Filenames** — no hand-authored slug field exists per exhibit yet (91
+  exhibits, real content-authoring work, not invented here), so
+  `src/lib/exportFilename.ts` mechanically slugifies the exhibit's own
+  real title instead of falling back to its opaque id: e.g.
+  `degree-production_how-many-research-doctorates-are-awarded-by-u-s-
+  universities_1900-2024.csv`. Reuses `realDateRange()` (already built
+  for the methodology drawer) for the trailing date range, converting its
+  en dash to a plain hyphen — filenames shouldn't carry a unicode
+  character the way display text can.
+
+Not yet done (tracked in #4): "CSV of the currently DISPLAYED data" as a
+real, distinct option from "the complete underlying dataset" — today
+both download the exhibit's full `rows` regardless of what a picker
+(`SeriesChart`'s >6-series toggle, `LeaderboardYears`' year-chip) has
+currently selected. Needs a lifted-state callback threaded up from those
+two components, the same pattern `onHoverCountry`/`onSelectCountry`
+already use, before it can be built for real. PNG export (build-time-
+prerendered, per the user's own direction) and combined per-stage ZIP
+downloads (also build-time-generated) are real, separate, larger pieces
+not yet started.
+
 ## Methodology drawer (2026-07-30)
 
 `src/components/MethodologyDrawer.tsx` replaces `ExhibitPanel.tsx`'s old

@@ -1,3 +1,4 @@
+import { useRef } from "react";
 import type { Exhibit } from "../lib/types.ts";
 import { SectionHeader } from "./ChartFrame.tsx";
 import { ExhibitChart } from "./ExhibitChart.tsx";
@@ -27,11 +28,14 @@ export function ExhibitPanel({
   // case; every regular panel leaves this unset and gets the default h3.
   headingLevel?: 2 | 3;
 }) {
+  const chartRef = useRef<HTMLDivElement>(null);
   return (
     <div className="panel">
       <SectionHeader title={exhibit.title} takeaway={takeaway} level={headingLevel} />
-      <ExhibitChart exhibit={exhibit} emphasize={emphasize} onHoverCountry={onHoverCountry} onSelectCountry={onSelectCountry} />
-      <MethodologyDrawer exhibit={exhibit} />
+      <div ref={chartRef}>
+        <ExhibitChart exhibit={exhibit} emphasize={emphasize} onHoverCountry={onHoverCountry} onSelectCountry={onSelectCountry} />
+      </div>
+      <MethodologyDrawer exhibit={exhibit} chartRef={chartRef} />
     </div>
   );
 }
