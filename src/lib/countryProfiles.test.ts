@@ -1,5 +1,17 @@
 import { describe, it, expect } from "vitest";
-import { buildCountryProfile, exhibitCountryCodes, isImplicitlyDomestic, isSafeAsCountryChart, PROFILE_COUNTRIES } from "./countryProfiles.ts";
+import {
+  buildCountryProfile,
+  exhibitCountryCodes,
+  isImplicitlyDomestic,
+  isSafeAsCountryChart,
+  sectionCoversCountry,
+  relatedCountries,
+  representativeTopic,
+  buildProfileDownloadRows,
+  PROFILE_COUNTRIES,
+  PROFILE_SECTIONS,
+} from "./countryProfiles.ts";
+import { ALL_TOPICS } from "./metricRegistry.ts";
 import type { Exhibit } from "./types.ts";
 
 function fixture(overrides: Partial<Exhibit> = {}): Exhibit {
@@ -304,5 +316,71 @@ describe("buildCountryProfile", () => {
     const us = buildCountryProfile("US", [exhibit]);
     expect(cn!.summary).toContain("500");
     expect(us!.summary).toContain("4,110");
+  });
+});
+
+describe("sectionCoversCountry", () => {
+  it("is true when a real exhibit in the section has data for the compare country", () => {
+    const exhibit = fixture({ columns: ["Country", "Value"], rows: [{ Country: "Germany", Value: 5 }] });
+    const section = { id: "talent-production" as const, label: "Talent production", exhibits: [exhibit], isMissing: false };
+    expect(sectionCoversCountry(section, "DE")).toBe(true);
+    expect(sectionCoversCountry(section, "FR")).toBe(false);
+  });
+
+  it("covers the US via the implicit-domestic rule, not just an explicit column match", () => {
+    const exhibit = fixture(); // no country dimension at all — implicitly US
+    const section = { id: "talent-production" as const, label: "Talent production", exhibits: [exhibit], isMissing: false };
+    expect(sectionCoversCountry(section, "US")).toBe(true);
+    expect(sectionCoversCountry(section, "DE")).toBe(false);
+  });
+});
+
+describe("relatedCountries", () => {
+  it("ranks by real shared-exhibit count, never including the country itself", () => {
+    const both = fixture({ id: "A", columns: ["Country", "V"], rows: [{ Country: "China", V: 1 }, { Country: "Germany", V: 2 }] });
+    const onlyChina = fixture({ id: "B", columns: ["Country", "V"], rows: [{ Country: "China", V: 1 }] });
+    const related = relatedCountries("CN", [both, onlyChina]);
+    expect(related.map((c) => c.code)).toEqual(["DE"]);
+    expect(related.some((c) => c.code === "CN")).toBe(false);
+  });
+
+  it("returns an empty list when no other real profile country shares any exhibit", () => {
+    const exhibit = fixture({ columns: ["Country", "V"], rows: [{ Country: "China", V: 1 }] });
+    expect(relatedCountries("CN", [exhibit])).toEqual([]);
+  });
+});
+
+describe("representativeTopic", () => {
+  it("returns a real, valid topic (from metricRegistry's own ALL_TOPICS) for every profile section", () => {
+    for (const section of PROFILE_SECTIONS) {
+      expect(ALL_TOPICS).toContain(representativeTopic(section.id));
+    }
+  });
+});
+
+describe("buildProfileDownloadRows", () => {
+  it("emits one real row per eligible exhibit with this country's own value, not the country-blind default", () => {
+    const exhibit = fixture({
+      id: "FIG109",
+      title: "Who Will Produce the Most STEM PhDs?",
+      columns: ["Year", "China", "India"],
+      rows: [{ Year: 2020, China: 43399, India: 16968 }],
+    });
+    const profile = buildCountryProfile("IN", [exhibit])!;
+    const rows = buildProfileDownloadRows(profile);
+    expect(rows).toEqual([{ id: "FIG109", title: exhibit.title, section: "Talent production", value: "16,968", asOf: 2020, source: exhibit.sourceShort }]);
+  });
+
+  it("labels a country-map exhibit's own x-value honestly (asOf), never as a fabricated year", () => {
+    const exhibit = fixture({
+      id: "FIG305",
+      title: "Where Do Immigrant AI Founders Come From?",
+      kind: "country-map",
+      columns: ["Country", "Count"],
+      rows: [{ Country: "Australia", Count: 7 }],
+    });
+    const profile = buildCountryProfile("AU", [exhibit])!;
+    const rows = buildProfileDownloadRows(profile);
+    expect(rows[0].asOf).toBe("Australia");
   });
 });

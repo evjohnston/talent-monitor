@@ -193,6 +193,14 @@ a { color: inherit; }
 a.pill { cursor: pointer; text-decoration: none; display: inline-block; }
 .chip:hover, .ghost-btn:hover { border-color: var(--slate); color: var(--ink); }
 .chip[aria-pressed="true"] { background: var(--surface-selected); border-color: var(--surface-selected); color: var(--on-selected); }
+/* label.chip wrapping a real disabled checkbox (country profile compare
+   control) — a <label> gets no native disabled appearance the way a
+   <button disabled> does, so this makes the cap-reached state visible. */
+.chip-disabled { color: var(--slate); cursor: not-allowed; }
+.chip-disabled:hover { border-color: var(--line-2); color: var(--slate); }
+
+.compare-control { border: none; padding: 0; margin: 0; }
+.compare-control legend { padding: 0; margin-bottom: 4px; }
 .ghost-btn:hover { border-color: var(--red); color: var(--red); }
 
 /* ── panel: the one container primitive, border only, no shadow, no radius ── */

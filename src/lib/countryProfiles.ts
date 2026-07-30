@@ -405,3 +405,91 @@ export function buildCountryProfile(code: string, exhibits: Exhibit[]): CountryP
     sections,
   };
 }
+
+export interface ProfileDownloadRow {
+  id: string;
+  title: string;
+  section: string;
+  value: string | number | null;
+  // Named "asOf," not "year" — for most exhibits this really is a year,
+  // but a country-map/snapshot exhibit's own x-axis is a country NAME
+  // (see buildSummary's own note on this same real distinction), and
+  // labeling that column "year" would misrepresent what it actually is.
+  asOf: string | number | null;
+  source: string;
+}
+
+// "Profile CSV (all displayed metrics for that country)" (issue #19's
+// own downloads spec) — one row per real eligible exhibit, this
+// country's own latest value/year (via countryLatestValue, never the
+// country-blind toLatestValue), and its real citation. Deliberately a
+// SUMMARY table, not a bundle of every exhibit's full raw row data —
+// each exhibit's own complete rows are already one click away via its
+// own panel's existing CSV/JSON download, so duplicating them here would
+// just be a second, redundant copy of the same real files.
+export function buildProfileDownloadRows(profile: CountryProfileData): ProfileDownloadRow[] {
+  const rows: ProfileDownloadRow[] = [];
+  for (const section of profile.sections) {
+    for (const exhibit of section.exhibits) {
+      const latest = countryLatestValue(exhibit, profile.country.code) ?? toLatestValue(exhibit);
+      rows.push({
+        id: exhibit.id,
+        title: exhibit.title,
+        section: section.label,
+        value: latest && typeof latest.value === "number" ? formatIndicatorValue(exhibit, latest.value) : latest?.value ?? null,
+        asOf: latest ? latest.x : null,
+        source: exhibit.sourceShort,
+      });
+    }
+  }
+  return rows;
+}
+
+// Compare mode's own real coverage check (issue #19's "warn where one
+// country lacks data" rule) — does ANY exhibit already shown in this
+// section have a real data point for the given compare country? Checked
+// against the section's own already-selected exhibits, not that
+// country's independently-built profile, so the warning reflects exactly
+// what a reader looking at THIS section's real charts would or wouldn't
+// see for the country they added to compare.
+export function sectionCoversCountry(section: ProfileSectionData, code: string): boolean {
+  return section.exhibits.some((e) => exhibitCountryCodes(e).has(code) || (code === "US" && isImplicitlyDomestic(e)));
+}
+
+// Real related countries (issue #19's own "based on actual shared-data
+// availability, not generic geographic proximity" rule) — ranked by how
+// many real exhibits both countries have data in, computed once across
+// the whole corpus rather than a hand-typed adjacency table. Ties break
+// on PROFILE_COUNTRIES' own declared order for a deterministic result.
+export function relatedCountries(code: string, exhibits: Exhibit[], limit = 4): ProfileCountry[] {
+  const codesByExhibit = exhibits.map((e) => exhibitCountryCodes(e));
+  const scored = PROFILE_COUNTRIES.filter((c) => c.code !== code).map((c) => {
+    const shared = codesByExhibit.filter((codes) => codes.has(code) && codes.has(c.code)).length;
+    return { country: c, shared };
+  });
+  return scored
+    .filter((s) => s.shared > 0)
+    .sort((a, b) => b.shared - a.shared || PROFILE_COUNTRIES.indexOf(a.country) - PROFILE_COUNTRIES.indexOf(b.country))
+    .slice(0, limit)
+    .map((s) => s.country);
+}
+
+// One representative real topic per profile section, for a genuinely
+// working (not guessed) explorer deep link — the explorer's own search
+// matches real topic strings (ALL_TOPICS in metricRegistry.ts), not this
+// page's own section labels, so "Talent production" itself would return
+// zero results. Picked in the same most-specific-first SECTION_PRIORITY
+// order sectionFor() already uses, so it's the same real topic that
+// classification logic would itself pick first for this section.
+const SECTION_TOPIC: Record<ProfileSectionId, string> = (() => {
+  const bySection: Partial<Record<ProfileSectionId, string>> = {};
+  for (const topic of SECTION_PRIORITY) {
+    const section = TOPIC_TO_SECTION[topic];
+    if (section && !bySection[section]) bySection[section] = topic;
+  }
+  return bySection as Record<ProfileSectionId, string>;
+})();
+
+export function representativeTopic(sectionId: ProfileSectionId): string {
+  return SECTION_TOPIC[sectionId];
+}
