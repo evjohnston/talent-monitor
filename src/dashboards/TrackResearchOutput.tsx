@@ -1,4 +1,4 @@
-import type { DashboardContext } from "./types.ts";
+import type { TrackDashboardContext } from "./types.ts";
 import { TrackShell } from "./TrackShell.tsx";
 
 // Sixth and final stage rebuilt with TrackShell's `sections` prop —
@@ -24,7 +24,7 @@ import { TrackShell } from "./TrackShell.tsx";
 // patent-leadership finding and building that switcher is real,
 // substantially larger work than this pass's section-grouping — a
 // genuine future Phase 4/7 undertaking, not a same-day fix.
-export function TrackResearchOutput({ ctx }: { ctx: DashboardContext }) {
+export function TrackResearchOutput({ ctx }: { ctx: TrackDashboardContext }) {
   return (
     <TrackShell
       ctx={ctx}

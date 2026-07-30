@@ -1,11 +1,11 @@
 ---
 import BaseLayout from "../layouts/BaseLayout.astro";
 import { TrackResearchOutput } from "../dashboards/TrackResearchOutput.tsx";
-import { buildDashboardContext, formatGenerated } from "../lib/buildContext.ts";
+import { buildTrackContext, formatGenerated } from "../lib/buildContext.ts";
 import { loadTalentData } from "../lib/loadTalentData.ts";
 
 const data = loadTalentData();
-const ctx = buildDashboardContext(data);
+const ctx = buildTrackContext(data, "research-output");
 ---
 <BaseLayout active="research-output" generated={formatGenerated(data)}>
   <TrackResearchOutput ctx={ctx} client:load />

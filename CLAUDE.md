@@ -496,22 +496,22 @@ without JS for free, with no separate prerendering pipeline to maintain.
   are gone, replaced by `astro.config.mjs` and `src/pages/`.
   `npm run typecheck` (`tsc -b --noEmit`) still only checks `.ts`/`.tsx`;
   `.astro` frontmatter is checked by `astro build` itself, not by `tsc`.
-- **Known follow-up, not yet done** — the Cloudflare Worker's
-  `ALLOWED_ORIGINS` (`worker/wrangler.jsonc`) has been updated in source
-  to add `astro dev`'s default port (`localhost:4321`, replacing Vite's
-  old `:5173` as the primary local origin) but **not yet redeployed** —
-  until someone runs `wrangler deploy` from `worker/`, the live news
-  ticker will log CORS errors against a local `astro dev` server (it still
-  fails soft to an empty ticker, so this isn't a broken feature, just a
-  noisy local console). Deploying is a real change to a shared live
-  service, so it wasn't done without asking first, consistent with this
-  file's own instinct to flag anything that touches shared/production
-  state rather than doing it silently.
-- **Known follow-up, not yet done** — every page still ships the full
-  `exhibits` corpus to its React island's hydration payload, not just
-  that stage's own slice — unchanged from the old SPA's behavior, and a
-  legitimate future performance pass, not something this migration tried
-  to also fix in the same change.
+- **No longer a gap, redeployed 2026-07-30** — the Cloudflare Worker's
+  `ALLOWED_ORIGINS` (`worker/wrangler.jsonc`) had been updated in source
+  to add `astro dev`'s default port (`localhost:4321`) but sat undeployed
+  for a while (the live news ticker logged CORS errors against a local
+  `astro dev` server in the meantime — a noisy console, not a broken
+  feature, since it fails soft to an empty ticker either way). Deploying
+  is a real change to a shared live service, so it wasn't done without
+  asking first — confirmed with the user, then `wrangler deploy` run for
+  real, and the fix verified against the live Worker directly (`curl`
+  with a real `Origin: http://localhost:4321` header now gets back a
+  matching `access-control-allow-origin`).
+- **No longer a gap — see "Chart-page performance" below.** Every page
+  used to ship the full `exhibits` corpus to its React island's
+  hydration payload regardless of how many exhibits it actually
+  rendered; the 6 single-stage Track pages (the ones that actually
+  needed this fix) now get only their own stage's own slice.
 
 ## Build chunking (2026-07-29)
 
@@ -1795,6 +1795,93 @@ real, JS-enhanced additions to a page whose title/chart/citation content
 was already fully server-rendered before this PR.
 
 Closes #19. All six deferred features (#13) are now complete.
+
+## Chart-page performance — real per-stage hydration payload trimming (2026-07-30)
+
+Real, partial progress on issue #23 (Lighthouse budgets' own real follow-up
+— see that section below). Closes the "trim `public/data/talent.json`'s
+hydration payload per route" item on that issue's task list; does NOT
+close #23 itself, since its dominant real problem (Total Blocking Time)
+is confirmed, by actual measurement below, to be untouched by this fix.
+
+**The real, confirmed cause**: every one of the 6 single-stage Track
+pages received the exact same full `DashboardContext` Overview/
+Methodology/Downloads/Explorer/country profiles legitimately need (the
+whole 91-exhibit corpus, `exhibitsByStage` for all 6 stages, and — until
+this fix — a full second copy of the same exhibits array again inside a
+`data: DataFile | null` field nothing but Methodology.tsx's own single
+`generatedAt` string ever needed). Checked by hand, not assumed:
+`TrackShell.tsx` and every one of the 6 `Track*.tsx` files only ever read
+ONE stage's own `exhibitsByStage[stage]`/`latestNote[stage]` slice —
+including `TrackRetentionImmigration.tsx`'s own extra Sankey, which only
+looks up FIG601/FIG602 by id, both already within its own stage.
+
+**The fix**: a new `TrackDashboardContext` (`dashboards/types.ts`,
+`stage`/`exhibits`/`note`/`annotations` — just what a single stage
+needs) and `buildTrackContext(data, stage)` (`buildContext.ts`), which
+filters the real corpus down to that one stage's own exhibits (and
+re-derives `note`/`annotations` from that same real slice — confirmed by
+hand that all 5 currently-registered annotations are self-contained to
+one stage, so nothing silently disappears). All 6 stage `.astro` pages
+now call this instead of the full `buildDashboardContext`; `DashboardContext`
+itself dropped its redundant `data` field down to a plain `generatedAt`
+string, used by Overview/Methodology/Downloads/Explorer/country profiles,
+which still legitimately need the rest of the full context.
+
+**Measured, not assumed**: extracted each page's real `<astro-island>`
+`props` attribute length directly from the built HTML. Before this fix,
+a stage page's own payload was the same order of magnitude as
+Overview's real, full-corpus 2,572,206-character escaped-JSON payload;
+after, every stage page's own payload is genuinely just that stage's own
+slice — 118,796 (retention-immigration) to 297,081 (foundation)
+characters, roughly 9-22x smaller.
+
+**A real, second local Lighthouse baseline (3 runs/route, same
+methodology as issue #17's own original), confirming what actually
+moved and what didn't**:
+
+| Route | Performance (was → now) | LCP (was → now) | TBT (was → now) |
+|---|---|---|---|
+| `/graduate-training/` | 0.42 → 0.50 | 6669ms → 5588ms | 1721ms → 1759ms |
+| `/research-output/` | 0.43 → 0.57 | 6390ms → 4678ms | 1348ms → 1422ms |
+| `/degree-production/` | 0.44 → 0.57 | 6366ms → 4707ms | 1164ms → 1197ms |
+| `/retention-immigration/` | 0.54 → 0.65 | 6355ms → 4654ms | 712ms → 682ms |
+| `/foundation/` | 0.56 → 0.67 | 6367ms → 4475ms | 638ms → 625ms |
+| `/workforce-entry/` | 0.67 → 0.79 | 6367ms → 4518ms | 228ms → 247ms |
+| `/` (Overview) | 0.71 → 0.76 | 6366ms → 5668ms | 9ms → 8ms |
+
+**Performance and LCP improved meaningfully on every single route** (LCP
+600-1900ms faster, Performance +0.04 to +0.14) — a smaller hydration
+payload genuinely parses and becomes interactive faster, exactly as
+predicted. **TBT on the three chart-heaviest pages did not move** (within
+normal run-to-run noise, no real direction either way) — real,
+conclusive proof that the hydration-payload size was never the TBT
+bottleneck to begin with. The actual remaining cost is the CHART
+RENDERING work itself (Nivo's `ResponsiveLine` scale/path computation,
+`react-simple-maps`/`d3-geo` projection math, running synchronously for
+every panel on the page the instant the island hydrates, regardless of
+which panels are actually visible) — confirmed as the real next target,
+not guessed at.
+
+**Why "lazy-load below-the-fold charts" (the OTHER real candidate on
+#23's own task list) is deliberately NOT attempted in this same pass**:
+every Track page today is ONE Astro island (`client:load` on the whole
+`TrackFoundation`/`TrackGraduateTraining`/etc. component) sharing real,
+live React state across every panel on the page — `TrackShell.tsx`'s own
+`emphasizeCountry`/`pinnedCountries` cross-highlight, a real, already-
+shipped, well-tested feature (see "Click-to-pin" above). Deferring a
+single panel's hydration until it scrolls into view, the standard
+technique (Astro's own `client:visible` directive), requires splitting
+each panel into its OWN independently-mounted island — and separate
+Astro islands do not share React state/context with each other at all,
+which would break real cross-highlighting the moment it shipped. Doing
+this correctly needs a real redesign of how that shared state crosses
+island boundaries (a shared external store, a custom event bus, or
+promoting it to the same URL-state mechanism pinned countries already
+use) — genuinely bigger, riskier surgery than trimming a hydration prop,
+and not something to attempt in the same pass as a change already fully
+verified and ready to ship. Tracked as the real remaining work on #23,
+with this session's own real numbers as its new baseline.
 
 ## Lighthouse performance budgets (2026-07-30)
 

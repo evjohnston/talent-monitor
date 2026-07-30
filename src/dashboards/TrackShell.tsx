@@ -1,6 +1,6 @@
 import { useEffect, useState, type ReactNode } from "react";
 import type { Exhibit, Stage } from "../lib/types.ts";
-import type { DashboardContext } from "./types.ts";
+import type { TrackDashboardContext } from "./types.ts";
 import { ExhibitPanel } from "../components/ExhibitPanel.tsx";
 import { PolicyTakeaway, SectionHeader } from "../components/ChartFrame.tsx";
 import { countryName } from "../lib/countries.ts";
@@ -61,7 +61,7 @@ export function TrackShell({
   excludeIds,
   sections,
 }: {
-  ctx: DashboardContext;
+  ctx: TrackDashboardContext;
   stage: Stage;
   heroId?: string;
   heroContent?: ReactNode;
@@ -87,8 +87,8 @@ export function TrackShell({
   useEffect(() => {
     writePinnedCountriesToUrl(pinnedCountries);
   }, [pinnedCountries]);
-  const exhibits = ctx.exhibitsByStage[stage];
-  const note = ctx.latestNote[stage];
+  const exhibits = ctx.exhibits;
+  const note = ctx.note;
   const hero = heroId ? exhibits.find((e) => e.id === heroId) : undefined;
   const excluded = new Set([...(excludeIds ?? []), ...(hero ? [hero.id] : [])]);
   const rest = exhibits.filter((e) => !excluded.has(e.id));

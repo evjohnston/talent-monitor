@@ -1,4 +1,4 @@
-import type { DashboardContext } from "./types.ts";
+import type { TrackDashboardContext } from "./types.ts";
 import { TrackShell } from "./TrackShell.tsx";
 
 // Third stage rebuilt with TrackShell's `sections` prop (see
@@ -9,7 +9,7 @@ import { TrackShell } from "./TrackShell.tsx";
 // (docs/report-crosswalk-notes.md's own biggest-consolidation call), and
 // FIG409-411/TAB403/TAB404 are every remaining exhibit the CSV tagged
 // "study abroad" — not a fresh grouping invented for this pass.
-export function TrackFoundation({ ctx }: { ctx: DashboardContext }) {
+export function TrackFoundation({ ctx }: { ctx: TrackDashboardContext }) {
   return (
     <TrackShell
       ctx={ctx}

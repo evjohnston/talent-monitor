@@ -42,7 +42,7 @@ function main() {
 
   if (existsSync(TALENT_JSON)) {
     const dataKb = statSync(TALENT_JSON).size / 1024;
-    console.log(`\npublic/data/talent.json: ${(dataKb / 1024).toFixed(2)} MB — shipped to every route's hydration payload today (a real, disclosed gap, see CLAUDE.md's "Astro migration" section on per-route trimming as future work).`);
+    console.log(`\npublic/data/talent.json: ${(dataKb / 1024).toFixed(2)} MB — the real, full corpus. As of issue #23's per-route hydration-payload fix (2026-07-30), only Overview/Methodology/Downloads/Explorer/country profiles genuinely need this whole file in their own hydration payload; each of the 6 single-stage Track pages now ships only its own ~10-20 exhibits (buildTrackContext() in buildContext.ts) — confirmed by hand at roughly 120-300KB of escaped JSON per stage, not the full ~2.5MB every Track page used to carry. See CLAUDE.md's "Chart-page performance" section for the real before/after Lighthouse numbers.`);
   }
 }
 
