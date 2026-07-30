@@ -1,11 +1,11 @@
 import { useMemo } from "react";
-import type { DashboardContext } from "./types.ts";
+import type { TrackDashboardContext } from "./types.ts";
 import { TrackShell } from "./TrackShell.tsx";
 import { Sankey } from "../components/Sankey.tsx";
 import { SectionHeader } from "../components/ChartFrame.tsx";
 import { retentionFunnelSankey } from "../lib/sankeyData.ts";
 
-export function TrackRetentionImmigration({ ctx }: { ctx: DashboardContext }) {
+export function TrackRetentionImmigration({ ctx }: { ctx: TrackDashboardContext }) {
   const funnel = useMemo(() => retentionFunnelSankey(ctx.exhibits), [ctx.exhibits]);
 
   const heroContent = funnel.nodes.length > 0 && (

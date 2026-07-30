@@ -1,4 +1,4 @@
-import type { DashboardContext } from "./types.ts";
+import type { TrackDashboardContext } from "./types.ts";
 import { TrackShell } from "./TrackShell.tsx";
 
 // Fourth stage rebuilt with TrackShell's `sections` prop. Grouped per
@@ -24,7 +24,7 @@ import { TrackShell } from "./TrackShell.tsx";
 // that note's editorial content would leave the headline finding and the
 // hero visual telling two different stories. Worth a real look in a
 // future pass, not silently fixed here.
-export function TrackGraduateTraining({ ctx }: { ctx: DashboardContext }) {
+export function TrackGraduateTraining({ ctx }: { ctx: TrackDashboardContext }) {
   return (
     <TrackShell
       ctx={ctx}

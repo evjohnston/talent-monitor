@@ -1,4 +1,4 @@
-import type { DashboardContext } from "./types.ts";
+import type { TrackDashboardContext } from "./types.ts";
 import { TrackShell } from "./TrackShell.tsx";
 
 // Fifth stage rebuilt with TrackShell's `sections` prop. FIG302 (the raw
@@ -23,7 +23,7 @@ import { TrackShell } from "./TrackShell.tsx";
 // ("the top 10 H-1B employers took 78.2% of approvals...") — swapping the
 // hero without rewriting that note would split the headline finding from
 // the hero visual, the same reasoning as the other stage's discrepancy.
-export function TrackWorkforceEntry({ ctx }: { ctx: DashboardContext }) {
+export function TrackWorkforceEntry({ ctx }: { ctx: TrackDashboardContext }) {
   return (
     <TrackShell
       ctx={ctx}

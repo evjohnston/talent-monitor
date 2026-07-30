@@ -1,4 +1,4 @@
-import type { DashboardContext } from "./types.ts";
+import type { TrackDashboardContext } from "./types.ts";
 import { TrackShell } from "./TrackShell.tsx";
 
 // Second stage rebuilt with TrackShell's `sections` prop (see
@@ -10,7 +10,7 @@ import { TrackShell } from "./TrackShell.tsx";
 // international share of that same pipeline (by raw count, by degree
 // level, by field), and FIG109/110 are the one real cross-national
 // comparison (absolute and per-capita PhD production by country).
-export function TrackDegreeProduction({ ctx }: { ctx: DashboardContext }) {
+export function TrackDegreeProduction({ ctx }: { ctx: TrackDashboardContext }) {
   return (
     <TrackShell
       ctx={ctx}

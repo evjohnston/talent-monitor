@@ -265,7 +265,7 @@ export function Methodology({ ctx, crosswalk }: { ctx: DashboardContext; crosswa
       <div className="panel" id="revision-history">
         <SectionHeader level={2} title="Revision history and data update dates" />
         <p>
-          Data last imported: <strong>{ctx.data?.generatedAt ? new Date(ctx.data.generatedAt).toLocaleString("en-US", { month: "long", day: "numeric", year: "numeric" }) : "unknown"}</strong>.
+          Data last imported: <strong>{ctx.generatedAt ? new Date(ctx.generatedAt).toLocaleString("en-US", { month: "long", day: "numeric", year: "numeric" }) : "unknown"}</strong>.
           There is no live source behind this site's data — every exhibit is re-imported by hand from the report's
           own finished exports, not fetched on a schedule (see this project's own <code>CLAUDE.md</code> for the full,
           dated history of every real change made while building this site).

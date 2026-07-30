@@ -1,11 +1,11 @@
 ---
 import BaseLayout from "../layouts/BaseLayout.astro";
 import { TrackRetentionImmigration } from "../dashboards/TrackRetentionImmigration.tsx";
-import { buildDashboardContext, formatGenerated } from "../lib/buildContext.ts";
+import { buildTrackContext, formatGenerated } from "../lib/buildContext.ts";
 import { loadTalentData } from "../lib/loadTalentData.ts";
 
 const data = loadTalentData();
-const ctx = buildDashboardContext(data);
+const ctx = buildTrackContext(data, "retention-immigration");
 ---
 <BaseLayout active="retention-immigration" generated={formatGenerated(data)}>
   <TrackRetentionImmigration ctx={ctx} client:load />
