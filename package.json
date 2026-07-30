@@ -20,7 +20,10 @@
     "test:visual": "playwright test tests/visual-regression.spec.ts",
     "test:gallery-hidden": "playwright test tests/gallery-hidden.spec.ts",
     "test:gallery": "playwright test --config=playwright.gallery.config.ts",
-    "generate-downloads": "tsx scripts/generate-downloads.ts"
+    "test:data-review-hidden": "playwright test tests/data-review-hidden.spec.ts",
+    "test:data-review": "playwright test --config=playwright.data-review.config.ts",
+    "generate-downloads": "tsx scripts/generate-downloads.ts",
+    "review:data": "tsx scripts/generate-data-review.ts"
   },
   "dependencies": {
     "@astrojs/react": "^6.0.2",

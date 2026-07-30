@@ -146,13 +146,55 @@ jobs:
           path: test-results/
           retention-days: 14
 
-      # Real, required — not defensive boilerplate. The step above just
-      # left dist/ built WITH PUBLIC_ENABLE_DEV_GALLERY=true; every step
-      # from here on (downloads generation, the deploy artifact) must ship
-      # the real flag-off production build instead, or the internal
-      # gallery's real content would go live.
-      - name: Rebuild for production (gallery flag off)
+      # tests/data-review-hidden.spec.ts — same real pattern as the
+      # gallery's own hidden-in-production check, for the internal data
+      # review sheet (src/pages/dev/data-review.astro, issue #16).
+      - name: Data review sheet is hidden in production (Playwright)
+        run: npm run test:data-review-hidden
+        env:
+          GTM_BASE: /${{ github.event.repository.name }}/
+
+      # tests/data-review/*.spec.ts — the real review-sheet content, only
+      # reachable with PUBLIC_ENABLE_DATA_REVIEW=true (see
+      # playwright.data-review.config.ts, its own separate rebuild for the
+      # same reason the gallery's own config is separate). Also leaves
+      # dist/ built with that flag on — covered by the same "Rebuild for
+      # production" step below, now running after BOTH own-build test
+      # steps rather than needing a second copy of itself.
+      - name: Data review sheet content (Playwright, own build)
+        id: data_review_content
+        run: npm run test:data-review
+        continue-on-error: true
+        env:
+          GTM_BASE: /${{ github.event.repository.name }}/
+
+      - uses: actions/upload-artifact@v4
+        if: steps.data_review_content.outcome == 'failure'
+        with:
+          name: data-review-test-failure-output
+          path: test-results/
+          retention-days: 14
+
+      # Real, required — not defensive boilerplate. The two steps above
+      # each left dist/ built WITH their own PUBLIC_ENABLE_* flag on;
+      # every step from here on (downloads generation, the deploy
+      # artifact) must ship the real flag-off production build instead,
+      # or an internal dev-only tool's real content would go live.
+      - name: Rebuild for production (dev-tool flags off)
         run: npm run build
+        env:
+          GTM_BASE: /${{ github.event.repository.name }}/
+
+      # scripts/generate-data-review.ts — the same real review records the
+      # HTML page above renders, as CSV/JSON build output, and a real gate:
+      # fails the build on a genuine data problem (missing source, a real
+      # duplicate primary key, a derived exhibit with no calculation note,
+      # a raw source file that doesn't exist) rather than shipping one
+      # silently. Confirmed by hand this already caught one real bug
+      # (FIG512/FIG513's own blank Flourish-export trailing rows) before
+      # this step existed — see CLAUDE.md's "Data review sheet" section.
+      - name: Generate and validate the data review sheet
+        run: npm run review:data
         env:
           GTM_BASE: /${{ github.event.repository.name }}/
 
