@@ -15,6 +15,7 @@ import type { ChartKind, DataFile, Exhibit, Stage } from "../src/lib/types.ts";
 import { NOTES } from "../data/talent/notes.ts";
 import { canonicalizeCompany } from "../src/lib/entityResolution.ts";
 import { parseCsv } from "../src/lib/parseCsv.ts";
+import { PARTS } from "../src/lib/exhibitParts.ts";
 
 const ROOT = join(import.meta.dirname, "..");
 const CHARTS_DIR = join(ROOT, "talent_charts");
@@ -133,45 +134,9 @@ function orderOf(id: string): number {
   return prefixRank + Number(m[2]);
 }
 
-// ---- multi-part exhibits: some exhibits' underlying CSV was exported in
-// named slices (talent_charts/figures.Rmd / tables.Rmd's own `sources =`
-// lists give the real per-part label) rather than one file per fig_no. Two
-// shapes: "split" (each part becomes its own exhibit, same shape but a
-// different population — e.g. one table per STEM field) and "merge"
-// (parts share the same Year axis, columns get prefixed with the part
-// label and folded into one exhibit).
-type PartsMode = "split" | "merge";
-interface PartsSpec { mode: PartsMode; parts: { suffix: string; label: string }[] }
-
-const PARTS: Record<string, PartsSpec> = {
-  FIG301: { mode: "merge", parts: [{ suffix: "a", label: "U.S.-born" }, { suffix: "b", label: "Foreign-born" }] },
-  FIG604: { mode: "merge", parts: [{ suffix: "a", label: "All industries" }, { suffix: "b", label: "Tech sector" }] },
-  FIG605: { mode: "merge", parts: [{ suffix: "a", label: "All industries" }, { suffix: "b", label: "Tech sector" }] },
-  TAB202: {
-    mode: "split",
-    parts: [
-      { suffix: "a", label: "Engineering" },
-      { suffix: "b", label: "Math and Computer Science" },
-      { suffix: "c", label: "Physical and Life Sciences" },
-    ],
-  },
-  TAB203: {
-    mode: "split",
-    parts: [{ suffix: "a", label: "Science" }, { suffix: "b", label: "Engineering" }, { suffix: "c", label: "Health" }],
-  },
-  TAB204: {
-    mode: "merge",
-    parts: [{ suffix: "a", label: "U.S. citizens & permanent residents" }, { suffix: "b", label: "Temporary visa holders" }],
-  },
-  TAB505: {
-    mode: "split",
-    parts: [
-      { suffix: "a", label: "Biotechnology" },
-      { suffix: "b", label: "Semiconductors" },
-      { suffix: "c", label: "Computer technology" },
-    ],
-  },
-};
+// PARTS moved to src/lib/exhibitParts.ts (2026-07-30) — pure data, reused
+// by src/lib/rawSourceFiles.ts for the /downloads/ route's own raw-
+// source-file resolution, not duplicated here a second time.
 
 // Exhibits computed inline in the report's own R pipeline from another
 // exhibit's data (or, for TAB605, from real source CSVs that exist but

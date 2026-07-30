@@ -1152,6 +1152,83 @@ real page state (pinned countries, series-picker selections) — that's
 this drawer's own smaller piece of a larger, still-open download/share
 mechanism.
 
+## The /downloads/ route (2026-07-30)
+
+Closes #6. `src/pages/downloads.astro` + `src/dashboards/Downloads.tsx` —
+search, a stage-chip filter, combined bundles, and every real exhibit in
+one table, each with its own real raw/CSV/JSON/PNG links.
+
+**The real distinction the user asked for explicitly**: "raw" and
+"processed" are two different real things here, never conflated. A new
+`src/lib/rawSourceFiles.ts` (`resolveRawSourceFiles()`) resolves each
+exhibit back to the literal, unmodified CSV(s) it was imported from in
+`talent_charts/data/` — mirroring the importer's own real logic exactly
+(a derived exhibit's `derivedFrom` names its real source; a split-mode
+multi-part exhibit's hyphenated id, e.g. `TAB202-a`, maps to its real
+unhyphenated raw filename, `TAB202a.csv`; a merge-mode exhibit resolves
+to every real part file folded into it), not guessed at separately.
+Verified against real data, not assumed: every one of the 91 real
+exhibits' resolved raw file(s) actually exist on disk (0 missing), and a
+byte-for-byte diff confirms the copied `dist/downloads/raw/*.csv` files
+are identical to their real source. The "Processed CSV/JSON" buttons sit
+right next to the raw link on the same row, generated the exact same
+client-side way `MethodologyDrawer.tsx`'s own buttons already do (reused
+directly, not reimplemented) — so the difference between the two is
+visible on the same line, not buried in separate places.
+
+**`scripts/generate-downloads.ts` grew three more real, build-time
+outputs**, alongside the PNG/ZIP pipeline from #4:
+- Raw source files, copied (not regenerated) into `dist/downloads/raw/`,
+  deduplicated by real filename — several derived exhibits share one
+  real source (everything derived from FIG302 resolves to the same
+  `FIG302.csv`), copied once, not once per exhibit.
+- One combined `all.zip` spanning every real exhibit (91 small CSVs,
+  ~110KB total — genuinely small, not a build-size concern, confirmed by
+  hand rather than assumed).
+- `metadata.csv`, a real data dictionary (exhibit id, title, stage,
+  source, resolved raw files, derivation) generated from the same real
+  fields everything else in this pipeline already uses.
+
+**A real, second-order bug this predicate work caught, not shipped
+blind**: predicting which exhibits get a PNG at Astro build time (before
+the LATER screenshot pass that actually knows) needs its own logic,
+`src/lib/chartAvailability.ts`. A first version wrongly counted
+`BoxPlotRow` (FIG512/FIG513) as SVG-producing — checked directly against
+that component's real source and found it's plain absolutely-positioned
+HTML/CSS divs, the same real pattern `BarRow.tsx` uses, not an `<svg>`
+at all. Caught by diffing the predicate's own output against
+`generate-downloads.ts`'s REAL generated PNG file list (66 predicted vs.
+62 actually generated, not assumed to match), which also surfaced a
+second, different real case: FIG601/FIG602 never render as their own
+standalone panel anywhere (`TrackRetentionImmigration.tsx`'s own
+`excludeIds` — their data feeds that stage's hero Sankey directly), so
+the real screenshot pass never encounters them regardless of chart kind.
+Both are now explicit, tested cases in the predicate, not silently
+wrong — re-verified afterward: 62 predicted, 0 mismatches against the
+real file list.
+
+**A real CSS specificity bug caught by hand, not left in**: `.lb thead
+th`'s own `padding: 0 0 5px` (zero right-padding) beat a same-specificity
+`.crosswalk-table th`/`.downloads-table th` override, so both new
+tables' header text ran together edge to edge ("DATE RANGEDOWNLOAD") —
+confirmed visually, not assumed fixed just because the CSS rule existed.
+Fixed by matching `.lb thead th`'s own specificity (`.crosswalk-table
+thead th`, not a bare `.crosswalk-table th`), verified by re-screenshotting
+both tables' real headers after the fix.
+
+Extracted `PARTS` (the multi-part-exhibit merge/split spec) out of
+`scripts/import-talent-charts.ts` into a shared `src/lib/exhibitParts.ts`
+— pure data, no fs/DOM dependency, reused by `rawSourceFiles.ts` the same
+way `parseCsv`/`csv`/`dateRange` were already extracted for the
+methodology and download work. Confirmed the importer's own output is
+byte-identical before and after (besides the real `generatedAt`
+timestamp) — a pure refactor, not a behavior change.
+
+Verified: zero axe-core violations on the new route (added to the
+committed suite), all 77 unit tests passing, every real download link
+(raw file, CSV button, combined ZIP, metadata dictionary) fetched and
+confirmed working by hand with Playwright, not just rendered.
+
 ## The /methodology/ route (2026-07-30)
 
 Closes #5. `src/pages/methodology.astro` + `src/dashboards/Methodology.tsx`

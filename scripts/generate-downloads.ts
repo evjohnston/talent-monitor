@@ -13,7 +13,7 @@
 // dist/ (regenerated every build, never committed).
 //
 // Run: npx tsx scripts/generate-downloads.ts
-import { readFileSync, mkdirSync, existsSync, createWriteStream } from "node:fs";
+import { readFileSync, writeFileSync, mkdirSync, existsSync, createWriteStream, copyFileSync } from "node:fs";
 import { join } from "node:path";
 import { spawn, type ChildProcess } from "node:child_process";
 import { chromium } from "@playwright/test";
@@ -21,10 +21,12 @@ import { ZipArchive } from "archiver";
 import type { DataFile, Exhibit } from "../src/lib/types.ts";
 import { rowsToCsv } from "../src/lib/csv.ts";
 import { buildExportFilename } from "../src/lib/exportFilename.ts";
+import { resolveRawSourceFiles } from "../src/lib/rawSourceFiles.ts";
 
 const ROOT = join(import.meta.dirname, "..");
 const DIST = join(ROOT, "dist");
 const DATA_PATH = join(ROOT, "public", "data", "talent.json");
+const RAW_DATA_DIR = join(ROOT, "talent_charts", "data");
 const PORT = 4322; // deliberately not 4321 — avoids colliding with a real dev/preview/test server already using the default port
 const BASE = process.env.GTM_BASE ?? "/";
 
@@ -116,6 +118,21 @@ async function generatePngs(exhibits: Exhibit[]) {
   }
 }
 
+function writeZip(zipPath: string, exhibits: Exhibit[]): Promise<void> {
+  return new Promise((resolve, reject) => {
+    const output = createWriteStream(zipPath);
+    const archive = new ZipArchive({ zlib: { level: 9 } });
+    output.on("close", resolve);
+    archive.on("error", reject);
+    archive.pipe(output);
+    for (const e of exhibits) {
+      const csv = rowsToCsv(e.rows);
+      if (csv) archive.append(csv, { name: buildExportFilename(e, "csv") });
+    }
+    archive.finalize();
+  });
+}
+
 async function generateZips(exhibits: Exhibit[]) {
   const outDir = join(DIST, "downloads", "zip");
   mkdirSync(outDir, { recursive: true });
@@ -127,21 +144,57 @@ async function generateZips(exhibits: Exhibit[]) {
   }
 
   for (const [stage, stageExhibits] of byStage) {
-    const zipPath = join(outDir, `${stage}.zip`);
-    await new Promise<void>((resolve, reject) => {
-      const output = createWriteStream(zipPath);
-      const archive = new ZipArchive({ zlib: { level: 9 } });
-      output.on("close", resolve);
-      archive.on("error", reject);
-      archive.pipe(output);
-      for (const e of stageExhibits) {
-        const csv = rowsToCsv(e.rows);
-        if (csv) archive.append(csv, { name: buildExportFilename(e, "csv") });
-      }
-      archive.finalize();
-    });
+    await writeZip(join(outDir, `${stage}.zip`), stageExhibits);
   }
-  console.log(`Generated ${byStage.size} per-stage ZIP bundles -> ${outDir}`);
+  // One combined bundle across every real stage — genuinely small (91
+  // real exhibit CSVs, each a few KB) rather than a build-size concern,
+  // per the redesign brief's own "if build size remains reasonable" call.
+  await writeZip(join(outDir, "all.zip"), exhibits);
+  console.log(`Generated ${byStage.size} per-stage ZIP bundles + 1 combined bundle -> ${outDir}`);
+}
+
+// Copies the real, unmodified source CSVs each exhibit actually came
+// from — the "raw files we used," per the user's own explicit direction
+// (2026-07-30) that "view all data" should link to these, not to this
+// site's own processed exhibit.rows (already through coerce()/
+// numericColumns() etc.). Deduplicated by real filename, since several
+// derived exhibits share the same real source file (e.g. every exhibit
+// derived from FIG302 resolves to the same FIG302.csv).
+function copyRawSourceFiles(exhibits: Exhibit[]) {
+  const outDir = join(DIST, "downloads", "raw");
+  mkdirSync(outDir, { recursive: true });
+  const byId = new Map(exhibits.map((e) => [e.id, e]));
+  const files = new Set<string>();
+  for (const e of exhibits) for (const f of resolveRawSourceFiles(e, byId)) files.add(f);
+  let copied = 0;
+  for (const f of files) {
+    const src = join(RAW_DATA_DIR, f);
+    if (!existsSync(src)) { console.warn(`Raw source file not found, skipping: ${f}`); continue; }
+    copyFileSync(src, join(outDir, f));
+    copied++;
+  }
+  console.log(`Copied ${copied} real raw source files -> ${outDir}`);
+}
+
+// One combined, real data dictionary — every exhibit's own real id,
+// title, stage, citation, computed date range, and resolved raw source
+// file(s) — for the downloads route's own "metadata dictionary download"
+// requirement. Generated from the same real fields every other part of
+// this pipeline already uses, not a second hand-authored copy.
+function generateMetadataDictionary(exhibits: Exhibit[]) {
+  const byId = new Map(exhibits.map((e) => [e.id, e]));
+  const rows = exhibits.map((e) => ({
+    exhibit_id: e.id,
+    title: e.title,
+    stage: e.stage,
+    source: e.sourceShort,
+    raw_source_files: resolveRawSourceFiles(e, byId).join("; "),
+    derived_from: e.derivedFrom?.join("; ") ?? "",
+  }));
+  const path = join(DIST, "downloads", "metadata.csv");
+  const csv = rowsToCsv(rows);
+  writeFileSync(path, csv);
+  console.log(`Generated metadata dictionary -> ${path}`);
 }
 
 async function main() {
@@ -152,6 +205,8 @@ async function main() {
   const exhibits = loadExhibits();
   await generateZips(exhibits);
   await generatePngs(exhibits);
+  copyRawSourceFiles(exhibits);
+  generateMetadataDictionary(exhibits);
 }
 
 main();

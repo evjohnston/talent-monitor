@@ -20,6 +20,7 @@ const ROUTES = [
   "retention-immigration/",
   "research-output/",
   "methodology/",
+  "downloads/",
 ];
 
 for (const route of ROUTES) {

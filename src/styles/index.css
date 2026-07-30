@@ -434,8 +434,28 @@ code { font-family: var(--mono); background: var(--panel-2); padding: 1px 4px; f
 .methodology-calc-row > div { color: var(--ink-2); margin-top: 2px; }
 .methodology-list { margin: var(--sp-2) 0 0; padding-left: 1.2em; line-height: 1.6; color: var(--ink-2); }
 .methodology-list li { margin-bottom: var(--sp-2); }
-.crosswalk-table td, .crosswalk-table th { padding-right: var(--sp-2); }
+/* `.lb thead th`'s own `padding: 0 0 5px` (zero right-padding) beats a
+   plain `.crosswalk-table th` on specificity (2 compound parts vs. 1) —
+   real bug caught by hand (header text ran together edge to edge before
+   this). `thead th` matches that same specificity instead of just
+   hoping a bare class selector wins. */
+.crosswalk-table td { padding-right: var(--sp-2); }
+.crosswalk-table thead th { padding-right: var(--sp-2); }
 .crosswalk-table tbody tr:target { background: var(--panel-2); }
+
+/* ── /downloads/ route ─────────────────────────────────────────────── */
+.downloads-toolbar { display: flex; flex-direction: column; gap: var(--sp-2); margin-top: 12px; }
+.download-links { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; font-size: 12.5px; }
+.download-links .sep { color: var(--line-2); }
+.download-links a, .link-btn {
+  color: var(--red); text-decoration: underline; background: none; border: none; padding: 0; font: inherit; cursor: pointer;
+}
+.download-links a:hover, .link-btn:hover { color: var(--ink); }
+/* Same real specificity bug as .crosswalk-table above — .lb thead th's
+   own padding-right:0 otherwise wins over a bare .downloads-table th. */
+.downloads-table td { vertical-align: top; padding-right: var(--sp-3); }
+.downloads-table thead th { padding-right: var(--sp-3); }
+.downloads-table td:last-child, .downloads-table thead th:last-child { padding-right: 0; }
 
 /* ── tooltip ────────────────────────────────────────────────────── */
 /* Fixed dark-on-white regardless of page theme — a floating overlay reads
