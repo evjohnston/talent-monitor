@@ -1284,6 +1284,68 @@ Methodology/Downloads), `urlState.ts`'s `Dashboard` type,
 `tests/accessibility.spec.ts`'s route list (now 10 routes, 0 violations),
 and `lighthouserc.cjs`'s route list.
 
+## The /explorer/ route — indicator detail (2026-07-30)
+
+Closes the "explorer indicator detail" stage of #18 — second of the
+three planned PRs (foundation → indicator detail → compare mode).
+`src/components/ExplorerDetail.tsx`, `src/components/ExhibitTable.tsx`
+(new, generic table alternative for any real `ChartKind`), `?metric=<id>`
+added to `explorerUrlState.ts`.
+
+**Reuses `ExhibitPanel` directly for the "full chart" requirement** —
+the real chart, its real controls (series picker, annotations), and its
+real `MethodologyDrawer` (citation, CSV/JSON/SVG downloads) are exactly
+what every stage page already renders per exhibit; the detail view is
+not a second, parallel chart-rendering path. The only genuinely new
+pieces are the chart/table toggle and the related-indicators list.
+"Report presets" (the source issue's own wording) aren't a separate
+mechanism for the same reason — this view's default state already
+reproduces the report's own real figure/table exactly, since that's
+just what `ExhibitPanel` always renders; a separate preset system would
+duplicate that, not add to it.
+
+**A full-page swap, not a side panel** — selecting a result replaces the
+catalog with the detail view entirely (a "← Back to explorer" link
+returns), rather than a split-pane layout. The issue's own wording says
+a side panel "may" be used on wide screens, not that it must be; a full
+swap is simpler to build correctly and avoids a separate, harder
+responsive-layout problem for a first detail-view pass.
+
+**Real browsable/shareable navigation, not just a state variable** —
+opening or closing the detail view uses `pushState` (a real, back-
+button-undoable navigation a reader would expect), while ordinary
+catalog filter changes (typing in search, clicking a dropdown) keep
+using `replaceState` to avoid spamming history per keystroke — the same
+real distinction this app's other URL-state code (pinned countries,
+scrollytelling) never needed, since neither of those has a real
+sub-view to navigate into. A `popstate` listener re-reads the URL on
+back/forward so the catalog-vs-detail swap responds to real browser
+navigation, not just this component's own button clicks — verified by
+hand with Playwright (`page.goBack()` genuinely returns to the catalog).
+
+**Real related indicators** — ranked by real shared topics (from
+`metricRegistry.ts`, plus a same-stage bonus), capped at 5, never
+including the entry itself — confirmed by hand that FIG101 (a degree-
+production doctorate count) surfaces five other real degree-production
+indicators, not an arbitrary or empty list.
+
+**A real, expected test update, not a bug in either direction** — PR 1's
+own interaction test asserted that "Open →" navigates away to the real
+stage page (the only behavior that existed then). Clicking now
+`preventDefault()`s and opens the in-page detail view instead once JS is
+running — the `<a href>` itself is untouched and still points at the
+real stage page's `?methods=<id>` deep link, so a no-JS reader (or a
+crawler) still gets a real, working link; only the JS-enhanced click
+behavior changed. Updated that test to assert the new real behavior
+rather than leaving it to silently break.
+
+**Real, dedicated accessibility coverage for the detail view's own
+state** — `tests/accessibility.spec.ts` gained a check against
+`?metric=FIG101` specifically, since the plain per-route sweep only ever
+loads each URL with no query string and would never otherwise exercise
+this real, JS-driven view (chart/table toggle, related-indicators list)
+at all. Zero violations.
+
 ## Lighthouse performance budgets (2026-07-30)
 
 Closes #17, the fourth of six features deliberately deferred when the

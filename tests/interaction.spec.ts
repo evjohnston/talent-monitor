@@ -130,7 +130,7 @@ test.describe("download menu", () => {
 });
 
 test.describe("explorer catalog", () => {
-  test("search filters the real catalog and updates the URL; a result's Open link deep-links into the real methodology drawer", async ({ page }) => {
+  test("search filters the real catalog and updates the URL", async ({ page }) => {
     await page.goto("explorer/", { waitUntil: "networkidle" });
     const results = page.locator(".explorer-result");
     const totalCount = await results.count();
@@ -143,18 +143,6 @@ test.describe("explorer catalog", () => {
     const filteredCount = await results.count();
     expect(filteredCount).toBeGreaterThan(0);
     expect(filteredCount).toBeLessThan(totalCount);
-
-    const openLink = results.first().getByRole("link", { name: "Open →" });
-    const href = await openLink.getAttribute("href");
-    const exhibitId = new URL(href!, page.url()).searchParams.get("methods");
-    await openLink.click();
-    await page.waitForLoadState("networkidle");
-    expect(page.url()).toContain(href!.split("?")[0]);
-    // The specific drawer the URL targets, not "whichever renders first in
-    // DOM order" — a result's real stage-page position isn't necessarily
-    // first on that page (same real lesson as the data-review Show/Hide
-    // locator bug: don't assume DOM position matches intent).
-    await expect(page.locator(`#methods-${exhibitId}`)).toHaveJSProperty("open", true);
   });
 
   test("stage and topic filters are keyboard-operable and clearable", async ({ page }) => {
@@ -166,5 +154,40 @@ test.describe("explorer catalog", () => {
 
     await page.getByRole("button", { name: "Clear all" }).click();
     await expect(page).not.toHaveURL(/stage=/);
+  });
+});
+
+test.describe("explorer indicator detail", () => {
+  test("Open opens a real in-page detail view with a shareable URL, real chart/table toggle, and real browser back support", async ({ page }) => {
+    await page.goto("explorer/", { waitUntil: "networkidle" });
+    const firstResult = page.locator(".explorer-result").first();
+    const openLink = firstResult.getByRole("link", { name: "Open →" });
+    const href = await openLink.getAttribute("href");
+    const exhibitId = new URL(href!, page.url()).searchParams.get("methods");
+
+    await openLink.click();
+    // A real in-page swap, not a navigation away — the href's own stage
+    // page is a no-JS fallback (see Explorer.tsx's own comment), not
+    // where a JS-enabled click actually goes.
+    await expect(page).toHaveURL(new RegExp(`metric=${exhibitId}`));
+    await expect(page.getByRole("button", { name: "Back to explorer" })).toBeVisible();
+    await expect(page.locator(".explorer-detail svg[role='img']")).toBeVisible();
+
+    await page.getByRole("button", { name: "Table" }).click();
+    await expect(page.locator(".exhibit-table")).toBeVisible();
+
+    await page.goBack();
+    await expect(page).not.toHaveURL(/metric=/);
+    await expect(page.locator(".explorer-results")).toBeVisible();
+  });
+
+  test("a related indicator is keyboard-operable and opens its own real detail view", async ({ page }) => {
+    await page.goto("explorer/?metric=FIG101", { waitUntil: "networkidle" });
+    const related = page.locator(".explorer-related-list button").first();
+    await expect(related).toBeVisible();
+    await related.focus();
+    await page.keyboard.press("Enter");
+    await expect(page).not.toHaveURL(/metric=FIG101/);
+    await expect(page.getByRole("button", { name: "Back to explorer" })).toBeVisible();
   });
 });
