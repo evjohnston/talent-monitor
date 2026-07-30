@@ -126,11 +126,20 @@ export function SeriesChart({
   };
   const defaultVisibleKeys = useMemo(() => {
     if (series.length <= MAX_SERIES_WITHOUT_PICKER) return new Set(series.map((s) => s.key));
-    return new Set(
-      [...series].sort((a, b) => lastRealValue(b) - lastRealValue(a)).slice(0, MAX_SERIES_WITHOUT_PICKER).map((s) => s.key)
-    );
+    const topSix = [...series].sort((a, b) => lastRealValue(b) - lastRealValue(a)).slice(0, MAX_SERIES_WITHOUT_PICKER).map((s) => s.key);
+    // An explicitly emphasized series is never silently hidden behind the
+    // top-6-by-value default — a real, confirmed case: a country
+    // profile's own cross-highlight (`emphasize={[code]}`) does nothing
+    // if that country's line isn't even rendered, which happens the
+    // moment it's outside the top 6 of an 11-series exhibit (the UK's
+    // own real J-1-scholars line on FIG607, confirmed by hand). Adds to,
+    // never replaces, the top-6 default, so the ordinary (no-emphasis)
+    // case — every existing Track page's own hover/pin cross-highlight —
+    // is completely unchanged.
+    const emphasizedKeys = emphasize?.length ? series.filter((s) => emphasize.includes(resolveCountry(s.key) ?? s.key)).map((s) => s.key) : [];
+    return new Set([...topSix, ...emphasizedKeys]);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [series]);
+  }, [series, emphasize]);
   // Deterministic from `series` alone (no Math.random/Date.now), so this
   // initial state is identical on the server and the first client render
   // — no hydration mismatch, and a no-JS reader sees this exact default,

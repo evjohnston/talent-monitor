@@ -237,6 +237,26 @@ describe("buildCountryProfile", () => {
     expect(profile!.summary).toContain("does not contain a comparable indicator series");
   });
 
+  it("omits the 'In {year},' clause when the primary exhibit's own x-axis isn't a real year", () => {
+    // Regression: Australia's real earliest-chapter eligible exhibit is
+    // FIG305, a country-map with columns [Country, Count] — its own
+    // x-axis (exhibit.columns[0]) is a COUNTRY NAME, not a year, so the
+    // old unconditional "In {x}," clause produced the nonsensical "In
+    // Australia, Australia's value ... was 7."
+    const exhibit = fixture({
+      id: "FIG305",
+      title: "Where Do Immigrant AI Founders Come From?",
+      kind: "country-map",
+      columns: ["Country", "Count"],
+      rows: [{ Country: "Australia", Count: 7 }],
+    });
+    const profile = buildCountryProfile("AU", [exhibit]);
+    expect(profile!.summary).not.toContain("In Australia,");
+    expect(profile!.summary).toBe(
+      'Australia\'s value for "Where Do Immigrant AI Founders Come From?" was 7. Australia appears in 1 of the report\'s real indicators overall.',
+    );
+  });
+
   it("picks the RIGHT country's own value from a real multi-country wide-format exhibit, not whichever column comes first", () => {
     // Regression: a first version called plain toLatestValue(exhibit),
     // which has no country context and defaults to numericColumns()[0]

@@ -166,7 +166,7 @@ export const PROFILE_COUNTRIES: ProfileCountry[] = (
 // (see CLAUDE.md's "Country profiles" section for what each PR checked).
 // Not a feature flag masking incomplete work: every enabled country's
 // profile is fully real, exactly like every other route in this app.
-export const ENABLED_PROFILE_CODES: readonly string[] = ["US", "CN", "IN"];
+export const ENABLED_PROFILE_CODES: readonly string[] = ["US", "CN", "IN", "GB", "DE", "KR", "JP", "CA", "AU"];
 
 export function enabledProfileCountries(): ProfileCountry[] {
   return PROFILE_COUNTRIES.filter((c) => ENABLED_PROFILE_CODES.includes(c.code));
@@ -324,7 +324,17 @@ function buildSummary(country: ProfileCountry, eligible: { exhibit: Exhibit; ent
     return `${country.name} appears in ${eligible.length} of the report's real indicators.`;
   }
   const value = typeof latest.value === "number" ? formatIndicatorValue(primary.exhibit, latest.value) : String(latest.value);
-  return `In ${latest.x}, ${country.name}'s value for "${primary.exhibit.title}" was ${value}. ${country.name} appears in ${eligible.length} of the report's real indicators overall.`;
+  // A real "In {year}," clause only when the primary exhibit's own x-axis
+  // is genuinely a year — countryLatestValue()/toLatestValue() both key
+  // off `exhibit.columns[0]` regardless of chart kind, and for a
+  // country-map or long-format ranked-bar exhibit that column is a
+  // COUNTRY NAME, not a year (a real, confirmed case: Australia's own
+  // earliest-chapter eligible exhibit was FIG305, a country-map, which
+  // produced the nonsensical "In Australia, Australia's value ... was
+  // 7" before this check existed). A coerced year is always a real
+  // number; a country name never is.
+  const yearClause = typeof latest.x === "number" ? `In ${latest.x}, ` : "";
+  return `${yearClause}${country.name}'s value for "${primary.exhibit.title}" was ${value}. ${country.name} appears in ${eligible.length} of the report's real indicators overall.`;
 }
 
 // The one real per-country config this whole feature is built around —

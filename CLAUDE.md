@@ -1637,6 +1637,75 @@ code before being fixed, same discipline as every other test added this
 session. Both new routes pass the full a11y/interaction suite with zero
 violations.
 
+## Country profiles — remaining 6 countries (2026-07-30)
+
+PR 11 of 12 for issue #19 — United Kingdom, Germany, South Korea, Japan,
+Canada, Australia. `ENABLED_PROFILE_CODES` now reads all 9 real profile
+countries. Hand-reviewing every one of the 6 new profiles (a real,
+full-page Playwright screenshot pass, not a spot check) surfaced two
+more real, general bugs — both in shared components every stage page
+also uses, not something specific to a country-profile page.
+
+**Bug 5 — a fabricated "year" in the generated summary.** Australia's
+own real earliest-chapter eligible exhibit is FIG305, a `country-map`
+(`columns: [Country, Count]`, no year dimension at all) — `buildSummary()`
+unconditionally wrapped its value in `In ${latest.x},`, and for a
+country-map exhibit `latest.x` is the COUNTRY'S OWN NAME (the map's
+identity column), producing the nonsensical real sentence "In Australia,
+Australia's value ... was 7." Fixed by only emitting the year clause
+when `latest.x` is genuinely a number — a coerced year always is; a
+country name never is. This is the same real class of bug as bugs 1-2
+above (a function built assuming every exhibit has a year axis, broken
+by the first real country-map/long-format exhibit that reaches it) —
+confirmed regression test in `countryProfiles.test.ts`.
+
+**Bug 6 — an emphasized country silently invisible on its own profile.**
+`SeriesChart.tsx`'s own real >6-series default (top 6 by most recent
+value, see "Rendering" above) has no awareness of `emphasize` at all —
+confirmed, real, checked-by-hand cases: Japan ranks 9th of 10 on FIG203
+("Which Countries Account for the Largest Share of International
+Undergraduates?"), South Korea 11th of 10 on FIG411's own real
+comparison, both genuinely below the default cutoff. A reader opening
+Japan's own profile would see this section's own primary chart with NO
+Japan line rendered at all, defeating the entire cross-highlight premise
+country profiles are built on — confirmed by hand (`stroke` attribute
+inspection on the real built page, not assumed from the code). This is a
+real, general gap in a component every stage page's own hover/pin
+cross-highlight also uses, just far less likely to surface there (a
+reader would need to specifically hover a low-ranked country, versus a
+country profile ALWAYS emphasizing its own country on every load). Fixed
+by unioning the top-6 default with whichever series `emphasize` names,
+verified by hand that Japan's own FIG203 panel now reads "Showing 7 of
+10 series" with Japan's own legend entry no longer struck through —
+zero behavior change for the ordinary (no-emphasis) case on every
+existing Track page, since the union only ever ADDS to the default, and
+adds nothing when the emphasized country is already in the top 6 (which
+is why the UK's own FIG607 panel, checked first, showed no visible
+change at all — it was already correctly rendering, a real dead end that
+led to correctly re-diagnosing the actual bug against Japan instead).
+
+**A real, disclosed non-fix, not overlooked**: `LeaderboardYears`/
+`BarRow` (the `leaderboard-years`/entity-ranked chart kinds) still have
+no per-country emphasis mechanism at all — a country profile's own
+section can legitimately show a top-N ranked list (e.g. FIG410's "Study
+Abroad" leaderboard) where the profile's own country has a real row
+somewhere in the data but isn't in the currently-selected year's top 12,
+so it simply doesn't appear, unhighlighted, same as any other real
+top-N truncation already accepted elsewhere in this app (BarRow's own
+"+N more not shown," the explorer's "+N more indicators"). Building a
+real per-entity filter/pin for these two chart kinds is legitimate,
+larger follow-up work, not attempted in this pass.
+
+**A real, disclosed cost trade-off on the Lighthouse route list**:
+`lighthouserc.cjs` was NOT extended to all 9 country routes (it already
+covers `/countries/`, `/countries/united-states/`, `/countries/china/`,
+`/countries/india/` from PRs 9-10) — the earlier real CI-vs-local TBT gap
+found adding just the explorer route (see "Lighthouse performance
+budgets" below) is exactly the kind of runtime/flakiness risk 6 more
+audited pages (18 more runs, at 3 runs/route) would compound, with no
+real new signal over the 3 already-covered representative profiles. The
+full a11y sweep (much cheaper per route) DOES cover all 9.
+
 ## Lighthouse performance budgets (2026-07-30)
 
 Closes #17, the fourth of six features deliberately deferred when the
