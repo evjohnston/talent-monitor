@@ -64,10 +64,23 @@ test.describe("chart annotations", () => {
     await panel.scrollIntoViewIfNeeded();
     const button = panel.locator(".chart-annotation-btn").first();
     await expect(button).toHaveCount(1);
-    await button.focus();
-    await expect(panel.locator(".chart-annotation-detail")).toHaveCount(0);
-    await page.keyboard.press("Enter");
-    await expect(panel.locator(".chart-annotation-detail")).toBeVisible();
+    const detail = panel.locator(".chart-annotation-detail");
+    await expect(detail).toHaveCount(0);
+    // FIG409 isn't the hero on `foundation/`, so it's one of the
+    // per-panel `client:visible` islands (issue #23's real TBT fix) —
+    // scrolling it into view triggers hydration, but that's real,
+    // genuinely async work (loading its own JS chunk, mounting React),
+    // not instant. The static button is present immediately either way
+    // (SSR), but its click handler only attaches once React actually
+    // hydrates — a real user who scrolled straight here and clicked
+    // immediately would see the same brief delay. `toPass()` retries the
+    // real interaction until it actually takes effect, matching that
+    // real timing instead of asserting on a race.
+    await expect(async () => {
+      await button.focus();
+      await page.keyboard.press("Enter");
+      await expect(detail).toBeVisible({ timeout: 200 });
+    }).toPass({ timeout: 5000 });
     await expect(button).toBeFocused();
   });
 });
