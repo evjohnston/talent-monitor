@@ -1,12 +1,57 @@
 ---
 import BaseLayout from "../layouts/BaseLayout.astro";
-import { TrackRetentionImmigration } from "../dashboards/TrackRetentionImmigration.tsx";
+import { ExhibitPanelIsland } from "../components/ExhibitPanelIsland.tsx";
+import { PinnedCountriesBar } from "../components/PinnedCountriesBar.tsx";
+import { RetentionFunnelHero } from "../components/RetentionFunnelHero.tsx";
+import { PolicyTakeaway, SectionHeader } from "../components/ChartFrame.tsx";
 import { buildTrackContext, formatGenerated } from "../lib/buildContext.ts";
 import { loadTalentData } from "../lib/loadTalentData.ts";
+import { computeTrackLayout, toExhibitRows } from "../lib/trackLayout.ts";
+import { TRACK_CONFIG } from "../lib/trackConfig.ts";
+import { annotationsForExhibit } from "../lib/annotations.ts";
 
+// Real per-panel-island architecture (issue #23's own measured TBT fix
+// — see CLAUDE.md's "Chart-page performance" section and the
+// graduate-training pilot's own notes for the full real reasoning). This
+// stage's own hero is a custom Sankey (RetentionFunnelHero, computed
+// from FIG601/FIG602 directly), not a plain exhibit — TRACK_CONFIG has
+// no heroId for this stage, so `layout.hero` is always undefined here
+// and the Sankey renders in its place instead, always `client:load`
+// (already visible, no lazy-hydration needed for the one hero).
 const data = loadTalentData();
 const ctx = buildTrackContext(data, "retention-immigration");
+const layout = computeTrackLayout(ctx.exhibits, TRACK_CONFIG["retention-immigration"] ?? {});
 ---
 <BaseLayout active="retention-immigration" generated={formatGenerated(data)}>
-  <TrackRetentionImmigration ctx={ctx} client:load />
+  <div class="track-enter">
+    {ctx.note && <PolicyTakeaway>{ctx.note.headline} — {ctx.note.body}</PolicyTakeaway>}
+    <PinnedCountriesBar client:load />
+    <RetentionFunnelHero exhibits={ctx.exhibits} client:load />
+    {layout.sections.map((section) => (
+      <div class="track-section">
+        <SectionHeader title={section.title} level={2} />
+        <div class="row3">
+          {section.exhibits.map((exhibit) => (
+            <ExhibitPanelIsland
+              exhibit={exhibit}
+              annotations={annotationsForExhibit(ctx.annotations, exhibit.id)}
+              client:visible
+            />
+          ))}
+        </div>
+      </div>
+    ))}
+    {toExhibitRows(layout.leftover).map((row) => (
+      <div class="row3">
+        {row.map((exhibit) => (
+          <ExhibitPanelIsland
+            exhibit={exhibit}
+            annotations={annotationsForExhibit(ctx.annotations, exhibit.id)}
+            client:visible
+          />
+        ))}
+      </div>
+    ))}
+    {ctx.exhibits.length === 0 && <div class="trend-empty">No exhibits imported for this stage yet.</div>}
+  </div>
 </BaseLayout>

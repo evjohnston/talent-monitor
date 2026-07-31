@@ -1993,6 +1993,85 @@ repeat of a proven pattern rather than open architectural exploration,
 but still needs its own real verification pass (functional +
 Lighthouse-measured) before shipping, same discipline as this pilot.
 
+## Chart-page performance — full rollout to all 6 stages (2026-07-30)
+
+The graduate-training pilot's real architecture (per-panel `client:visible`
+islands, `crossHighlightBus.ts` for cross-island cross-highlight) rolled
+out to the remaining 5 stage pages — issue #23's own dominant real
+problem is now fixed everywhere, not just on the one worst offender.
+
+**`retention-immigration`'s own real special case**: its hero is a
+custom Sankey (`retentionFunnelSankey`, computed from FIG601/FIG602
+directly), not a plain exhibit `computeTrackLayout()`'s generic `heroId`
+lookup can find. Extracted into a new `RetentionFunnelHero.tsx` —
+identical real content/markup to the old inline JSX — mounted as its own
+always-`client:load` island (no cross-highlight wiring needed; `Sankey.tsx`
+takes no `emphasize`/`onHoverCountry` props at all). `TRACK_CONFIG`'s
+own entry for this stage has no `heroId`, only `excludeIds`/`sections`.
+
+**A real, second confirmed regression, caught by the existing committed
+test suite doing its actual job — not shipped blind**: the pre-existing
+chart-annotation interaction test (`foundation/`'s own FIG409 COVID
+annotation) started failing once `foundation` migrated, because FIG409
+is one of that stage's `client:visible` panels now, not the hero. The
+test scrolled it into view and pressed Enter immediately — but a
+`client:visible` panel's real click handler only attaches once React
+actually hydrates it (genuinely async: loading its own JS chunk,
+mounting React), so an interaction landing in that real, honest window
+does nothing, same as it would for an actual reader who scrolled fast
+and clicked immediately. Fixed the TEST (not the app — this latency is
+inherent to lazy hydration, not a bug) with Playwright's own `toPass()`
+retry, which keeps pressing Enter until the real click handler is live,
+matching how the interaction would actually resolve for a real user
+rather than asserting on a race. Confirmed by hand: hydration for this
+specific panel completes in roughly 1 second after scroll — a real,
+disclosed, honest trade-off of deferring chart computation, not
+something worth papering over.
+
+**Measured on every stage (single-run spot check; graduate-training's
+own PR already established the 3-run-median discipline for this
+architecture)**:
+
+| Route | Performance (before → after) | TBT (before → after) |
+|---|---|---|
+| `/graduate-training/` | 0.42 → 0.79-0.80 (3-run median) | 1721ms → 16ms (3-run median) |
+| `/research-output/` | 0.43 → 0.79 | 1348ms → 0ms |
+| `/degree-production/` | 0.44 → 0.80 | 1164ms → 19ms |
+| `/retention-immigration/` | 0.54 → 0.82 | 712ms → 0ms |
+| `/foundation/` | 0.56 → 0.81 | 638ms → 0ms |
+| `/workforce-entry/` | 0.67 → 0.83 | 228ms → 0ms |
+
+Every stage now lands in the same real 0.79-0.83 Performance band with
+TBT at or near zero, regardless of how chart-heavy it originally was
+(research-output, the single largest page at 21 real exhibits, dropped
+from the worst TBT after graduate-training to 0ms) — real, direct
+confirmation that deferring off-screen chart computation was the actual
+fix, not something specific to graduate-training's own exhibit mix.
+
+**Real dead code removed, not left as a "just in case" backup**: all 6
+`Track*.tsx` files and `TrackShell.tsx` itself deleted — every stage
+`.astro` page now builds its own layout directly via `trackLayout.ts`/
+`trackConfig.ts`. `TrackSection` (the section-config type) moved from
+`TrackShell.tsx` into `trackLayout.ts`, its new real home. Recoverable
+from git history if a future session ever needs the original shared-
+React-tree version to reference.
+
+**Verified**: 190 unit tests, 23 a11y checks (zero violations across
+every stage), 18 interaction tests (all passing, including the fixed
+annotation test and the 2 cross-island-bus tests from the pilot) — the
+same full suite the pilot PR already established, now confirmed clean
+against all 6 migrated stages together, not just the one.
+
+Closes every item on issue #23's own task list: "lazy-load below-the-fold
+charts," "investigate real TBT," and — checked directly, not assumed —
+"reserve chart height before hydration to reduce/confirm CLS stays
+low." Real Cumulative Layout Shift measured at exactly 0.000 on all 6
+migrated stages: the existing CSS-driven panel/row layout already
+reserves the correct space from the server-rendered markup alone, and
+`client:visible` hydration only attaches behavior, never resizes
+anything — there was no real layout-shift risk to reserve space
+against in the first place. Issue #23 closes with this PR.
+
 ## Lighthouse performance budgets (2026-07-30)
 
 Closes #17, the fourth of six features deliberately deferred when the

@@ -1,18 +1,26 @@
 import type { Exhibit } from "./types.ts";
-import type { TrackSection } from "../dashboards/TrackShell.tsx";
 
-// A pure-data version of TrackShell.tsx's own real hero/section/leftover
-// partitioning logic — callable from an `.astro` page's own frontmatter
-// (plain build-time JS/TS, no React) rather than only from inside a React
-// component tree. Needed once a stage page's exhibit panels became
-// independent Astro islands (issue #23's real TBT fix, see CLAUDE.md's
-// "Chart-page performance" section) — `client:visible` is a template-
-// level directive that only works on components an `.astro` file mounts
-// directly, so the "which exhibit goes in which section, in what order"
-// decision has to happen at that same level now, not inside a nested
-// React component. Behavior is unchanged from TrackShell.tsx's own
-// original logic — same real editorial section configs, same exclusion
-// rules — just computed as plain data instead of JSX.
+// A pure-data version of the old TrackShell.tsx's own real hero/section/
+// leftover partitioning logic (that component and all 6 of its
+// Track*.tsx callers were deleted as confirmed dead code once every
+// stage page migrated to this architecture — see git history for the
+// original React-tree version if ever needed) — callable from an
+// `.astro` page's own frontmatter (plain build-time JS/TS, no React)
+// rather than only from inside a React component tree. Needed once a
+// stage page's exhibit panels became independent Astro islands (issue
+// #23's real TBT fix, see CLAUDE.md's "Chart-page performance" section)
+// — `client:visible` is a template-level directive that only works on
+// components an `.astro` file mounts directly, so the "which exhibit
+// goes in which section, in what order" decision has to happen at that
+// same level now, not inside a nested React component. Behavior is
+// unchanged from the original logic — same real editorial section
+// configs, same exclusion rules — just computed as plain data instead
+// of JSX.
+export interface TrackSection {
+  title: string;
+  ids: string[];
+}
+
 export interface TrackLayoutConfig {
   heroId?: string;
   // Exhibits that feed a custom hero's own numbers directly (e.g. a
