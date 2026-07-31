@@ -119,5 +119,34 @@ const description = "A pipeline view of US STEM talent, from foundation through 
         new MutationObserver(sync).observe(document.documentElement, { attributes: true, attributeFilter: ["data-theme"] });
       })();
     </script>
+
+    <script is:inline>
+      // A real, confirmed regression this fixes: on a stage page whose
+      // panels are independent `client:visible` islands (issue #23's own
+      // per-panel lazy-hydration fix — see CLAUDE.md's "Chart-page
+      // performance" section), a `?methods=<id>` deep link (used by the
+      // explorer catalog and country-profile supporting metrics) to a
+      // panel below the fold silently did nothing — that panel's own
+      // React tree, and therefore its own MethodologyDrawer mount effect
+      // that normally opens+scrolls to match the URL, never even mounts
+      // until it scrolls into view, which never happens on its own if
+      // nothing scrolled there first. This plain script runs immediately
+      // (no React, no island dependency) and forces exactly that panel
+      // into view via a real DOM query against `data-exhibit-id` — a
+      // real attribute ExhibitPanel.tsx always renders in the static
+      // HTML regardless of hydration state — which triggers the
+      // `client:visible` observer to mount it, and its own existing
+      // MethodologyDrawer mount effect takes over from there unchanged.
+      // A harmless no-op on a page where every panel is already
+      // `client:load` (the target is already visible; scrolling to it
+      // again before its own real scroll fires changes nothing).
+      (function () {
+        var params = new URLSearchParams(window.location.search);
+        var id = params.get("methods");
+        if (!id) return;
+        var target = document.querySelector('[data-exhibit-id="' + CSS.escape(id) + '"]');
+        if (target) target.scrollIntoView({ block: "center" });
+      })();
+    </script>
   </body>
 </html>

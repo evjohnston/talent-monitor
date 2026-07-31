@@ -1,12 +1,67 @@
 ---
 import BaseLayout from "../layouts/BaseLayout.astro";
-import { TrackGraduateTraining } from "../dashboards/TrackGraduateTraining.tsx";
+import { ExhibitPanelIsland } from "../components/ExhibitPanelIsland.tsx";
+import { PinnedCountriesBar } from "../components/PinnedCountriesBar.tsx";
+import { PolicyTakeaway, SectionHeader } from "../components/ChartFrame.tsx";
 import { buildTrackContext, formatGenerated } from "../lib/buildContext.ts";
 import { loadTalentData } from "../lib/loadTalentData.ts";
+import { computeTrackLayout, toExhibitRows } from "../lib/trackLayout.ts";
+import { TRACK_CONFIG } from "../lib/trackConfig.ts";
+import { annotationsForExhibit } from "../lib/annotations.ts";
 
+// Real per-panel-island pilot for issue #23's own measured TBT fix (see
+// CLAUDE.md's "Chart-page performance" section) — graduate-training
+// picked as the pilot stage since a real Lighthouse profile confirmed it
+// as the single worst offender (18 real Nivo chart instances, all
+// computing scales/paths synchronously on hydration). Every panel below
+// the hero is now its own independent `client:visible` Astro island,
+// deferring that same real computation until it actually scrolls into
+// view, instead of one shared TrackShell.tsx island rendering all 20
+// exhibits eagerly. Cross-highlight state (hover-emphasize, click-to-
+// pin/compare) can no longer live in one shared React tree once panels
+// are independent islands — see crossHighlightBus.ts and
+// ExhibitPanelIsland.tsx's own notes on how it's kept in sync instead.
 const data = loadTalentData();
 const ctx = buildTrackContext(data, "graduate-training");
+const layout = computeTrackLayout(ctx.exhibits, TRACK_CONFIG["graduate-training"] ?? {});
 ---
 <BaseLayout active="graduate-training" generated={formatGenerated(data)}>
-  <TrackGraduateTraining ctx={ctx} client:load />
+  <div class="track-enter">
+    {ctx.note && <PolicyTakeaway>{ctx.note.headline} — {ctx.note.body}</PolicyTakeaway>}
+    <PinnedCountriesBar client:load />
+    {layout.hero && (
+      <ExhibitPanelIsland
+        exhibit={layout.hero}
+        annotations={annotationsForExhibit(ctx.annotations, layout.hero.id)}
+        headingLevel={2}
+        client:load
+      />
+    )}
+    {layout.sections.map((section) => (
+      <div class="track-section">
+        <SectionHeader title={section.title} level={2} />
+        <div class="row3">
+          {section.exhibits.map((exhibit) => (
+            <ExhibitPanelIsland
+              exhibit={exhibit}
+              annotations={annotationsForExhibit(ctx.annotations, exhibit.id)}
+              client:visible
+            />
+          ))}
+        </div>
+      </div>
+    ))}
+    {toExhibitRows(layout.leftover).map((row) => (
+      <div class="row3">
+        {row.map((exhibit) => (
+          <ExhibitPanelIsland
+            exhibit={exhibit}
+            annotations={annotationsForExhibit(ctx.annotations, exhibit.id)}
+            client:visible
+          />
+        ))}
+      </div>
+    ))}
+    {ctx.exhibits.length === 0 && <div class="trend-empty">No exhibits imported for this stage yet.</div>}
+  </div>
 </BaseLayout>

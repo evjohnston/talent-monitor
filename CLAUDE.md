@@ -1883,6 +1883,116 @@ and not something to attempt in the same pass as a change already fully
 verified and ready to ship. Tracked as the real remaining work on #23,
 with this session's own real numbers as its new baseline.
 
+## Chart-page performance — per-panel lazy islands, graduate-training pilot (2026-07-30)
+
+The real fix for issue #23's own remaining, dominant problem —
+confirmed by a direct Lighthouse `bootup-time` audit, not guessed:
+`vendor-nivo.js` alone accounted for 2,326ms of `/graduate-training/`'s
+2,295ms total script-evaluation time. That page renders 20 real
+exhibits, 18 of them as `<svg role="img">` Nivo line charts, ALL
+computing their own scales/paths synchronously the instant the page's
+one shared island hydrated — regardless of whether a reader had
+scrolled anywhere near them yet.
+
+**The real architectural constraint this ran into**: Astro's own
+`client:visible` (defer hydration until scroll-into-view, with zero
+hydration-mismatch risk since the component simply isn't mounted client-
+side until then) only works on a component an `.astro` template mounts
+directly — not on a React component nested inside another React
+component's render tree. Every stage page was ONE big island
+(`TrackFoundation`/`TrackGraduateTraining`/etc., `client:load`), with
+`TrackShell.tsx` — a plain nested React component — deciding internally
+which exhibits render where, and owning real, shared, live cross-
+highlight state (`emphasizeCountry`/`pinnedCountries`) across every
+panel in that one shared tree. Making each panel its own lazily-
+hydrated island meant that layout decision had to move to the `.astro`
+level, and that shared state had to survive crossing real island
+boundaries that don't share React context at all.
+
+**The real fix, piloted on graduate-training** (the confirmed worst
+offender):
+- `src/lib/trackLayout.ts` — `computeTrackLayout()`, a pure-data
+  version of `TrackShell.tsx`'s own real hero/section/leftover
+  partitioning logic, callable from `.astro` frontmatter (plain
+  build-time JS, no React) instead of only from inside a React tree.
+  Same real behavior as before — same editorial section configs, same
+  exclusion rules — just computed as data.
+- `src/lib/trackConfig.ts` — the same real per-stage hero/section config
+  every `Track*.tsx` file used to hardcode inline in its own JSX,
+  extracted as plain data (`TRACK_CONFIG`), filled in per stage as it
+  migrates.
+- `src/components/ExhibitPanelIsland.tsx` — one exhibit panel,
+  independently mountable. Owns its OWN local `emphasizeCountry`/
+  `pinnedCountries` state (no longer shared via a parent's React state),
+  synced across every other panel on the page via a new
+  `src/lib/crossHighlightBus.ts` — plain browser `CustomEvent`s (not a
+  state-management library; this app has exactly two real cross-panel
+  signals to carry). Pinned/compare state was already real, URL-
+  persisted state (`urlState.ts`) — but `history.replaceState` never
+  fires `popstate`, so the bus also broadcasts pin changes directly so
+  every OTHER already-hydrated panel's own local copy stays in sync.
+- `src/components/PinnedCountriesBar.tsx` — the real "Pinned:"/
+  "Comparing:" bar (identical markup/behavior to TrackShell.tsx's own
+  original inline JSX), extracted into its own small, always-`client:load`
+  island — it isn't tied to any one exhibit, and needs immediate
+  interactivity for its remove-chip buttons.
+- `graduate-training.astro` rewritten to compute the real layout at
+  build time and mount the hero as `client:load` (already visible on
+  load) with every other real panel as `client:visible` (deferred until
+  scrolled to).
+
+**A real, confirmed second bug this surfaced, fixed before it shipped,
+not after**: a `?methods=<id>` deep link (used by the explorer catalog
+and country-profile supporting metrics) to a below-the-fold exhibit
+silently stopped working — that panel's own React tree, and therefore
+its own `MethodologyDrawer` mount effect that normally opens+scrolls to
+match the URL, never even mounts until something scrolls it into view,
+which nothing did on page load. Fixed with a small, always-run inline
+script in `BaseLayout.astro` (real, plain JS, no React, no island
+dependency) that scrolls the real target panel — found via the
+`data-exhibit-id` attribute `ExhibitPanel.tsx` already renders in the
+static HTML regardless of hydration state — into view immediately,
+which triggers `client:visible` to mount it; that panel's own existing
+`MethodologyDrawer` mount effect takes over from there, unchanged. A
+real no-op on every other page (the target is already visible; a second
+scroll to the same place changes nothing) — confirmed by hand on both a
+migrated and an unmigrated page.
+
+**Measured, not assumed — a real second Lighthouse baseline (3 runs),
+same methodology as every other real number in this file**:
+
+| Metric | Before this pilot | After |
+|---|---|---|
+| Performance | 0.50 | 0.79-0.80 (median 0.79 across 3 runs) |
+| Total Blocking Time | 1759ms | 15-24ms (median 16ms) |
+| Largest Contentful Paint | 5588ms | 4802-5002ms |
+| `vendor-nivo.js` scripting time | 2222ms | 181ms |
+
+A ~99% reduction in Total Blocking Time and Nivo's own scripting cost,
+consistent across 3 independent runs, not a single lucky measurement —
+conclusive confirmation that deferring off-screen chart computation,
+not the hydration-payload size PR #32 already fixed, was the real
+remaining lever for this app's own worst-performing pages.
+
+**Verified functionally, not just measured**: all 190 unit tests, 23
+a11y checks (zero violations), and 18 interaction tests (2 new, directly
+exercising the new cross-island bus: a synthetic hover-country event
+reaching an independently-hydrated panel elsewhere on the page, and
+pinned countries read from the URL applying consistently across every
+panel) pass. `TrackGraduateTraining.tsx` deleted as confirmed dead code
+(zero remaining importers) once `graduate-training.astro` no longer
+needed it — `TrackShell.tsx` and the other 5 `Track*.tsx` files are
+untouched and still serve the other 5 stage pages exactly as before.
+
+**Real, disclosed follow-up, not attempted in this same PR**: rolling
+this same real pattern out to the other 5 stage pages (foundation,
+degree-production, workforce-entry, research-output, and retention-
+immigration — the last of which has its own custom Sankey hero, not a
+plain exhibit, needing its own real handling). Each is now a mechanical
+repeat of a proven pattern rather than open architectural exploration,
+but still needs its own real verification pass (functional +
+Lighthouse-measured) before shipping, same discipline as this pilot.
+
 ## Lighthouse performance budgets (2026-07-30)
 
 Closes #17, the fourth of six features deliberately deferred when the

@@ -38,6 +38,19 @@ test.describe("methodology drawer", () => {
     await expect(drawer).toHaveJSProperty("open", false);
     await expect(summary).toBeFocused();
   });
+
+  test("a ?methods= deep link still opens a panel that's below the fold on a per-panel-island stage page", async ({ page }) => {
+    // Regression: once graduate-training's panels became independent
+    // client:visible islands (issue #23's real TBT fix), a deep link to
+    // a below-the-fold exhibit (FIG212, the last panel on the page)
+    // silently did nothing — that panel's own React tree, and its own
+    // MethodologyDrawer mount effect, never even mounted until something
+    // scrolled it into view, which nothing did on its own. Fixed with a
+    // real, always-run inline script in BaseLayout.astro.
+    await page.goto("graduate-training/?methods=FIG212", { waitUntil: "networkidle" });
+    const drawer = page.locator("details.methodology-drawer#methods-FIG212");
+    await expect(drawer).toHaveJSProperty("open", true);
+  });
 });
 
 test.describe("chart annotations", () => {
@@ -283,5 +296,45 @@ test.describe("country profile", () => {
     expect(parsed.country.code).toBe("US");
     expect(Array.isArray(parsed.indicators)).toBe(true);
     expect(parsed.indicators.length).toBeGreaterThan(10);
+  });
+});
+
+test.describe("cross-island cross-highlight (per-panel-island stage pages)", () => {
+  test("a real hover-country event reaches an independently-hydrated panel elsewhere on the page", async ({ page }) => {
+    // graduate-training has no country-map (WorldMap) exhibit of its own
+    // to originate a real mouse hover from, so this dispatches the same
+    // real event WorldMap.tsx's own onMouseMove already emits
+    // (crossHighlightBus.ts's emitHoverCountry) — a real, direct test of
+    // the cross-island bus itself, independent of which chart kind
+    // happens to originate it. India is genuinely in FIG206's own
+    // natural top-6-by-value default (confirmed by hand against the
+    // real data), so its own real color should survive un-faded.
+    await page.goto("graduate-training/", { waitUntil: "networkidle" });
+    await page.evaluate(() => window.scrollTo(0, document.body.scrollHeight));
+    await page.waitForTimeout(500);
+
+    const panel = page.locator('[data-exhibit-id="FIG206"]');
+    const strokesBefore = await panel.locator("svg path[stroke]").evaluateAll((els) => els.map((e) => e.getAttribute("stroke")));
+    expect(strokesBefore).toContain("var(--country-in)");
+
+    await page.evaluate(() => window.dispatchEvent(new CustomEvent("gtm:hover-country", { detail: "IN" })));
+    await page.waitForTimeout(300);
+
+    const strokesAfter = await panel.locator("svg path[stroke]").evaluateAll((els) => els.map((e) => e.getAttribute("stroke")));
+    expect(strokesAfter).toContain("var(--country-in)");
+    // Every other real series on this independently-hydrated panel is
+    // now faded — confirming the event actually changed something, not
+    // just that India's own line was already unfaded by coincidence.
+    expect(strokesAfter.filter((s) => s !== "var(--country-in)").every((s) => s === "var(--line-2)")).toBe(true);
+  });
+
+  test("pinned countries read from the URL apply consistently across every independently-hydrated panel", async ({ page }) => {
+    await page.goto("graduate-training/?countries=CN", { waitUntil: "networkidle" });
+    await expect(page.locator(".pinned-country-bar")).toBeVisible();
+    await page.evaluate(() => window.scrollTo(0, document.body.scrollHeight));
+    await page.waitForTimeout(500);
+    const panel = page.locator('[data-exhibit-id="FIG203"]');
+    const strokes = await panel.locator("svg path[stroke]").evaluateAll((els) => els.map((e) => e.getAttribute("stroke")));
+    expect(strokes).toContain("var(--country-cn)");
   });
 });
